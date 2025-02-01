@@ -99,7 +99,7 @@ const ActiveStudentsChart = () => {
       .style("border-radius", "4px")
       .style("pointer-events", "none")
       .style("opacity", 0)
-      .attr("class", "shadow-md text-sm max-w-xs");
+      .attr("class", "shadow-md text-xs max-w-xs");
 
     // Add axes
     svg
@@ -141,13 +141,13 @@ const ActiveStudentsChart = () => {
           .attr("fill", color(d.passedCourses))
           .on("mouseover", () => {
             tooltip
-              .style("opacity", 1)
+              .style("opacity", 0.8)
               .html(tooltipContent);
           })
           .on("mousemove", (event) => {
             tooltip
               .style("left", event.pageX + 10 + "px")
-              .style("top", event.pageY - 28 + "px");
+              .style("top", event.pageY/2 + "px");
           })
           .on("mouseout", () => {
             tooltip.style("opacity", 0);
