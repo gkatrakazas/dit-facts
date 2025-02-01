@@ -7,6 +7,8 @@ const ActiveStudentsChart = () => {
   const chartRef = useRef(null);
   const [pivotedData, setPivotedData] = useState([]);
   const [chartWidth, setChartWidth] = useState(0);
+  const [selectedYears, setSelectedYears] = useState([]); // Track selected years
+  const [availableYears, setAvailableYears] = useState([]); // Populate dropdown
 
   const updateChartWidth = () => {
     if (chartRef.current) {
@@ -22,8 +24,11 @@ const ActiveStudentsChart = () => {
     const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
 
     const transformedData = [];
+    const yearsSet = new Set();
+
     sheetData.forEach((row) => {
       const year = row["Έτος εγγραφής"];
+      yearsSet.add(year);
       Object.keys(row).forEach((key) => {
         if (!isNaN(key)) {
           transformedData.push({
@@ -36,6 +41,7 @@ const ActiveStudentsChart = () => {
     });
 
     setPivotedData(transformedData);
+    setAvailableYears(Array.from(yearsSet).sort());
   };
 
   const createChart = () => {
@@ -55,7 +61,13 @@ const ActiveStudentsChart = () => {
       .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
 
-    const groupedData = d3.groups(pivotedData, (d) => d.year);
+    // Filter data based on selected years
+    const filteredData =
+      selectedYears.length === 0
+        ? pivotedData
+        : pivotedData.filter((d) => selectedYears.includes(d.year));
+
+    const groupedData = d3.groups(filteredData, (d) => d.year);
 
     const x = d3
       .scaleBand()
@@ -80,7 +92,7 @@ const ActiveStudentsChart = () => {
     const tooltip = d3
       .select(chartRef.current)
       .append("div")
-      .style("position", "absolute")
+      .style("position", "fixed")
       .style("background", "white")
       .style("border", "1px solid gray")
       .style("padding", "8px")
@@ -210,7 +222,7 @@ const ActiveStudentsChart = () => {
 
   useEffect(() => {
     createChart();
-  }, [pivotedData, chartWidth]);
+  }, [pivotedData, chartWidth, selectedYears]);
 
   useEffect(() => {
     window.addEventListener("resize", updateChartWidth);
@@ -218,9 +230,46 @@ const ActiveStudentsChart = () => {
     return () => window.removeEventListener("resize", updateChartWidth);
   }, []);
 
+  const toggleYearSelection = (year) => {
+    setSelectedYears((prev) =>
+      prev.includes(year)
+        ? prev.filter((y) => y !== year)
+        : [...prev, year]
+    );
+  };
+
   return (
     <div>
       <h1 className="text-2xl font-bold mb-4">Students Passing Courses Over the Years</h1>
+
+      {/* Multi-Select Year Filter */}
+      <div className="mb-4">
+        <label className="font-semibold mr-2">Filter by Year:</label>
+        <div className="flex flex-wrap gap-2">
+          {availableYears.map((year) => (
+            <button
+              key={year}
+              onClick={() => toggleYearSelection(year)}
+              className={`px-3 py-1 border rounded ${
+                selectedYears.includes(year)
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-200"
+              }`}
+            >
+              {year}
+            </button>
+          ))}
+          {selectedYears.length > 0 && (
+            <button
+              onClick={() => setSelectedYears([])}
+              className="px-3 py-1 border rounded bg-red-500 text-white"
+            >
+              Clear All
+            </button>
+          )}
+        </div>
+      </div>
+
       <div ref={chartRef} className="w-full relative"></div>
     </div>
   );
