@@ -5,10 +5,11 @@ import excelFile from "./data/active-students.xlsx";
 
 const ActiveStudentsChart = () => {
   const chartRef = useRef(null);
+  const tooltipRef = useRef(null);
   const [pivotedData, setPivotedData] = useState([]);
   const [chartWidth, setChartWidth] = useState(0);
-  const [selectedYears, setSelectedYears] = useState([]); // Track selected years
-  const [availableYears, setAvailableYears] = useState([]); // Populate dropdown
+  const [selectedYears, setSelectedYears] = useState([]);
+  const [availableYears, setAvailableYears] = useState([]);
 
   const updateChartWidth = () => {
     if (chartRef.current) {
@@ -47,7 +48,7 @@ const ActiveStudentsChart = () => {
   const createChart = () => {
     if (!pivotedData.length) return;
 
-    const margin = { top: 40, right: 30, bottom: 70, left: 60 };
+    const margin = { top: 40, right: 30, bottom: 100, left: 60 };
     const width = chartRef.current.offsetWidth - margin.left - margin.right;
     const height = 400 - margin.top - margin.bottom;
 
@@ -61,7 +62,6 @@ const ActiveStudentsChart = () => {
       .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
 
-    // Filter data based on selected years
     const filteredData =
       selectedYears.length === 0
         ? pivotedData
@@ -88,20 +88,6 @@ const ActiveStudentsChart = () => {
 
     const color = d3.scaleSequential(d3.interpolateOranges).domain([0, 52]);
 
-    // Tooltip container
-    const tooltip = d3
-      .select(chartRef.current)
-      .append("div")
-      .style("position", "fixed")
-      .style("background", "white")
-      .style("border", "1px solid gray")
-      .style("padding", "8px")
-      .style("border-radius", "4px")
-      .style("pointer-events", "none")
-      .style("opacity", 0)
-      .attr("class", "shadow-md text-xs max-w-xs");
-
-    // Add axes
     svg
       .append("g")
       .attr("transform", `translate(0,${height})`)
@@ -112,66 +98,13 @@ const ActiveStudentsChart = () => {
 
     svg.append("g").call(d3.axisLeft(y));
 
-    groupedData.forEach(([year, values]) => {
-      let cumulative = 0;
-      const totalStudents = d3.sum(values, (d) => d.students);
-
-      const yearData = values
-        .filter((d) => d.students > 0)
-        .sort((a, b) => a.passedCourses - b.passedCourses) // Sort by passed courses
-        .map(
-          (d) =>
-            `<strong>Passed Courses:</strong> ${d.passedCourses} | <strong>Students Passed:</strong> ${d.students}`
-        )
-        .join("<br/>");
-
-      const tooltipContent = `
-        <strong>Year:</strong> ${year}<br/>
-        <strong>Active Students:</strong> ${totalStudents}<br/>
-        ${yearData}
-      `;
-
-      values.forEach((d) => {
-        svg
-          .append("rect")
-          .attr("x", x(year))
-          .attr("y", y(cumulative + d.students))
-          .attr("width", x.bandwidth())
-          .attr("height", y(cumulative) - y(cumulative + d.students))
-          .attr("fill", color(d.passedCourses))
-          .on("mouseover", () => {
-            tooltip
-              .style("opacity", 0.8)
-              .html(tooltipContent);
-          })
-          .on("mousemove", (event) => {
-            tooltip
-              .style("left", event.pageX + 10 + "px")
-              .style("top", event.pageY/2 + "px");
-          })
-          .on("mouseout", () => {
-            tooltip.style("opacity", 0);
-          });
-
-        cumulative += d.students;
-      });
-
-      svg
-        .append("text")
-        .attr("x", x(year) + x.bandwidth() / 2)
-        .attr("y", y(cumulative) - 5)
-        .attr("text-anchor", "middle")
-        .attr("font-size", "12px")
-        .attr("fill", "black")
-        .text(totalStudents);
-    });
-
+    // ✅ Add Legend
     const legendWidth = 300;
     const legendHeight = 10;
 
     const legendSvg = svg
       .append("g")
-      .attr("transform", `translate(${(width - legendWidth) / 2}, ${height + 50})`);
+      .attr("transform", `translate(${(width - legendWidth) / 2}, ${height + 40})`);
 
     const gradient = legendSvg
       .append("defs")
@@ -202,9 +135,7 @@ const ActiveStudentsChart = () => {
       .attr("transform", `translate(0, ${legendHeight})`)
       .call(
         d3
-          .axisBottom(
-            d3.scaleLinear().domain([0, 52]).range([0, legendWidth])
-          )
+          .axisBottom(d3.scaleLinear().domain([0, 52]).range([0, legendWidth]))
           .ticks(6)
       );
 
@@ -214,6 +145,72 @@ const ActiveStudentsChart = () => {
       .attr("y", legendHeight + 30)
       .attr("text-anchor", "middle")
       .text("Number of Passed Courses");
+
+    groupedData.forEach(([year, values]) => {
+      let cumulative = 0;
+      const totalStudents = d3.sum(values, (d) => d.students);
+      const totalPassedCourses = d3.sum(
+        values,
+        (d) => d.passedCourses * d.students
+      );
+      const averagePassedCourses = totalStudents
+        ? (totalPassedCourses / totalStudents).toFixed(2)
+        : 0;
+
+      const tooltipContent = `
+        <strong>Year:</strong> ${year}<br/>
+        <strong>Total Active Students:</strong> ${totalStudents}<br/>
+        <strong>Average Passed Courses:</strong> ${averagePassedCourses}
+      `;
+
+      values.forEach((d) => {
+        svg
+          .append("rect")
+          .attr("x", x(year))
+          .attr("y", y(cumulative + d.students))
+          .attr("width", x.bandwidth())
+          .attr("height", y(cumulative) - y(cumulative + d.students))
+          .attr("fill", color(d.passedCourses))
+          .on("mouseover", (event) => {
+            const tooltip = tooltipRef.current;
+            tooltip.style.opacity = 1;
+            tooltip.innerHTML = tooltipContent;
+          })
+          .on("mousemove", (event) => {
+            const tooltip = tooltipRef.current;
+            const tooltipWidth = tooltip.offsetWidth;
+            const screenWidth = window.innerWidth;
+            const mouseX = event.pageX;
+            const mouseY = event.pageY;
+
+            const isRightHalf = mouseX > screenWidth / 2;
+            const offsetX = 20;
+
+            const tooltipX = isRightHalf
+              ? Math.max(10, mouseX - tooltipWidth - offsetX) // Display to the left
+              : Math.min(screenWidth - tooltipWidth - 10, mouseX + offsetX); // Display to the right
+
+            const tooltipY = mouseY - 20;
+
+            tooltip.style.left = `${tooltipX}px`;
+            tooltip.style.top = `${tooltipY}px`;
+          })
+          .on("mouseout", () => {
+            tooltipRef.current.style.opacity = 0;
+          });
+
+        cumulative += d.students;
+      });
+
+      svg
+        .append("text")
+        .attr("x", x(year) + x.bandwidth() / 2)
+        .attr("y", y(cumulative) - 5)
+        .attr("text-anchor", "middle")
+        .attr("font-size", "12px")
+        .attr("fill", "black")
+        .text(totalStudents);
+    });
   };
 
   useEffect(() => {
@@ -239,10 +236,9 @@ const ActiveStudentsChart = () => {
   };
 
   return (
-    <div>
+    <div className="relative">
       <h1 className="text-2xl font-bold mb-4">Students Passing Courses Over the Years</h1>
 
-      {/* Multi-Select Year Filter */}
       <div className="mb-4">
         <label className="font-semibold mr-2">Filter by Year:</label>
         <div className="flex flex-wrap gap-2">
@@ -250,11 +246,10 @@ const ActiveStudentsChart = () => {
             <button
               key={year}
               onClick={() => toggleYearSelection(year)}
-              className={`px-3 py-1 border rounded ${
-                selectedYears.includes(year)
+              className={`px-3 py-1 border rounded ${selectedYears.includes(year)
                   ? "bg-blue-500 text-white"
                   : "bg-gray-200"
-              }`}
+                }`}
             >
               {year}
             </button>
@@ -271,6 +266,11 @@ const ActiveStudentsChart = () => {
       </div>
 
       <div ref={chartRef} className="w-full relative"></div>
+
+      <div
+        ref={tooltipRef}
+        className="fixed bg-white/90 border border-gray-200 text-xs p-2 rounded pointer-events-none opacity-0 z-10 shadow-lg max-w-xs"
+      ></div>
     </div>
   );
 };
