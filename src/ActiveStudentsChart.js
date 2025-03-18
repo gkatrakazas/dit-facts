@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 import * as XLSX from "xlsx";
 import excelFile from "./data/active-students.xlsx";
+import YearSelection from "./YearSelection"; // Import the new component
+import { MdOutlineCleaningServices } from "react-icons/md";
 
 const ActiveStudentsChart = () => {
   const chartRef = useRef(null);
@@ -10,6 +12,10 @@ const ActiveStudentsChart = () => {
   const [chartWidth, setChartWidth] = useState(0);
   const [selectedYears, setSelectedYears] = useState([]);
   const [availableYears, setAvailableYears] = useState([]);
+
+  // Popup State
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [filterType, setFilterType] = useState("multi");
 
   const updateChartWidth = () => {
     if (chartRef.current) {
@@ -98,54 +104,6 @@ const ActiveStudentsChart = () => {
 
     svg.append("g").call(d3.axisLeft(y));
 
-    // ✅ Add Legend
-    const legendWidth = 300;
-    const legendHeight = 10;
-
-    const legendSvg = svg
-      .append("g")
-      .attr("transform", `translate(${(width - legendWidth) / 2}, ${height + 40})`);
-
-    const gradient = legendSvg
-      .append("defs")
-      .append("linearGradient")
-      .attr("id", "color-gradient")
-      .attr("x1", "0%")
-      .attr("x2", "100%")
-      .selectAll("stop")
-      .data(
-        d3.ticks(0, 1, 10).map((t) => ({
-          offset: `${t * 100}%`,
-          color: d3.interpolateOranges(t),
-        }))
-      )
-      .enter()
-      .append("stop")
-      .attr("offset", (d) => d.offset)
-      .attr("stop-color", (d) => d.color);
-
-    legendSvg
-      .append("rect")
-      .attr("width", legendWidth)
-      .attr("height", legendHeight)
-      .style("fill", "url(#color-gradient)");
-
-    legendSvg
-      .append("g")
-      .attr("transform", `translate(0, ${legendHeight})`)
-      .call(
-        d3
-          .axisBottom(d3.scaleLinear().domain([0, 52]).range([0, legendWidth]))
-          .ticks(6)
-      );
-
-    legendSvg
-      .append("text")
-      .attr("x", legendWidth / 2)
-      .attr("y", legendHeight + 30)
-      .attr("text-anchor", "middle")
-      .text("Number of Passed Courses");
-
     groupedData.forEach(([year, values]) => {
       let cumulative = 0;
       const totalStudents = d3.sum(values, (d) => d.students);
@@ -187,8 +145,8 @@ const ActiveStudentsChart = () => {
             const offsetX = 20;
 
             const tooltipX = isRightHalf
-              ? Math.max(10, mouseX - tooltipWidth - offsetX) // Display to the left
-              : Math.min(screenWidth - tooltipWidth - 10, mouseX + offsetX); // Display to the right
+              ? Math.max(10, mouseX - tooltipWidth - offsetX)
+              : Math.min(screenWidth - tooltipWidth - 10, mouseX + offsetX);
 
             const tooltipY = mouseY - 20;
 
@@ -227,43 +185,48 @@ const ActiveStudentsChart = () => {
     return () => window.removeEventListener("resize", updateChartWidth);
   }, []);
 
-  const toggleYearSelection = (year) => {
-    setSelectedYears((prev) =>
-      prev.includes(year)
-        ? prev.filter((y) => y !== year)
-        : [...prev, year]
-    );
-  };
 
   return (
     <div className="relative">
-      <h1 className="text-2xl font-bold mb-4">Students Passing Courses Over the Years</h1>
+      <h1 className="text-2xl text-center mt-2 font-bold mb-4">Students Passing Courses Over the Years</h1>
 
-      <div className="mb-4">
-        <label className="font-semibold mr-2">Filter by Year:</label>
-        <div className="flex flex-wrap gap-2">
-          {availableYears.map((year) => (
-            <button
-              key={year}
-              onClick={() => toggleYearSelection(year)}
-              className={`px-3 py-1 border rounded ${selectedYears.includes(year)
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-200"
-                }`}
-            >
-              {year}
-            </button>
-          ))}
+      <div className="px-12 flex items-center gap-6">
+        <p>Filters: </p>
+        <div className="flex flex-center">
+          <button
+            onClick={() => setIsPopupOpen(true)}
+            className={`px-4 py-1.5 text-sm  shadow bg-gray-300 font-medium ${selectedYears.length > 0 ? 'text-blue-600  border-b-2 border-blue-600' : 'text-gray-800'} rounded`}
+          >
+            Year
+          </button>
           {selectedYears.length > 0 && (
             <button
               onClick={() => setSelectedYears([])}
-              className="px-3 py-1 border rounded bg-red-500 text-white"
+              className=" px-2 py-2 text-gray-500 rounded"
             >
-              Clear All
+              <MdOutlineCleaningServices size={20} />
             </button>
           )}
         </div>
       </div>
+
+      {isPopupOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-20">
+          <div className="bg-white p-6 rounded shadow-xl w-96 space-y-4">
+            <h2 className="text-lg font-semibold">Filter Years</h2>
+
+            {/* Year Selection Component */}
+            <YearSelection
+              availableYears={availableYears}
+              selectedYears={selectedYears} // Pass current selected years
+              setSelectedYears={setSelectedYears}
+              onClose={() => setIsPopupOpen(false)}
+              filterType={filterType} // Pass filterType to YearSelection
+              setFilterType={setFilterType} // Pass setFilterType to YearSelection
+            />
+          </div>
+        </div>
+      )}
 
       <div ref={chartRef} className="w-full relative"></div>
 
