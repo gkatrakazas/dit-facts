@@ -7,6 +7,7 @@ import { MdOutlineCleaningServices } from "react-icons/md";
 
 const ActiveStudentsChart = () => {
   const chartRef = useRef(null);
+  const treeMapRef = useRef(null);
   const tooltipRef = useRef(null);
   const [pivotedData, setPivotedData] = useState([]);
   const [chartWidth, setChartWidth] = useState(0);
@@ -47,6 +48,7 @@ const ActiveStudentsChart = () => {
       });
     });
 
+    console.log('transformedData', transformedData)
     setPivotedData(transformedData);
     setAvailableYears(Array.from(yearsSet).sort());
   };
@@ -54,9 +56,9 @@ const ActiveStudentsChart = () => {
   const createChart = () => {
     if (!pivotedData.length) return;
 
-    const margin = { top: 40, right: 30, bottom: 100, left: 60 };
+    const margin = { top: 40, right: 30, bottom: 40, left: 60 };
     const width = chartRef.current.offsetWidth - margin.left - margin.right;
-    const height = 400 - margin.top - margin.bottom;
+    const height = Math.min(200, Math.max(100, pivotedData.length * 3)); // Adjust height dynamically
 
     d3.select(chartRef.current).selectAll("*").remove();
 
@@ -64,7 +66,7 @@ const ActiveStudentsChart = () => {
       .select(chartRef.current)
       .append("svg")
       .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom + 50)
+      .attr("height", height + margin.top + margin.bottom)
       .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
 
@@ -92,7 +94,7 @@ const ActiveStudentsChart = () => {
       .nice()
       .range([height, 0]);
 
-    const color = d3.scaleSequential(d3.interpolateOranges).domain([0, 52]);
+    const color = d3.scaleSequential(d3.interpolateOranges).domain([52, 0]);
 
     svg
       .append("g")
@@ -171,12 +173,97 @@ const ActiveStudentsChart = () => {
     });
   };
 
+  const createTreeMap = () => {
+    if (!pivotedData.length) return;
+  
+    d3.select(treeMapRef.current).selectAll("*").remove();
+  
+    const margin = { top: 20, right: 20, bottom: 20, left: 20 };
+    const width = treeMapRef.current.offsetWidth - margin.left - margin.right;
+    const height = 400 - margin.top - margin.bottom;
+  
+    const svg = d3
+      .select(treeMapRef.current)
+      .append("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
+  
+    // ✅ Apply Year Filter
+    const filteredData =
+      selectedYears.length === 0
+        ? pivotedData
+        : pivotedData.filter((d) => selectedYears.includes(d.year));
+  
+    // ✅ Group Data by Passed Courses
+    const groupedData = d3.groups(filteredData, (d) => d.passedCourses);
+  
+    // ✅ Convert to Hierarchical Format for Tree Map
+    const root = d3
+      .hierarchy({
+        children: groupedData.map(([passedCourses, students]) => ({
+          name: `Μαθ: ${passedCourses}`,
+          students: d3.sum(students, (d) => d.students),
+        })),
+      })
+      .sum((d) => d.students);
+  
+    // ✅ Create Tree Map Layout
+    d3.treemap()
+      .size([width, height])
+      .padding(3) // 🔹 Increased padding for readability
+      .round(true) // 🔹 Makes layout smoother
+      (root);
+  
+    // ✅ Keep Previous Color Scale (`d3.interpolateOranges`)
+    const color = d3.scaleSequential(d3.interpolateOranges).domain([
+      d3.min(root.leaves(), (d) => d.data.students), // Highest student count
+      52, // Lowest student count
+    ]);
+
+    const cell = svg
+      .selectAll("g")
+      .data(root.leaves())
+      .enter()
+      .append("g")
+      .attr("transform", (d) => `translate(${d.x0},${d.y0})`);
+  
+    cell
+      .append("rect")
+      .attr("width", (d) => d.x1 - d.x0)
+      .attr("height", (d) => d.y1 - d.y0)
+      .attr("fill", (d) => color(d.data.students));
+  
+    // ✅ Conditionally Show Text (Only If Box Is Large Enough)
+    cell
+      .filter((d) => d.x1 - d.x0 > 50 && d.y1 - d.y0 > 30) // Only show text in larger boxes
+      .append("text")
+      .attr("x", 5)
+      .attr("y", 15)
+      .text((d) => d.data.name)
+      .attr("font-size", "12px")
+      .attr("font-weight", "bold")
+      .attr("fill", "white");
+  
+    cell
+      .filter((d) => d.x1 - d.x0 > 50 && d.y1 - d.y0 > 30) // Only show student count in larger boxes
+      .append("text")
+      .attr("x", 5)
+      .attr("y", 30)
+      .text((d) => `Φοιτ: ${d.data.students}`)
+      .attr("font-size", "12px")
+      .attr("fill", "white");
+  };
+  
+
   useEffect(() => {
     loadExcelData();
   }, []);
 
   useEffect(() => {
     createChart();
+    createTreeMap();
   }, [pivotedData, chartWidth, selectedYears]);
 
   useEffect(() => {
@@ -229,6 +316,9 @@ const ActiveStudentsChart = () => {
       )}
 
       <div ref={chartRef} className="w-full relative"></div>
+
+      <h2 className="text-xl text-center mt-6 font-bold">Student Distribution by Passed Courses</h2>
+      <div ref={treeMapRef} className="w-full relative"></div>
 
       <div
         ref={tooltipRef}
