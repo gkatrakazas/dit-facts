@@ -1,0 +1,11 @@
+{
+    "filters": "Filters:",
+    "filter_by_year": "Filter Years",
+    "filter_by_courses": "Filter by Passed Courses",
+    "year": "Year",
+    "passed_courses": "Passed Courses",
+    "students_chart_title": "Students Passing Courses Over the Years",
+    "student_distribution": "Student Distribution by",
+    "size_legend": "Size by Student(s) Number"
+  }
+  

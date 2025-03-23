@@ -7,8 +7,12 @@ import { MdOutlineCleaningServices } from "react-icons/md";
 import PassedCoursesSelection from "./PassedCoursesSelection";
 import course, { ReactComponent as CourseIcon } from './assets/course.svg';
 import student, { ReactComponent as StudentIcon } from './assets/student.svg';
+import { useTranslation } from "react-i18next";
 
 const ActiveStudentsChart = () => {
+
+  const { t } = useTranslation();
+
   const chartRef = useRef(null);
   const treeMapRef = useRef(null);
   const tooltipRef = useRef(null);
@@ -362,7 +366,7 @@ const ActiveStudentsChart = () => {
 
 
   return (
-    <div className="relative mb-10">
+    <div className="mb-10">
       {isPopupOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-20">
           <div className="bg-white p-6 rounded shadow-xl w-96 space-y-4">
@@ -404,7 +408,7 @@ const ActiveStudentsChart = () => {
         <div className="flex gap-4 items-baseline">
           {/* filters */}
           <div className="max-w-max px-4 py-2 text-sm flex items-center gap-6 mt-4 bg-white rounded-lg shadow">
-            <p className="font-bold">Filters:</p>
+            <p className="font-bold">{t('filters')}</p>
             <div className="flex flex-center">
               <button
                 onClick={() => setIsPopupOpen(true)}
