@@ -1,11 +1,28 @@
 {
-    "filters": "Filters:",
-    "filter_by_year": "Filter Years",
-    "filter_by_courses": "Filter by Passed Courses",
-    "year": "Year",
-    "passed_courses": "Passed Courses",
-    "students_chart_title": "Students Passing Courses Over the Years",
-    "student_distribution": "Student Distribution by",
-    "size_legend": "Size by Student(s) Number"
+  "homepage": {
+    "welcome": "Welcome to DI Visualizations! Explore interactive charts and insights. Click on a visualization to dive deeper.",
+    "view_button": "View Visualization →",
+    "visualizations": {
+      "active_students": {
+        "title": "Active Students Chart",
+        "description": "A bar chart and tree map illustrating the number of active students with passed courses across over the years."
+      }
+    }
+  },
+  "chart": {
+    "activeStudents": {
+      "filters": "Filters",
+      "year": "Year",
+      "passed_courses": "Passed Courses",
+      "clear_filter": "Clear",
+      "students_chart_title": "Students Passing Courses Over the Years",
+      "student_distribution_title": "Student Distribution by",
+      "size_legend": "Size by Student(s) Number:",
+      "tooltip": {
+        "year": "Year",
+        "total_students": "Total Active Students",
+        "avg_passed_courses": "Average Passed Courses"
+      }
+    }
   }
-  
+}

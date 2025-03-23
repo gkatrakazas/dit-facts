@@ -164,9 +164,9 @@ const ActiveStudentsChart = () => {
         : 0;
 
       const tooltipContent = `
-        <strong>Year:</strong> ${year}<br/>
-        <strong>Total Active Students:</strong> ${totalStudents}<br/>
-        <strong>Average Passed Courses:</strong> ${averagePassedCourses}
+        <strong>${t("chart.activeStudents.tooltip.year")}:</strong> ${year}<br/>
+        <strong>${t("chart.activeStudents.tooltip.total_students")}:</strong> ${totalStudents}<br/>
+        <strong>${t("chart.activeStudents.tooltip.avg_passed_courses")}:</strong> ${averagePassedCourses}
       `;
 
       values.forEach((d) => {
@@ -412,13 +412,13 @@ const ActiveStudentsChart = () => {
         <div className="flex gap-4 items-baseline">
           {/* filters */}
           <div className="max-w-max px-4 py-2 text-sm flex items-center gap-6 mt-4 bg-white rounded-lg shadow">
-            <p className="font-bold">{t('filters')}</p>
+            <p className="font-bold">{t("chart.activeStudents.filters")}:</p>
             <div className="flex flex-center">
               <button
                 onClick={() => setIsPopupOpen(true)}
                 className={`px-4 py-1.5 text-sm  shadow bg-gray-300 font-medium ${selectedYears.length > 0 ? 'text-blue-600  border-b-2 border-blue-600' : 'text-gray-800'} rounded`}
               >
-                Year
+                {t("chart.activeStudents.year")}
               </button>
               {selectedYears.length > 0 && (
                 <button
@@ -435,7 +435,7 @@ const ActiveStudentsChart = () => {
                 onClick={() => setIsCoursePopupOpen(true)}
                 className={`px-4 py-1.5 text-sm shadow bg-gray-300 font-medium ${selectedCourses.length > 0 ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-800'} rounded`}
               >
-                Passed Courses
+                {t("chart.activeStudents.passed_courses")}
               </button>
               {selectedCourses.length > 0 && (
                 <button onClick={() => setSelectedCourses([])} className="px-2 py-2 text-gray-500 rounded">
@@ -458,7 +458,7 @@ const ActiveStudentsChart = () => {
               <rect x="0" y="0" width="120" height="12" fill="url(#legend-gradient)" />
             </svg>
             <span className="text-gray-600">{maxPassedCourses}</span>
-            <span className="ml-2 text-gray-500">(Passed Courses)</span>
+            <span className="ml-2 text-gray-500">({t("chart.activeStudents.passed_courses")})</span>
           </div>
 
         </div>
@@ -466,7 +466,7 @@ const ActiveStudentsChart = () => {
 
         {/* chart */}
         <div className="bg-white shadow shadow-lg rounded-lg">
-          <h2 className="text-md text-left pt-2 font-medium mx-6">Students Passing Courses Over the Years</h2>
+          <h2 className="text-md text-left pt-2 font-medium mx-6">{t("chart.activeStudents.students_chart_title")}</h2>
           <div ref={chartRef} className="w-full relative"></div>
         </div>
 
@@ -476,15 +476,15 @@ const ActiveStudentsChart = () => {
 
             <h2 className="text-md text-left pt-2 font-medium text-gray-700">
               <StudentIcon className="w-4 h-4 inline-block align-text-bottom mr-1 fill-gray-700" />
-              Student Distribution by&nbsp;
+              {t("chart.activeStudents.student_distribution_title")}&nbsp;
               <CourseIcon className="w-4 h-4 inline-block align-text-bottom mx-1 fill-gray-700" />
-              Passed Courses
+              {t("chart.activeStudents.passed_courses")}
             </h2>
 
 
             {/* Treemap Size Legend */}
             <div className="flex flex-row text-xs text-gray-600 px-4 items-center mt-2">
-              <span className="mb-1 text-xm font-medium mr-2">Size by Student(s) Number:</span>
+              <span className="mb-1 text-xm font-medium mr-2">{t("chart.activeStudents.size_legend")}</span>
               <div className="flex items-center gap-4">
                 {/* Large box */}
                 <div className="flex flex-row items-center">
