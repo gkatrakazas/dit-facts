@@ -244,6 +244,10 @@ const ActiveStudentsChart = () => {
     // ✅ Apply Year Filter
     let filteredData = pivotedData;
 
+    if (selectedCourses.length > 0) {
+      filteredData = filteredData.filter((d) => selectedCourses.includes(d.passedCourses));
+    }
+
     // If a year is highlighted, temporarily filter the treemap to just that year
     if (highlightedYear) {
       filteredData = filteredData.filter((d) => d.year === highlightedYear);
