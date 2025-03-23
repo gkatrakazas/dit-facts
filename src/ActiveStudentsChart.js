@@ -31,6 +31,8 @@ const ActiveStudentsChart = () => {
   // Popup State
   const [filterType, setFilterType] = useState("multi");
 
+  const [highlightedYear, setHighlightedYear] = useState(null);
+  const [highlightedCourse, setHighlightedCourse] = useState(null);
 
   const updateChartWidth = () => {
     if (chartRef.current) {
@@ -101,9 +103,12 @@ const ActiveStudentsChart = () => {
       filteredData = filteredData.filter((d) => selectedYears.includes(d.year));
     }
 
-    if (selectedCourses.length > 0) {
+    if (highlightedCourse) {
+      filteredData = filteredData.filter((d) => d.passedCourses === highlightedCourse);
+    } else if (selectedCourses.length > 0) {
       filteredData = filteredData.filter((d) => selectedCourses.includes(d.passedCourses));
     }
+
     const groupedData = d3.groups(filteredData, (d) => d.year);
 
     const x = d3
@@ -168,6 +173,8 @@ const ActiveStudentsChart = () => {
           .attr("width", x.bandwidth())
           .attr("height", y(cumulative) - y(cumulative + d.students))
           .attr("fill", color(d.passedCourses))
+          .attr("opacity", highlightedYear && highlightedYear !== year ? 0.2 : 1) // ✅ dim others
+          .style("cursor", "pointer")
           .on("mouseover", (event) => {
             const tooltip = tooltipRef.current;
             tooltip.style.opacity = 1;
@@ -194,6 +201,9 @@ const ActiveStudentsChart = () => {
           })
           .on("mouseout", () => {
             tooltipRef.current.style.opacity = 0;
+          })
+          .on("click", () => {
+            setHighlightedYear((prev) => (prev === year ? null : year)); // ✅ toggle highlight
           });
 
         cumulative += d.students;
@@ -230,13 +240,11 @@ const ActiveStudentsChart = () => {
     // ✅ Apply Year Filter
     let filteredData = pivotedData;
 
-    if (selectedYears.length > 0) {
+    // If a year is highlighted, temporarily filter the treemap to just that year
+    if (highlightedYear) {
+      filteredData = filteredData.filter((d) => d.year === highlightedYear);
+    } else if (selectedYears.length > 0) {
       filteredData = filteredData.filter((d) => selectedYears.includes(d.year));
-    }
-
-    console.log('selectedCourses', selectedCourses)
-    if (selectedCourses.length > 0) {
-      filteredData = filteredData.filter((d) => selectedCourses.includes(d.passedCourses));
     }
 
     // ✅ Group Data by Passed Courses
@@ -284,6 +292,17 @@ const ActiveStudentsChart = () => {
         const passedCourses = parseInt(d.data.name.replace("Μαθ: ", ""));
         return colorScale(passedCourses);
       })
+      .attr("opacity", (d) => {
+        const passedCourses = parseInt(d.data.name);
+        if (!highlightedCourse) return 1;
+        return highlightedCourse === passedCourses ? 1 : 0.2;
+      })
+      .style("cursor", "pointer")
+      .on("click", (event, d) => {
+        const passedCourses = parseInt(d.data.name);
+        setHighlightedCourse((prev) => (prev === passedCourses ? null : passedCourses));
+      });
+
 
     // ✅ Conditionally Show Text (Only If Box Is Large Enough)
     cell
@@ -333,7 +352,7 @@ const ActiveStudentsChart = () => {
   useEffect(() => {
     createChart();
     createTreeMap();
-  }, [pivotedData, chartWidth, selectedYears, selectedCourses]);
+  }, [pivotedData, chartWidth, selectedYears, selectedCourses, highlightedYear, highlightedCourse]);
 
   useEffect(() => {
     window.addEventListener("resize", updateChartWidth);
