@@ -13,6 +13,8 @@ const ActiveStudentsChart = () => {
 
   const { t } = useTranslation();
 
+  const [rawData, setRawData] = useState([]);
+
   const chartRef = useRef(null);
   const treeMapRef = useRef(null);
   const tooltipRef = useRef(null);
@@ -50,6 +52,7 @@ const ActiveStudentsChart = () => {
     const workbook = XLSX.read(arrayBuffer, { type: "array" });
     const sheetName = workbook.SheetNames[0];
     const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+    setRawData(sheetData); // Save the raw data for the table
 
     const transformedData = [];
     const yearsSet = new Set();
@@ -70,7 +73,6 @@ const ActiveStudentsChart = () => {
       });
     });
 
-    console.log('transformedData', transformedData)
     setPivotedData(transformedData);
     setAvailableYears(Array.from(yearsSet).sort());
     const sortedCourses = Array.from(coursesSet).sort((a, b) => a - b);
@@ -518,6 +520,40 @@ const ActiveStudentsChart = () => {
         ref={tooltipRef}
         className="fixed bg-white/90 border border-gray-200 text-xs p-2 rounded pointer-events-none opacity-0 z-10 shadow-lg max-w-xs"
       ></div>
+
+      {/* Raw Excel Data Table */}
+      {rawData.length > 0 && (
+        <div className="bg-white shadow shadow-lg rounded-lg mt-6 mx-5">
+          <div className="overflow-auto">
+            <h2 className="text-md text-left pt-2 font-medium mx-6 text-gray-700">
+              {t("chart.activeStudents.original_data")}
+            </h2>
+            <table className="table-auto text-xs text-left text-gray-600 mx-6 my-4">
+              <thead className="bg-gray-100 text-gray-700">
+                <tr>
+                  {Object.keys(rawData[0]).map((key) => (
+                    <th key={key} className="px-4 py-2 whitespace-nowrap">
+                      {key}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {rawData.map((row, rowIndex) => (
+                  <tr key={rowIndex} className="border-b">
+                    {Object.values(row).map((value, colIndex) => (
+                      <td key={colIndex} className="px-4 py-2 whitespace-nowrap">
+                        {value}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

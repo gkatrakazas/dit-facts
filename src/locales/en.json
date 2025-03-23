@@ -15,6 +15,7 @@
       "year": "Year",
       "passed_courses": "Passed Courses",
       "clear_filter": "Clear",
+      "original_data": "Original Dataset",
       "students_chart_title": "Students Passing Courses Over the Years",
       "student_distribution_title": "Student Distribution by",
       "size_legend": "Size by Student(s) Number:",
