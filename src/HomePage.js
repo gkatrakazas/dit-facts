@@ -16,6 +16,11 @@ const HomePage = () => {
       title: t("homepage.visualizations.active_students.title"),
       description: t("homepage.visualizations.active_students.description"),
       route: "/active-students-chart",
+    },
+    {
+      title: t("homepage.visualizations.active_students.title2"),
+      description: t("homepage.visualizations.active_students.description2"),
+      route: "/active-students-chart2",
     }
   ];
 
