@@ -3,6 +3,7 @@ import * as d3 from "d3";
 import * as XLSX from "xlsx";
 import excelFile from "./data/di_stats.xlsx";
 import { useTranslation } from "react-i18next";
+import MultiRangeSlider from "./components/MultiRangeSlider";
 
 const getColorByInactivity = (lastActionDate) => {
   const yearsInactive = (new Date() - new Date(lastActionDate)) / (1000 * 60 * 60 * 24 * 365.25);
@@ -19,9 +20,7 @@ const ActiveStudentsChart = () => {
 
   const [rawData, setRawData] = useState([]);
   const [inactiveBubbleData, setInactiveBubbleData] = useState([]);
-  const [bubblesByYear, setBubblesByYear] = useState(new Map());
   const [selectedTab, setSelectedTab] = useState("all");
-  const [yearBubbleData, setYearBubbleData] = useState([]);
   const [nestedStudentData, setNestedStudentData] = useState(null);
   const [selectedBubble, setSelectedBubble] = useState(null);
 
@@ -30,6 +29,24 @@ const ActiveStudentsChart = () => {
   const containerRef = useRef(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
+
+  //////////////////// about year filter
+  const [availableYears, setAvailableYears] = useState([]);
+  const [selectedYears, setSelectedYears] = useState([]);
+  const [range, setRange] = useState({ start: null, end: null });
+
+  const [minYear, setMinYear] = useState(null);
+  const [maxYear, setMaxYear] = useState(null);
+  ////////////////////
+
+  useEffect(() => {
+    console.log('availableYears', availableYears)
+    if (availableYears.length > 0) {
+      setMinYear(Math.min(...availableYears));
+      setMaxYear(Math.max(...availableYears));
+    }
+  }, [availableYears])
+  // 
   useEffect(() => {
     const observeTarget = containerRef.current;
     if (!observeTarget) return;
@@ -44,6 +61,15 @@ const ActiveStudentsChart = () => {
     resizeObserver.observe(observeTarget);
     return () => observeTarget && resizeObserver.unobserve(observeTarget);
   }, [selectedTab]);
+
+  useEffect(() => {
+    if (range.start !== null && range.end !== null) {
+      const filtered = availableYears.filter(
+        (y) => y >= range.start && y <= range.end
+      );
+      setSelectedYears(filtered);
+    }
+  }, [range, availableYears]);
 
   useEffect(() => {
     const loadExcelData = async () => {
@@ -94,28 +120,25 @@ const ActiveStudentsChart = () => {
 
       setRawData(sheetData);
       setInactiveBubbleData(bubbles);
-      setBubblesByYear(groupedByYear);
       setNestedStudentData(nestedHierarchy);
 
-      const bubblesPerYear = [...groupedByYear.entries()].map(([year, students]) => {
-        const avgInactivity = students.reduce((sum, s) => sum + s.size, 0) / students.length;
-        return {
-          year,
-          count: students.length,
-          avgInactivity,
-          size: students.length,
-          label: year.toString(),
-        };
+      const years = [...new Set(bubbles.map(b => b.raw["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"]))].sort((a, b) => a - b);
+      setAvailableYears(years);
+      setSelectedYears(years); // Default to all years visible
+
+      setRange({
+        start: Math.min(...years),
+        end: Math.max(...years),
       });
 
-      setYearBubbleData(bubblesPerYear);
     };
 
     loadExcelData();
   }, []);
 
   useEffect(() => {
-    if (!inactiveBubbleData.length || selectedTab !== "all") return;
+    const filteredData = inactiveBubbleData.filter(b => selectedYears.includes(b.raw["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"]));
+    if (!filteredData.length || selectedTab !== "all") return;
 
     const fallbackSize = 800;
     const width = dimensions.width || fallbackSize;
@@ -138,13 +161,11 @@ const ActiveStudentsChart = () => {
 
     const tooltip = d3.select("#bubble-tooltip");
 
-    const sortedData = [...inactiveBubbleData].sort(
+    const sortedData = [...filteredData].sort(
       (a, b) => new Date(a.lastAction) - new Date(b.lastAction)
     );
 
-    const root = d3
-      .hierarchy({ children: sortedData })
-      .sum(d => d.value || 0.5);
+    const root = d3.hierarchy({ children: sortedData }).sum(d => d.value || 0.5);
 
     const padding = 1.5;
 
@@ -197,7 +218,7 @@ const ActiveStudentsChart = () => {
       .on("click", (_, d) => {
         setSelectedBubble(d.data); // 🟢 Store data for details panel
       });
-  }, [inactiveBubbleData, selectedTab, dimensions]);
+  }, [inactiveBubbleData, selectedTab, dimensions, selectedYears]);
 
 
   useEffect(() => {
@@ -328,6 +349,29 @@ const ActiveStudentsChart = () => {
               <option value="all">Όλοι οι φοιτητές</option>
               <option value="byYear">Ανά έτος εγγραφής</option>
             </select>
+
+            <div className="mt-4 ">
+              <label className="text-sm text-gray-700 font-medium">Έτος εγγραφής</label>
+
+              {minYear && maxYear && (
+                <MultiRangeSlider
+                  min={minYear}
+                  max={maxYear}
+                  value={{
+                    min: range.start,
+                    max: range.end,
+                  }}
+                  onChange={({ min, max }) => {
+                    setRange({
+                      start: min,
+                      end: max,
+                    });
+                  }}
+                />
+              )}
+
+            </div>
+
           </div>
 
           {/* Main content (bubble chart and legend) */}
@@ -350,7 +394,7 @@ const ActiveStudentsChart = () => {
             <div className="w-full m-4">
               {selectedTab === "all" && (
                 <div>
-                  <h2 className="text-md font-medium">Φοιτητές χωρίς πτυχίο: {inactiveBubbleData.length}</h2>
+                  <h2 className="text-md font-medium">Φοιτητές χωρίς πτυχίο: {inactiveBubbleData.filter(b => selectedYears.includes(b.raw["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"])).length}</h2>
                   <div ref={containerRef} style={{ height: "80vh", width: "100%" }} className="relative">
                     <div ref={packedRef} className="absolute inset-0"></div>
                   </div>
