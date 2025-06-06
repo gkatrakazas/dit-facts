@@ -238,18 +238,33 @@ const ActiveStudentsChart = () => {
 
 
   useEffect(() => {
-    if (!nestedStudentData || selectedTab !== "byYear") return;
+    if (!inactiveBubbleData.length || selectedYears.length === 0 || courseRange.start === null || courseRange.end === null || selectedTab !== "byYear") return;
 
     const width = 600;
     const height = 600;
 
     d3.select(yearPackedRef.current).selectAll("*").remove();
 
+    const filteredData = inactiveBubbleData.filter(b =>
+      selectedYears.includes(b.raw["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"]) &&
+      b.r >= courseRange.start &&
+      b.r <= courseRange.end
+    );
+    
+    const groupedByYear = d3.group(filteredData, d => d.raw["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"]);
+    
+    const filteredHierarchy = {
+      children: [...groupedByYear.entries()].map(([year, students]) => ({
+        year,
+        children: students.map(s => ({ ...s, value: 1 }))
+      }))
+    };
+    
     const root = d3
-      .hierarchy(nestedStudentData)
+      .hierarchy(filteredHierarchy)
       .sum(d => d.value || 0)
       .sort((a, b) => b.value - a.value);
-
+    
 
     d3.pack()
       .size([width, height])
@@ -345,7 +360,7 @@ const ActiveStudentsChart = () => {
       .style("stroke", "#ffffff")
       .style("stroke-width", "3px")
       .text(d => d.data.year);
-  }, [nestedStudentData, selectedTab]);
+  }, [nestedStudentData, selectedTab,dimensions, selectedYears, courseRange]);
 
 
   return (
