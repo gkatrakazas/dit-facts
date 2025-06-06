@@ -39,6 +39,10 @@ const ActiveStudentsChart = () => {
   const [maxYear, setMaxYear] = useState(null);
   ////////////////////
 
+  const [courseRange, setCourseRange] = useState({ start: null, end: null });
+  const [availableCourses, setAvailableCourses] = useState([]);
+
+
   useEffect(() => {
     console.log('availableYears', availableYears)
     if (availableYears.length > 0) {
@@ -131,13 +135,25 @@ const ActiveStudentsChart = () => {
         end: Math.max(...years),
       });
 
+      const courses = [...new Set(bubbles.map(b => b.r))].sort((a, b) => a - b);
+      setAvailableCourses(courses);
+
+      setCourseRange({
+        start: Math.min(...courses),
+        end: Math.max(...courses),
+      });
+
     };
 
     loadExcelData();
   }, []);
 
   useEffect(() => {
-    const filteredData = inactiveBubbleData.filter(b => selectedYears.includes(b.raw["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"]));
+    const filteredData = inactiveBubbleData.filter(b =>
+      selectedYears.includes(b.raw["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"]) &&
+      b.r >= courseRange.start &&
+      b.r <= courseRange.end
+    );
     if (!filteredData.length || selectedTab !== "all") return;
 
     const fallbackSize = 800;
@@ -218,7 +234,7 @@ const ActiveStudentsChart = () => {
       .on("click", (_, d) => {
         setSelectedBubble(d.data); // 🟢 Store data for details panel
       });
-  }, [inactiveBubbleData, selectedTab, dimensions, selectedYears]);
+  }, [inactiveBubbleData, selectedTab, dimensions, selectedYears, courseRange]);
 
 
   useEffect(() => {
@@ -351,6 +367,8 @@ const ActiveStudentsChart = () => {
             </select>
 
             <div className="mt-4 ">
+              <h2 className="text-md font-semibold mb-2">Φίλτρα</h2>
+
               <label className="text-sm text-gray-700 font-medium">Έτος εγγραφής</label>
 
               {minYear && maxYear && (
@@ -370,6 +388,24 @@ const ActiveStudentsChart = () => {
                 />
               )}
 
+              <label className="text-sm text-gray-700 font-medium mt-4">Πλήθος μαθημάτων</label>
+
+              {availableCourses.length > 0 && (
+                <MultiRangeSlider
+                  min={Math.min(...availableCourses)}
+                  max={Math.max(...availableCourses)}
+                  value={{
+                    min: courseRange.start,
+                    max: courseRange.end,
+                  }}
+                  onChange={({ min, max }) => {
+                    setCourseRange({
+                      start: min,
+                      end: max,
+                    });
+                  }}
+                />
+              )}
             </div>
 
           </div>
