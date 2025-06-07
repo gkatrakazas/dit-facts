@@ -15,6 +15,22 @@ const getColorByInactivity = (lastActionDate) => {
   return "#32CD32";
 };
 
+const getTooltipHtml = (d) => {
+  const fieldsToShow = [
+    { label: "Έτος τελευταίας ενέργειας", value: d.data.year },
+    { label: "Πλήθος μαθημάτων", value: d.data.r },
+    { label: "Ημερομηνία τελευταίας ενέργειας", value: d.data.lastAction },
+    { label: "Τρόπος εισαγωγής", value: d.data.raw?.["ΤΡΟΠΟΣ ΕΙΣΑΓΩΓΗΣ"] },
+    { label: "Έτος εγγραφής", value: d.data.raw?.["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"] },
+    { label: "Κατάσταση", value: d.data.raw?.["ΚΑΤΑΣΤΑΣΗ"] },
+    { label: "Έτη ανενεργός", value: d.data.size.toFixed(1) },
+  ];
+
+  return fieldsToShow
+    .map(({ label, value }) => `<b>${label}:</b> ${value ?? "-"}`)
+    .join("<br/>");
+};
+
 const ActiveStudentsChart = () => {
   const { t } = useTranslation();
 
@@ -28,6 +44,7 @@ const ActiveStudentsChart = () => {
   const yearPackedRef = useRef(null);
   const containerRef = useRef(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const yearContainerRef = useRef(null);
 
 
   //////////////////// about year filter
@@ -207,21 +224,9 @@ const ActiveStudentsChart = () => {
       .attr("stroke", "#222")
       .attr("stroke-width", 0.3)
       .on("mouseover", (event, d) => {
-        const fieldsToShow = [
-          { label: "Έτος τελευταίας ενέργειας", value: d.data.year },
-          { label: "Πλήθος μαθημάτων", value: d.data.r },
-          { label: "Ημερομηνία τελευταίας ενέργειας", value: d.data.lastAction },
-          { label: "Τρόπος εισαγωγής", value: d.data.raw?.["ΤΡΟΠΟΣ ΕΙΣΑΓΩΓΗΣ"] },
-          { label: "Έτος εγγραφής", value: d.data.raw?.["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"] },
-          { label: "Κατάσταση", value: d.data.raw?.["ΚΑΤΑΣΤΑΣΗ"] },
-          { label: "Έτη ανενεργός", value: d.data.size.toFixed(1) },
-        ];
-
-        const html = fieldsToShow
-          .map(({ label, value }) => `<b>${label}:</b> ${value ?? "-"}`)
-          .join("<br/>");
-
-        tooltip.style("opacity", 1).html(html);
+        tooltip
+          .style("opacity", 1)
+          .html(getTooltipHtml(d));
       })
       .on("mousemove", (event) => {
         tooltip
@@ -240,8 +245,11 @@ const ActiveStudentsChart = () => {
   useEffect(() => {
     if (!inactiveBubbleData.length || selectedYears.length === 0 || courseRange.start === null || courseRange.end === null || selectedTab !== "byYear") return;
 
-    const width = 600;
-    const height = 600;
+    const fallbackSize = 800;
+    const width = dimensions.width || fallbackSize;
+    const height = dimensions.height || fallbackSize;
+
+    if (!width || !height || !yearPackedRef.current) return;
 
     d3.select(yearPackedRef.current).selectAll("*").remove();
 
@@ -250,21 +258,21 @@ const ActiveStudentsChart = () => {
       b.r >= courseRange.start &&
       b.r <= courseRange.end
     );
-    
+
     const groupedByYear = d3.group(filteredData, d => d.raw["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"]);
-    
+
     const filteredHierarchy = {
       children: [...groupedByYear.entries()].map(([year, students]) => ({
         year,
         children: students.map(s => ({ ...s, value: 1 }))
       }))
     };
-    
+
     const root = d3
       .hierarchy(filteredHierarchy)
       .sum(d => d.value || 0)
       .sort((a, b) => b.value - a.value);
-    
+
 
     d3.pack()
       .size([width, height])
@@ -330,19 +338,18 @@ const ActiveStudentsChart = () => {
       .on("mouseover", (event, d) => {
         tooltip
           .style("opacity", 1)
-          .html(
-            `<b>Ημερομηνία:</b> ${d.data.lastAction}<br/>
-             <b>Έτη ανενεργός:</b> ${d.data.size.toFixed(1)}<br/>
-             <b>Μαθήματα:</b> ${d.data.r}`
-          );
+          .html(getTooltipHtml(d));
       })
+      
       .on("mousemove", (event) => {
         tooltip
           .style("left", `${event.clientX + 0}px`)
           .style("top", `${event.clientY + 0}px`);
       })
-      .on("mouseout", () => tooltip.style("opacity", 0));
-
+      .on("mouseout", () => tooltip.style("opacity", 0))
+      .on("click", (_, d) => {
+        setSelectedBubble(d.data); // 🟢 Store data for details panel
+      });
     // 🔵 Top-aligned year labels
     svg
       .selectAll("text.year-label")
@@ -360,7 +367,7 @@ const ActiveStudentsChart = () => {
       .style("stroke", "#ffffff")
       .style("stroke-width", "3px")
       .text(d => d.data.year);
-  }, [nestedStudentData, selectedTab,dimensions, selectedYears, courseRange]);
+  }, [nestedStudentData, selectedTab, dimensions, selectedYears, courseRange]);
 
 
   return (
@@ -455,7 +462,9 @@ const ActiveStudentsChart = () => {
               {selectedTab === "byYear" && (
                 <div>
                   <h2 className="text-md font-medium mb-6">Έτη εγγραφής (ως φυσαλίδες)</h2>
-                  <div ref={yearPackedRef}></div>
+                  <div ref={yearContainerRef} style={{ height: "80vh", width: "100%" }} className="relative">
+                    <div ref={yearPackedRef} className="absolute inset-0"></div>
+                  </div>
                 </div>
               )}
             </div>
