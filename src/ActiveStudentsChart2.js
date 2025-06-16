@@ -68,8 +68,10 @@ const ActiveStudentsChart = () => {
     }
   }, [availableYears])
   // 
+
   useEffect(() => {
-    const observeTarget = containerRef.current;
+    const observeTarget =
+      selectedTab === "all" ? containerRef.current : yearContainerRef.current;
     if (!observeTarget) return;
 
     const resizeObserver = new ResizeObserver(entries => {
@@ -82,6 +84,7 @@ const ActiveStudentsChart = () => {
     resizeObserver.observe(observeTarget);
     return () => observeTarget && resizeObserver.unobserve(observeTarget);
   }, [selectedTab]);
+
 
   useEffect(() => {
     if (range.start !== null && range.end !== null) {
@@ -340,7 +343,7 @@ const ActiveStudentsChart = () => {
           .style("opacity", 1)
           .html(getTooltipHtml(d));
       })
-      
+
       .on("mousemove", (event) => {
         tooltip
           .style("left", `${event.clientX + 0}px`)
@@ -452,7 +455,6 @@ const ActiveStudentsChart = () => {
             <div className="w-full m-4">
               {selectedTab === "all" && (
                 <div>
-                  <h2 className="text-md font-medium">Φοιτητές χωρίς πτυχίο: {inactiveBubbleData.filter(b => selectedYears.includes(b.raw["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"])).length}</h2>
                   <div ref={containerRef} style={{ height: "80vh", width: "100%" }} className="relative">
                     <div ref={packedRef} className="absolute inset-0"></div>
                   </div>
@@ -461,7 +463,6 @@ const ActiveStudentsChart = () => {
 
               {selectedTab === "byYear" && (
                 <div>
-                  <h2 className="text-md font-medium mb-6">Έτη εγγραφής (ως φυσαλίδες)</h2>
                   <div ref={yearContainerRef} style={{ height: "80vh", width: "100%" }} className="relative">
                     <div ref={yearPackedRef} className="absolute inset-0"></div>
                   </div>
@@ -470,27 +471,37 @@ const ActiveStudentsChart = () => {
             </div>
           </div>
 
-          {/* Details panel */}
-          {selectedBubble && (
-            <div className="relative max-w-[20%] bg-white shadow shadow-lg rounded-lg mt-6 w-full">
-              <button
-                onClick={() => setSelectedBubble(null)}
-                className="absolute top-2 right-4 text-gray-500 hover:text-gray-800 text-3xl font-bold"
-                aria-label="Close"
-              >
-                &times;
-              </button>
-              <div className="text-sm p-4">
-                <h3 className="text-md font-bold mb-2">Λεπτομέρειες</h3>
-                <p><b>Ημερομηνία τελευταίας ενέργειας:</b> {selectedBubble.lastAction}</p>
-                <p><b>Έτη ανενεργός:</b> {selectedBubble.size.toFixed(1)}</p>
-                <p><b>Έτος εγγραφής:</b> {selectedBubble.raw?.["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"]}</p>
-                <p><b>Πλήθος μαθημάτων:</b> {selectedBubble.r}</p>
-                <p><b>Κατάσταση:</b> {selectedBubble.raw?.["ΚΑΤΑΣΤΑΣΗ"]}</p>
-                <p><b>Τρόπος εισαγωγής:</b> {selectedBubble.raw?.["ΤΡΟΠΟΣ ΕΙΣΑΓΩΓΗΣ"]}</p>
-              </div>
+
+          <div className="max-w-[20%] mt-6 w-full">
+            <h3 className="text-md font-bold mb-2">Λεπτομέρειες</h3>
+
+            <div className="p-2 relative w-full bg-white shadow shadow-lg rounded-lg w-full">
+              <p className="text-sm font-medium">
+                <b>Φοιτητές:</b> {inactiveBubbleData.filter(b => selectedYears.includes(b.raw["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"])).length}
+              </p>
             </div>
-          )}
+            {/* Details panel */}
+            {selectedBubble && (
+              <div className="relative w-full p-2 text-sm bg-white shadow shadow-lg rounded-lg mt-2 w-full">
+                <button
+                  onClick={() => setSelectedBubble(null)}
+                  className="absolute top-0 right-1 text-gray-500 hover:text-gray-800 text-3xl font-bold"
+                  aria-label="Close"
+                >
+                  &times;
+                </button>
+                <p className="mb-2"><b>Επιλεγμένος φοιτητής</b></p>
+                <div className="text-sm space-y-1">
+                  <p><span className="font-semibold">Ημ/νία τελευταίας ενέργειας:</span> {selectedBubble.lastAction}</p>
+                  <p><span className="font-semibold">Έτη ανενεργός:</span> {selectedBubble.size.toFixed(1)}</p>
+                  <p><span className="font-semibold">Έτος εγγραφής:</span> {selectedBubble.raw?.["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"]}</p>
+                  <p><span className="font-semibold">Πλήθος μαθημάτων:</span> {selectedBubble.r}</p>
+                  <p><span className="font-semibold">Κατάσταση:</span> {selectedBubble.raw?.["ΚΑΤΑΣΤΑΣΗ"]}</p>
+                  <p><span className="font-semibold">Τρόπος εισαγωγής:</span> {selectedBubble.raw?.["ΤΡΟΠΟΣ ΕΙΣΑΓΩΓΗΣ"]}</p>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Tooltip */}
