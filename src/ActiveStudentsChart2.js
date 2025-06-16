@@ -248,8 +248,10 @@ const ActiveStudentsChart = () => {
       .attr("stroke-width", 0.3)
       .on("mouseover", (event, d) => {
         d3.select(event.currentTarget)
-          .attr("filter", "url(#hover-shadow)")
-          .attr("opacity", 1);
+          .transition()
+          .duration(200)
+          .attr("opacity", 1)
+          .attr("filter", "url(#hover-shadow)");
 
         tooltip
           .style("opacity", 1)
@@ -262,6 +264,8 @@ const ActiveStudentsChart = () => {
       })
       .on("mouseout", (event, d) => {
         d3.select(event.currentTarget)
+          .transition()
+          .duration(0)
           .attr("filter", null)
           .attr("opacity", () => {
             const isSelected =
@@ -398,6 +402,8 @@ const ActiveStudentsChart = () => {
       .attr("stroke-width", 0.5)
       .on("mouseover", (event, d) => {
         d3.select(event.currentTarget)
+          .transition()
+          .duration(200)
           .attr("filter", "url(#hover-shadow)")
           .attr("opacity", 1); // ⬅️ Always 1 on hover
 
@@ -413,6 +419,8 @@ const ActiveStudentsChart = () => {
       })
       .on("mouseout", (event, d) => {
         d3.select(event.currentTarget)
+          .transition()
+          .duration(0)
           .attr("filter", null)
           .attr("opacity", () => {
             const isSelected =
