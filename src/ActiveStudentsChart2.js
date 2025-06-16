@@ -209,6 +209,23 @@ const ActiveStudentsChart = () => {
       .size([width, height])
       .padding(padding);
 
+    const defs = svg.append("defs");
+
+    const filter = defs.append("filter")
+      .attr("id", "hover-shadow")
+      .attr("x", "-50%")
+      .attr("y", "-50%")
+      .attr("width", "200%")
+      .attr("height", "200%");
+
+    filter.append("feDropShadow")
+      .attr("dx", 0)
+      .attr("dy", 0)
+      .attr("stdDeviation", 3)
+      .attr("flood-color", "#000")
+      .attr("flood-opacity", 0.3);
+
+
     pack(root);
     // const scaleX = 1.5;
     // root.descendants().forEach(d => {
@@ -224,9 +241,16 @@ const ActiveStudentsChart = () => {
       .attr("cy", d => d.y)
       .attr("r", d => d.r)
       .attr("fill", d => getColorByInactivity(d.data.lastAction))
+      .attr("opacity", d =>
+        selectedBubble ? (d.data === selectedBubble ? 1 : 0.2) : 1
+      )
       .attr("stroke", "#222")
       .attr("stroke-width", 0.3)
       .on("mouseover", (event, d) => {
+        d3.select(event.currentTarget)
+          .attr("filter", "url(#hover-shadow)")
+          .attr("opacity", 1);
+
         tooltip
           .style("opacity", 1)
           .html(getTooltipHtml(d));
@@ -236,13 +260,24 @@ const ActiveStudentsChart = () => {
           .style("left", `${event.clientX + 0}px`)
           .style("top", `${event.clientY + 0}px`);
       })
-      .on("mouseout", () => {
+      .on("mouseout", (event, d) => {
+        d3.select(event.currentTarget)
+          .attr("filter", null)
+          .attr("opacity", () => {
+            const isSelected =
+              selectedBubble &&
+              d.data === selectedBubble
+
+            return selectedBubble ? (isSelected ? 1 : 0.2) : 1;
+          });
+
         tooltip.style("opacity", 0);
       })
+
       .on("click", (_, d) => {
         setSelectedBubble(d.data); // 🟢 Store data for details panel
       });
-  }, [inactiveBubbleData, selectedTab, dimensions, selectedYears, courseRange]);
+  }, [inactiveBubbleData, selectedTab, dimensions, selectedYears, courseRange, selectedBubble]);
 
 
   useEffect(() => {
@@ -312,6 +347,23 @@ const ActiveStudentsChart = () => {
 
     const tooltip = d3.select("#bubble-tooltip");
 
+
+    const defs = svg.append("defs");
+
+    const filter = defs.append("filter")
+      .attr("id", "hover-shadow")
+      .attr("x", "-50%")
+      .attr("y", "-50%")
+      .attr("width", "200%")
+      .attr("height", "200%");
+
+    filter.append("feDropShadow")
+      .attr("dx", 0)
+      .attr("dy", 0)
+      .attr("stdDeviation", 3)
+      .attr("flood-color", "#000")
+      .attr("flood-opacity", 0.3);
+
     // ⬇️ Fake parent bubbles (background)
     // ⬇️ Fake parent ovals (background)
     svg
@@ -336,9 +388,19 @@ const ActiveStudentsChart = () => {
       .attr("cy", d => d.y)
       .attr("r", d => d.r)
       .attr("fill", d => getColorByInactivity(d.data.lastAction))
+      .attr("opacity", d => {
+        console.log('selectedBubble', selectedBubble);
+        console.log('data', d.data);
+        if (d.depth !== 2) return 1;
+        return selectedBubble ? (d.data.raw === selectedBubble.raw ? 1 : 0.2) : 1;
+      })
       .attr("stroke", "#1E3A8A")
       .attr("stroke-width", 0.5)
       .on("mouseover", (event, d) => {
+        d3.select(event.currentTarget)
+          .attr("filter", "url(#hover-shadow)")
+          .attr("opacity", 1); // ⬅️ Always 1 on hover
+
         tooltip
           .style("opacity", 1)
           .html(getTooltipHtml(d));
@@ -349,7 +411,20 @@ const ActiveStudentsChart = () => {
           .style("left", `${event.clientX + 0}px`)
           .style("top", `${event.clientY + 0}px`);
       })
-      .on("mouseout", () => tooltip.style("opacity", 0))
+      .on("mouseout", (event, d) => {
+        d3.select(event.currentTarget)
+          .attr("filter", null)
+          .attr("opacity", () => {
+            const isSelected =
+              selectedBubble &&
+              d.data.raw === selectedBubble.raw
+
+            return selectedBubble ? (isSelected ? 1 : 0.2) : 1;
+          });
+
+        tooltip.style("opacity", 0);
+      })
+
       .on("click", (_, d) => {
         setSelectedBubble(d.data); // 🟢 Store data for details panel
       });
@@ -370,7 +445,7 @@ const ActiveStudentsChart = () => {
       .style("stroke", "#ffffff")
       .style("stroke-width", "3px")
       .text(d => d.data.year);
-  }, [nestedStudentData, selectedTab, dimensions, selectedYears, courseRange]);
+  }, [nestedStudentData, selectedTab, dimensions, selectedYears, courseRange, selectedBubble]);
 
 
   return (
@@ -384,7 +459,7 @@ const ActiveStudentsChart = () => {
             <h2 className="text-md font-semibold">Επιλογή προβολής</h2>
             <select
               value={selectedTab}
-              onChange={(e) => { setSelectedTab(e.target.value); setSelectedBubble(null) }}
+              onChange={(e) => { setSelectedTab(e.target.value) }}
               className="px-4 py-2 text-sm rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">Όλοι οι φοιτητές</option>
