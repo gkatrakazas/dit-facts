@@ -455,7 +455,7 @@ const ActiveStudentsChart = () => {
             <div className="w-full m-4">
               {selectedTab === "all" && (
                 <div>
-                  <div ref={containerRef} style={{ height: "80vh", width: "100%" }} className="relative">
+                  <div ref={containerRef} style={{ height: "90vh", width: "100%" }} className="relative">
                     <div ref={packedRef} className="absolute inset-0"></div>
                   </div>
                 </div>
@@ -463,7 +463,7 @@ const ActiveStudentsChart = () => {
 
               {selectedTab === "byYear" && (
                 <div>
-                  <div ref={yearContainerRef} style={{ height: "80vh", width: "100%" }} className="relative">
+                  <div ref={yearContainerRef} style={{ height: "90vh", width: "100%" }} className="relative">
                     <div ref={yearPackedRef} className="absolute inset-0"></div>
                   </div>
                 </div>
