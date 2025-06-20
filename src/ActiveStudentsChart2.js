@@ -85,6 +85,28 @@ const ActiveStudentsChart = () => {
     return () => observeTarget && resizeObserver.unobserve(observeTarget);
   }, [selectedTab]);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      const chartContainers = [containerRef.current, yearContainerRef.current];
+      const detailsPanel = document.querySelector(".text-sm.space-y-1")?.parentElement;
+
+      const clickedInside = chartContainers.some(ref =>
+        ref && ref.contains(event.target)
+      ) || (detailsPanel && detailsPanel.contains(event.target));
+
+      if (!clickedInside) {
+        setSelectedBubble(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+
+  useEffect(() => {
+    setSelectedBubble(null);
+  }, [selectedYears, courseRange]);
 
   useEffect(() => {
     if (range.start !== null && range.end !== null) {
@@ -194,6 +216,13 @@ const ActiveStudentsChart = () => {
       .attr("preserveAspectRatio", "xMidYMid meet")
 
 
+    svg.append("rect")
+      .attr("width", width)
+      .attr("height", height)
+      .attr("fill", "transparent")
+      .on("click", () => {
+        setSelectedBubble(null); // Clear when background is clicked
+      });
 
     const tooltip = d3.select("#bubble-tooltip");
 
@@ -348,6 +377,14 @@ const ActiveStudentsChart = () => {
       .attr("viewBox", `0 0 ${width} ${height}`)
       .attr("width", "100%")
       .attr("height", height);
+
+    svg.append("rect")
+      .attr("width", width)
+      .attr("height", height)
+      .attr("fill", "transparent")
+      .on("click", () => {
+        setSelectedBubble(null); // Clear when background is clicked
+      });
 
     const tooltip = d3.select("#bubble-tooltip");
 
@@ -556,13 +593,32 @@ const ActiveStudentsChart = () => {
 
 
           <div className="max-w-[20%] mt-6 w-full">
-            <h3 className="text-md font-bold mb-2">Λεπτομέρειες</h3>
-
             <div className="p-2 relative w-full bg-white shadow shadow-lg rounded-lg w-full">
               <p className="text-sm font-medium">
-                <b>Φοιτητές:</b> {inactiveBubbleData.filter(b => selectedYears.includes(b.raw["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"])).length}
+                Σύνολο Φοιτητών: {inactiveBubbleData.filter(b => selectedYears.includes(b.raw["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"])).length}
               </p>
             </div>
+            {selectedTab === "byYear" && (
+              <div className="relative w-full p-2 text-sm bg-white shadow shadow-lg rounded-lg mt-2">
+                <div className="text-sm">
+                  <p className="font-semibold mb-1">Φοιτητές ανά έτος:</p>
+                  <div className="max-h-40 overflow-y-auto pr-1">
+                    <ul className="space-y-1">
+                      {selectedYears.map(year => {
+                        const count = inactiveBubbleData.filter(b => b.raw["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"] === year).length;
+                        return (
+                          <li key={year} className="flex justify-between border-b border-gray-100 pb-1 mr-2">
+                            <span className="text-gray-700">{year}: </span>
+                            <span className="text-gray-900 font-semibold">{count}</span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Details panel */}
             {selectedBubble && (
               <div className="relative w-full p-2 text-sm bg-white shadow shadow-lg rounded-lg mt-2 w-full">
