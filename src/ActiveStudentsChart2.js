@@ -15,6 +15,15 @@ const getColorByInactivity = (lastActionDate) => {
   return "#32CD32";
 };
 
+
+const getInactivityCategory = (yearsInactive) => {
+  if (yearsInactive > 20) return ">20";
+  if (yearsInactive > 10) return "10–20";
+  if (yearsInactive > 5) return "5–10";
+  if (yearsInactive > 2) return "2–5";
+  return "<2";
+};
+
 const getTooltipHtml = (d) => {
   const fieldsToShow = [
     { label: "Έτος τελευταίας ενέργειας", value: d.data.year },
@@ -36,7 +45,6 @@ const ActiveStudentsChart = () => {
 
   const [rawData, setRawData] = useState([]);
   const [inactiveBubbleData, setInactiveBubbleData] = useState([]);
-  const [selectedTab, setSelectedTab] = useState("all");
   const [nestedStudentData, setNestedStudentData] = useState(null);
   const [selectedBubble, setSelectedBubble] = useState(null);
 
@@ -46,6 +54,8 @@ const ActiveStudentsChart = () => {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const yearContainerRef = useRef(null);
 
+  const categoryPackedRef = useRef(null);
+  const categoryContainerRef = useRef(null);
 
   //////////////////// about year filter
   const [availableYears, setAvailableYears] = useState([]);
@@ -60,6 +70,10 @@ const ActiveStudentsChart = () => {
   const [availableCourses, setAvailableCourses] = useState([]);
 
 
+  const [viewMode, setViewMode] = useState("individual"); // 'individual' or 'grouped'
+  const [groupedMode, setGroupedMode] = useState("byYear"); // only used when grouped
+
+
   useEffect(() => {
     console.log('availableYears', availableYears)
     if (availableYears.length > 0) {
@@ -71,7 +85,14 @@ const ActiveStudentsChart = () => {
 
   useEffect(() => {
     const observeTarget =
-      selectedTab === "all" ? containerRef.current : yearContainerRef.current;
+      viewMode === "all"
+        ? containerRef.current
+        : (viewMode === "grouped" && groupedMode === "byYear")
+          ? yearContainerRef.current
+          : (viewMode === "grouped" && groupedMode === "byCategory")
+            ? categoryContainerRef.current
+            : null;
+
     if (!observeTarget) return;
 
     const resizeObserver = new ResizeObserver(entries => {
@@ -83,7 +104,7 @@ const ActiveStudentsChart = () => {
 
     resizeObserver.observe(observeTarget);
     return () => observeTarget && resizeObserver.unobserve(observeTarget);
-  }, [selectedTab]);
+  }, [viewMode, groupedMode]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -196,7 +217,7 @@ const ActiveStudentsChart = () => {
       b.r >= courseRange.start &&
       b.r <= courseRange.end
     );
-    if (!filteredData.length || selectedTab !== "all") return;
+    if (!filteredData.length || viewMode !== "individual") return;
 
     const fallbackSize = 800;
     const width = dimensions.width || fallbackSize;
@@ -310,11 +331,11 @@ const ActiveStudentsChart = () => {
       .on("click", (_, d) => {
         setSelectedBubble(d.data); // 🟢 Store data for details panel
       });
-  }, [inactiveBubbleData, selectedTab, dimensions, selectedYears, courseRange, selectedBubble]);
+  }, [inactiveBubbleData, viewMode, groupedMode, dimensions, selectedYears, courseRange, selectedBubble]);
 
 
   useEffect(() => {
-    if (!inactiveBubbleData.length || selectedYears.length === 0 || courseRange.start === null || courseRange.end === null || selectedTab !== "byYear") return;
+    if (!inactiveBubbleData.length || selectedYears.length === 0 || courseRange.start === null || courseRange.end === null || !(viewMode === "grouped" && groupedMode === "byYear")) return;
 
     const fallbackSize = 800;
     const width = dimensions.width || fallbackSize;
@@ -482,7 +503,7 @@ const ActiveStudentsChart = () => {
       .attr("x", d => d.x - 10)
       .attr("y", d => d.y - d.r + (-3)) // ⬅️ aligned near top
       .attr("text-anchor", "middle")
-      .attr("font-size", d => `${Math.max(10, d.r / 5.5)}px`)
+      .attr("font-size", d => `${Math.max(10, d.r / 5, 14)}px`)
       .attr("font-weight", "800")
       .attr("fill", "#gray")
       .attr("pointer-events", "none")
@@ -490,7 +511,145 @@ const ActiveStudentsChart = () => {
       .style("stroke", "#ffffff")
       .style("stroke-width", "3px")
       .text(d => d.data.year);
-  }, [nestedStudentData, selectedTab, dimensions, selectedYears, courseRange, selectedBubble]);
+  }, [nestedStudentData, viewMode, dimensions, selectedYears, courseRange, selectedBubble]);
+
+
+  useEffect(() => {
+    if (
+      !(viewMode === "grouped" && groupedMode === "byCategory") ||
+      !inactiveBubbleData.length ||
+      !selectedYears.length ||
+      courseRange.start === null ||
+      courseRange.end === null ||
+      !categoryPackedRef.current ||
+      !dimensions.width
+    )
+      return;
+
+    d3.select(categoryPackedRef.current).selectAll("*").remove();
+
+    const filtered = inactiveBubbleData.filter(
+      (b) =>
+        selectedYears.includes(b.raw["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"]) &&
+        b.r >= courseRange.start &&
+        b.r <= courseRange.end
+    );
+
+    const grouped = d3.group(filtered, (d) => getInactivityCategory(d.size));
+
+    const hierarchy = {
+      children: [...grouped.entries()].map(([cat, students]) => ({
+        category: cat,
+        children: students.map((s) => ({ ...s, value: 1 })),
+      })),
+    };
+
+    const width = dimensions.width;
+    const height = dimensions.height;
+
+    const root = d3
+      .hierarchy(hierarchy)
+      .sum((d) => d.value || 0)
+      .sort((a, b) => b.value - a.value);
+
+    d3.pack()
+      .size([width, height])
+      .padding(8)(root);
+
+    // Shrink each group and reposition children
+    root.children.forEach((group) => {
+      group.r *= 0.8;
+      group.children.forEach((child) => {
+        const dx = child.x - group.x;
+        const dy = child.y - group.y;
+        const scale = 0.9;
+        child.x = group.x + dx * scale;
+        child.y = group.y + dy * scale;
+      });
+    });
+
+    const svg = d3
+      .select(categoryPackedRef.current)
+      .append("svg")
+      .attr("viewBox", `0 0 ${width} ${height}`)
+      .attr("width", "100%")
+      .attr("height", height);
+
+    svg.append("rect")
+      .attr("width", width)
+      .attr("height", height)
+      .attr("fill", "transparent")
+      .on("click", () => setSelectedBubble(null));
+
+    const tooltip = d3.select("#bubble-tooltip");
+
+    svg
+      .selectAll("circle.parent")
+      .data(root.children)
+      .join("circle")
+      .attr("cx", (d) => d.x)
+      .attr("cy", (d) => d.y)
+      .attr("r", (d) => d.r + 3)
+      .attr("fill", "#F9F9F9")
+      .attr("stroke", "#ccc");
+
+    svg
+      .selectAll("circle.student")
+      .data(root.leaves())
+      .join("circle")
+      .attr("cx", (d) => d.x)
+      .attr("cy", (d) => d.y)
+      .attr("r", (d) => d.r)
+      .attr("fill", (d) => getColorByInactivity(d.data.lastAction))
+      .attr("opacity", (d) =>
+        selectedBubble ? (d.data.raw === selectedBubble.raw ? 1 : 0.2) : 1
+      )
+      .attr("stroke", "#1E3A8A")
+      .attr("stroke-width", 0.5)
+      .on("mouseover", (event, d) => {
+        d3.select(event.currentTarget)
+          .transition()
+          .duration(200)
+          .attr("filter", "url(#hover-shadow)")
+          .attr("opacity", 1);
+
+        tooltip.style("opacity", 1).html(getTooltipHtml(d));
+      })
+      .on("mousemove", (event) => {
+        tooltip
+          .style("left", `${event.clientX}px`)
+          .style("top", `${event.clientY}px`);
+      })
+      .on("mouseout", (event, d) => {
+        d3.select(event.currentTarget)
+          .transition()
+          .duration(0)
+          .attr("filter", null)
+          .attr("opacity", () => {
+            const isSelected =
+              selectedBubble && d.data.raw === selectedBubble.raw;
+            return selectedBubble ? (isSelected ? 1 : 0.2) : 1;
+          });
+
+        tooltip.style("opacity", 0);
+      })
+      .on("click", (_, d) => setSelectedBubble(d.data));
+
+    svg
+      .selectAll("text.label")
+      .data(root.children)
+      .join("text")
+      .attr("x", (d) => d.x)
+      .attr("y", (d) => d.y - d.r - 5)
+      .attr("text-anchor", "middle")
+      .attr("font-size", (d) => `${Math.max(10, d.r / 5, 14)}px`)
+      .attr("font-weight", "bold")
+      .attr("fill", "#444")
+      .style("paint-order", "stroke")
+      .style("stroke", "#fff")
+      .style("stroke-width", "3px")
+      .text((d) => d.data.category);
+  }, [viewMode, groupedMode, inactiveBubbleData, dimensions, selectedYears, courseRange, selectedBubble]);
 
 
   return (
@@ -502,14 +661,29 @@ const ActiveStudentsChart = () => {
           {/* Sidebar: Display options */}
           <div className="flex flex-col gap-4 mt-6 bg-white p-4 rounded shadow">
             <h2 className="text-md font-semibold">Επιλογή προβολής</h2>
-            <select
-              value={selectedTab}
-              onChange={(e) => { setSelectedTab(e.target.value) }}
-              className="px-4 py-2 text-sm rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="all">Όλοι οι φοιτητές</option>
-              <option value="byYear">Ανά έτος εγγραφής</option>
-            </select>
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium">Επιλογή προβολής</label>
+              <select
+                value={viewMode}
+                onChange={(e) => setViewMode(e.target.value)}
+                className="px-4 py-2 text-sm rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="individual">Όλοι οι φοιτητές</option>
+                <option value="grouped">Ομαδοποιημένα</option>
+              </select>
+
+              {viewMode === "grouped" && (
+                <select
+                  value={groupedMode}
+                  onChange={(e) => setGroupedMode(e.target.value)}
+                  className="px-4 py-2 text-sm rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="byYear">Ανά έτος εγγραφής</option>
+                  <option value="byCategory">Ανά κατηγορία ανενεργών</option>
+                </select>
+              )}
+            </div>
+
 
             <div className="mt-4 ">
               <h2 className="text-md font-semibold mb-2">Φίλτρα</h2>
@@ -573,7 +747,7 @@ const ActiveStudentsChart = () => {
 
             {/* Chart container */}
             <div className="w-full m-4">
-              {selectedTab === "all" && (
+              {viewMode === "individual" && (
                 <div>
                   <div ref={containerRef} style={{ height: "90vh", width: "100%" }} className="relative">
                     <div ref={packedRef} className="absolute inset-0"></div>
@@ -581,11 +755,16 @@ const ActiveStudentsChart = () => {
                 </div>
               )}
 
-              {selectedTab === "byYear" && (
+              {(viewMode === "grouped" && groupedMode === "byYear") && (
                 <div>
                   <div ref={yearContainerRef} style={{ height: "90vh", width: "100%" }} className="relative">
                     <div ref={yearPackedRef} className="absolute inset-0"></div>
                   </div>
+                </div>
+              )}
+              {(viewMode === "grouped" && groupedMode === "byCategory") && (
+                <div ref={categoryContainerRef} style={{ height: "90vh", width: "100%" }} className="relative">
+                  <div ref={categoryPackedRef} className="absolute inset-0" />
                 </div>
               )}
             </div>
@@ -598,7 +777,7 @@ const ActiveStudentsChart = () => {
                 Σύνολο Φοιτητών: {inactiveBubbleData.filter(b => selectedYears.includes(b.raw["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"])).length}
               </p>
             </div>
-            {selectedTab === "byYear" && (
+            {(viewMode === "grouped" && groupedMode === "byYear") && (
               <div className="relative w-full p-2 text-sm bg-white shadow shadow-lg rounded-lg mt-2">
                 <div className="text-sm">
                   <p className="font-semibold mb-1">Φοιτητές ανά έτος:</p>
