@@ -40,6 +40,8 @@ const getTooltipHtml = (d) => {
     .join("<br/>");
 };
 
+
+
 const ActiveStudentsChart = () => {
   const { t } = useTranslation();
 
@@ -73,6 +75,25 @@ const ActiveStudentsChart = () => {
   const [viewMode, setViewMode] = useState("individual"); // 'individual' or 'grouped'
   const [groupedMode, setGroupedMode] = useState("byYear"); // only used when grouped
 
+
+  const groupedModeConfig = {
+    byYear: {
+      label: "Ανά έτος εγγραφής",
+      groupBy: (d) => d.raw["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"],
+      labelKey: "year",
+      getLabel: (d) => d.data.year,
+      containerRef: yearContainerRef,
+      packedRef: yearPackedRef,
+    },
+    byCategory: {
+      label: "Ανά κατηγορία ανενεργών",
+      groupBy: (d) => getInactivityCategory(d.size),
+      labelKey: "category",
+      getLabel: (d) => d.data.category,
+      containerRef: categoryContainerRef,
+      packedRef: categoryPackedRef,
+    },
+  };
 
   useEffect(() => {
     console.log('availableYears', availableYears)
@@ -149,22 +170,38 @@ const ActiveStudentsChart = () => {
 
       const today = new Date();
 
+      console.log(sheetData);
+      // 🔽 Add this to log 2024 students
+
+
+
+
       const bubbles = sheetData
         .filter(row => !row["ΕΤΟΣ ΑΠΟΦΟΙΤΗΣΗΣ"])
         .map(row => {
           const lastActionRaw = Math.max(
             row["ΤΕΛΕΥΤΑΙΑ ΔΗΛΩΣΗ"] || 0,
             row["ΤΕΛΕΥΤΑΙΑ ΕΠΙΤΥΧΗΣ ΕΞΕΤΑΣΗ"] || 0,
-            row["ΤΕΛΕΥΤΑΙΑ ΑΠΟΤΥΧΙΑ"] || 0
+            row["ΤΕΛΕΥΤΑΙΑ ΑΠΟΤΥΧΙΑ"] || 0,
+            row["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"] + '091' || 0
           );
 
           const str = String(lastActionRaw);
-          const year = parseInt(str.slice(0, 4));
-          const month = str.length === 7 ? parseInt(str.slice(4, 5)) : parseInt(str.slice(4, 6));
-          const day = str.length === 7 ? parseInt(str.slice(5, 7)) : parseInt(str.slice(6, 8));
+          let year = parseInt(str.slice(0, 4));
+          let month, day;
+
+
+          month =  parseInt(str.slice(4, 6))
+          day = parseInt(str.slice(6, 7));
 
           const lastActionDate = new Date(`${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`);
           const yearsInactive = (today - lastActionDate) / (1000 * 60 * 60 * 24 * 365.25);
+
+          if (!str || !year || !month || !day || !lastActionDate) {
+            console.log('-->', str, year, month, day)
+            console.log('--> lastActionDate', lastActionDate)
+            console.log('-->', row)
+          }
 
           return {
             r: row["ΠΛΗΘΟΣ ΜΑΘΗΜΑΤΩΝ"] || 0,
@@ -185,6 +222,9 @@ const ActiveStudentsChart = () => {
         }))
       };
 
+      // 🔽 Add this to log 2024 students
+      // console.log("2024 Students", bubbles.filter(b => b.raw["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"] === 2024));
+      console.log('bubbles', bubbles)
       setRawData(sheetData);
       setInactiveBubbleData(bubbles);
       setNestedStudentData(nestedHierarchy);
@@ -334,199 +374,326 @@ const ActiveStudentsChart = () => {
   }, [inactiveBubbleData, viewMode, groupedMode, dimensions, selectedYears, courseRange, selectedBubble]);
 
 
-  useEffect(() => {
-    if (!inactiveBubbleData.length || selectedYears.length === 0 || courseRange.start === null || courseRange.end === null || !(viewMode === "grouped" && groupedMode === "byYear")) return;
+  // useEffect(() => {
+  //   if (!inactiveBubbleData.length || selectedYears.length === 0 || courseRange.start === null || courseRange.end === null || !(viewMode === "grouped" && groupedMode === "byYear")) return;
 
-    const fallbackSize = 800;
-    const width = dimensions.width || fallbackSize;
-    const height = dimensions.height || fallbackSize;
+  //   const fallbackSize = 800;
+  //   const width = dimensions.width || fallbackSize;
+  //   const height = dimensions.height || fallbackSize;
 
-    if (!width || !height || !yearPackedRef.current) return;
+  //   if (!width || !height || !yearPackedRef.current) return;
 
-    d3.select(yearPackedRef.current).selectAll("*").remove();
+  //   d3.select(yearPackedRef.current).selectAll("*").remove();
 
-    const filteredData = inactiveBubbleData.filter(b =>
-      selectedYears.includes(b.raw["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"]) &&
-      b.r >= courseRange.start &&
-      b.r <= courseRange.end
-    );
+  //   const filteredData = inactiveBubbleData.filter(b =>
+  //     selectedYears.includes(b.raw["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"]) &&
+  //     b.r >= courseRange.start &&
+  //     b.r <= courseRange.end
+  //   );
 
-    const groupedByYear = d3.group(filteredData, d => d.raw["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"]);
+  //   const groupedByYear = d3.group(filteredData, d => d.raw["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"]);
 
-    const filteredHierarchy = {
-      children: [...groupedByYear.entries()].map(([year, students]) => ({
-        year,
-        children: students.map(s => ({ ...s, value: 1 }))
-      }))
-    };
+  //   const filteredHierarchy = {
+  //     children: [...groupedByYear.entries()].map(([year, students]) => ({
+  //       year,
+  //       children: students.map(s => ({ ...s, value: 1 }))
+  //     }))
+  //   };
 
-    const root = d3
-      .hierarchy(filteredHierarchy)
-      .sum(d => d.value || 0)
-      .sort((a, b) => b.value - a.value);
-
-
-    d3.pack()
-      .size([width, height])
-      .padding(8)(root);
-
-    // const scaleX = 1.3; // widen the layout horizontally
-    // root.descendants().forEach(d => {
-    //   d.x = (d.x - width / 2) * scaleX + width / 2;
-    // });
+  //   const root = d3
+  //     .hierarchy(filteredHierarchy)
+  //     .sum(d => d.value || 0)
+  //     .sort((a, b) => b.value - a.value);
 
 
-    // Apply extra space *within each year group*
-    root.children.forEach(group => {
-      // Shrink the available radius by 10%
-      group.r *= 0.8;
+  //   d3.pack()
+  //     .size([width, height])
+  //     .padding(8)(root);
 
-      // Move children closer to the center
-      group.children.forEach(child => {
-        const dx = child.x - group.x;
-        const dy = child.y - group.y;
-        const scale = 0.9; // 90% shrink
-        child.x = group.x + dx * scale;
-        child.y = group.y + dy * scale;
-      });
-    });
+  //   // const scaleX = 1.3; // widen the layout horizontally
+  //   // root.descendants().forEach(d => {
+  //   //   d.x = (d.x - width / 2) * scaleX + width / 2;
+  //   // });
 
 
-    const svg = d3
-      .select(yearPackedRef.current)
-      .append("svg")
-      .attr("viewBox", `0 0 ${width} ${height}`)
-      .attr("width", "100%")
-      .attr("height", height);
+  //   // Apply extra space *within each year group*
+  //   root.children.forEach(group => {
+  //     // Shrink the available radius by 10%
+  //     group.r *= 0.8;
 
-    svg.append("rect")
-      .attr("width", width)
-      .attr("height", height)
-      .attr("fill", "transparent")
-      .on("click", () => {
-        setSelectedBubble(null); // Clear when background is clicked
-      });
-
-    const tooltip = d3.select("#bubble-tooltip");
+  //     // Move children closer to the center
+  //     group.children.forEach(child => {
+  //       const dx = child.x - group.x;
+  //       const dy = child.y - group.y;
+  //       const scale = 0.9; // 90% shrink
+  //       child.x = group.x + dx * scale;
+  //       child.y = group.y + dy * scale;
+  //     });
+  //   });
 
 
-    const defs = svg.append("defs");
+  //   const svg = d3
+  //     .select(yearPackedRef.current)
+  //     .append("svg")
+  //     .attr("viewBox", `0 0 ${width} ${height}`)
+  //     .attr("width", "100%")
+  //     .attr("height", height);
 
-    const filter = defs.append("filter")
-      .attr("id", "hover-shadow")
-      .attr("x", "-50%")
-      .attr("y", "-50%")
-      .attr("width", "200%")
-      .attr("height", "200%");
+  //   svg.append("rect")
+  //     .attr("width", width)
+  //     .attr("height", height)
+  //     .attr("fill", "transparent")
+  //     .on("click", () => {
+  //       setSelectedBubble(null); // Clear when background is clicked
+  //     });
 
-    filter.append("feDropShadow")
-      .attr("dx", 0)
-      .attr("dy", 0)
-      .attr("stdDeviation", 3)
-      .attr("flood-color", "#000")
-      .attr("flood-opacity", 0.3);
-
-    // ⬇️ Fake parent bubbles (background)
-    // ⬇️ Fake parent ovals (background)
-    svg
-      .selectAll("circle.fake-year")
-      .data(root.descendants().filter(d => d.depth === 1))
-      .join("circle")
-      .attr("class", "fake-year")
-      .attr("cx", d => d.x)
-      .attr("cy", d => d.y)
-      .attr("r", d => d.r + 3)
-      .attr("fill", "#F9F9F9")
-      .attr("stroke", "lightgray")
-      .attr("stroke-width", 1);
-
-    // 🟢 Inner student bubbles
-    svg
-      .selectAll("circle.student")
-      .data(root.leaves())
-      .join("circle")
-      .attr("class", "student")
-      .attr("cx", d => d.x)
-      .attr("cy", d => d.y)
-      .attr("r", d => d.r)
-      .attr("fill", d => getColorByInactivity(d.data.lastAction))
-      .attr("opacity", d => {
-        console.log('selectedBubble', selectedBubble);
-        console.log('data', d.data);
-        if (d.depth !== 2) return 1;
-        return selectedBubble ? (d.data.raw === selectedBubble.raw ? 1 : 0.2) : 1;
-      })
-      .attr("stroke", "#1E3A8A")
-      .attr("stroke-width", 0.5)
-      .on("mouseover", (event, d) => {
-        d3.select(event.currentTarget)
-          .transition()
-          .duration(200)
-          .attr("filter", "url(#hover-shadow)")
-          .attr("opacity", 1); // ⬅️ Always 1 on hover
-
-        tooltip
-          .style("opacity", 1)
-          .html(getTooltipHtml(d));
-      })
-
-      .on("mousemove", (event) => {
-        tooltip
-          .style("left", `${event.clientX + 0}px`)
-          .style("top", `${event.clientY + 0}px`);
-      })
-      .on("mouseout", (event, d) => {
-        d3.select(event.currentTarget)
-          .transition()
-          .duration(0)
-          .attr("filter", null)
-          .attr("opacity", () => {
-            const isSelected =
-              selectedBubble &&
-              d.data.raw === selectedBubble.raw
-
-            return selectedBubble ? (isSelected ? 1 : 0.2) : 1;
-          });
-
-        tooltip.style("opacity", 0);
-      })
-
-      .on("click", (_, d) => {
-        setSelectedBubble(d.data); // 🟢 Store data for details panel
-      });
-    // 🔵 Top-aligned year labels
-    svg
-      .selectAll("text.year-label")
-      .data(root.descendants().filter(d => d.children && d.depth === 1))
-      .join("text")
-      .attr("class", "year-label")
-      .attr("x", d => d.x - 10)
-      .attr("y", d => d.y - d.r + (-3)) // ⬅️ aligned near top
-      .attr("text-anchor", "middle")
-      .attr("font-size", d => `${Math.max(10, d.r / 5, 14)}px`)
-      .attr("font-weight", "800")
-      .attr("fill", "#gray")
-      .attr("pointer-events", "none")
-      .style("paint-order", "stroke")
-      .style("stroke", "#ffffff")
-      .style("stroke-width", "3px")
-      .text(d => d.data.year);
-  }, [nestedStudentData, viewMode, dimensions, selectedYears, courseRange, selectedBubble]);
+  //   const tooltip = d3.select("#bubble-tooltip");
 
 
-  useEffect(() => {
-    if (
-      !(viewMode === "grouped" && groupedMode === "byCategory") ||
-      !inactiveBubbleData.length ||
-      !selectedYears.length ||
-      courseRange.start === null ||
-      courseRange.end === null ||
-      !categoryPackedRef.current ||
-      !dimensions.width
-    )
-      return;
+  //   const defs = svg.append("defs");
 
-    d3.select(categoryPackedRef.current).selectAll("*").remove();
+  //   const filter = defs.append("filter")
+  //     .attr("id", "hover-shadow")
+  //     .attr("x", "-50%")
+  //     .attr("y", "-50%")
+  //     .attr("width", "200%")
+  //     .attr("height", "200%");
+
+  //   filter.append("feDropShadow")
+  //     .attr("dx", 0)
+  //     .attr("dy", 0)
+  //     .attr("stdDeviation", 3)
+  //     .attr("flood-color", "#000")
+  //     .attr("flood-opacity", 0.3);
+
+  //   // ⬇️ Fake parent bubbles (background)
+  //   // ⬇️ Fake parent ovals (background)
+  //   svg
+  //     .selectAll("circle.fake-year")
+  //     .data(root.descendants().filter(d => d.depth === 1))
+  //     .join("circle")
+  //     .attr("class", "fake-year")
+  //     .attr("cx", d => d.x)
+  //     .attr("cy", d => d.y)
+  //     .attr("r", d => d.r + 3)
+  //     .attr("fill", "#F9F9F9")
+  //     .attr("stroke", "lightgray")
+  //     .attr("stroke-width", 1);
+
+  //   // 🟢 Inner student bubbles
+  //   svg
+  //     .selectAll("circle.student")
+  //     .data(root.leaves())
+  //     .join("circle")
+  //     .attr("class", "student")
+  //     .attr("cx", d => d.x)
+  //     .attr("cy", d => d.y)
+  //     .attr("r", d => d.r)
+  //     .attr("fill", d => getColorByInactivity(d.data.lastAction))
+  //     .attr("opacity", d => {
+  //       console.log('selectedBubble', selectedBubble);
+  //       console.log('data', d.data);
+  //       if (d.depth !== 2) return 1;
+  //       return selectedBubble ? (d.data.raw === selectedBubble.raw ? 1 : 0.2) : 1;
+  //     })
+  //     .attr("stroke", "#1E3A8A")
+  //     .attr("stroke-width", 0.5)
+  //     .on("mouseover", (event, d) => {
+  //       d3.select(event.currentTarget)
+  //         .transition()
+  //         .duration(200)
+  //         .attr("filter", "url(#hover-shadow)")
+  //         .attr("opacity", 1); // ⬅️ Always 1 on hover
+
+  //       tooltip
+  //         .style("opacity", 1)
+  //         .html(getTooltipHtml(d));
+  //     })
+
+  //     .on("mousemove", (event) => {
+  //       tooltip
+  //         .style("left", `${event.clientX + 0}px`)
+  //         .style("top", `${event.clientY + 0}px`);
+  //     })
+  //     .on("mouseout", (event, d) => {
+  //       d3.select(event.currentTarget)
+  //         .transition()
+  //         .duration(0)
+  //         .attr("filter", null)
+  //         .attr("opacity", () => {
+  //           const isSelected =
+  //             selectedBubble &&
+  //             d.data.raw === selectedBubble.raw
+
+  //           return selectedBubble ? (isSelected ? 1 : 0.2) : 1;
+  //         });
+
+  //       tooltip.style("opacity", 0);
+  //     })
+
+  //     .on("click", (_, d) => {
+  //       setSelectedBubble(d.data); // 🟢 Store data for details panel
+  //     });
+  //   // 🔵 Top-aligned year labels
+  //   svg
+  //     .selectAll("text.year-label")
+  //     .data(root.descendants().filter(d => d.children && d.depth === 1))
+  //     .join("text")
+  //     .attr("class", "year-label")
+  //     .attr("x", d => d.x - 10)
+  //     .attr("y", d => d.y - d.r + (-3)) // ⬅️ aligned near top
+  //     .attr("text-anchor", "middle")
+  //     .attr("font-size", d => `${Math.max(10, d.r / 5, 14)}px`)
+  //     .attr("font-weight", "800")
+  //     .attr("fill", "#gray")
+  //     .attr("pointer-events", "none")
+  //     .style("paint-order", "stroke")
+  //     .style("stroke", "#ffffff")
+  //     .style("stroke-width", "3px")
+  //     .text(d => d.data.year);
+  // }, [nestedStudentData, viewMode, dimensions, selectedYears, courseRange, selectedBubble]);
+
+
+  // useEffect(() => {
+  //   if (
+  //     !(viewMode === "grouped" && groupedMode === "byCategory") ||
+  //     !inactiveBubbleData.length ||
+  //     !selectedYears.length ||
+  //     courseRange.start === null ||
+  //     courseRange.end === null ||
+  //     !categoryPackedRef.current ||
+  //     !dimensions.width
+  //   )
+  //     return;
+
+  //   d3.select(categoryPackedRef.current).selectAll("*").remove();
+
+  //   const filtered = inactiveBubbleData.filter(
+  //     (b) =>
+  //       selectedYears.includes(b.raw["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"]) &&
+  //       b.r >= courseRange.start &&
+  //       b.r <= courseRange.end
+  //   );
+
+  //   const grouped = d3.group(filtered, (d) => getInactivityCategory(d.size));
+
+  //   const hierarchy = {
+  //     children: [...grouped.entries()].map(([cat, students]) => ({
+  //       category: cat,
+  //       children: students.map((s) => ({ ...s, value: 1 })),
+  //     })),
+  //   };
+
+  //   const width = dimensions.width;
+  //   const height = dimensions.height;
+
+  //   const root = d3
+  //     .hierarchy(hierarchy)
+  //     .sum((d) => d.value || 0)
+  //     .sort((a, b) => b.value - a.value);
+
+  //   d3.pack()
+  //     .size([width, height])
+  //     .padding(8)(root);
+
+  //   // Shrink each group and reposition children
+  //   root.children.forEach((group) => {
+  //     group.r *= 0.8;
+  //     group.children.forEach((child) => {
+  //       const dx = child.x - group.x;
+  //       const dy = child.y - group.y;
+  //       const scale = 0.9;
+  //       child.x = group.x + dx * scale;
+  //       child.y = group.y + dy * scale;
+  //     });
+  //   });
+
+  //   const svg = d3
+  //     .select(categoryPackedRef.current)
+  //     .append("svg")
+  //     .attr("viewBox", `0 0 ${width} ${height}`)
+  //     .attr("width", "100%")
+  //     .attr("height", height);
+
+  //   svg.append("rect")
+  //     .attr("width", width)
+  //     .attr("height", height)
+  //     .attr("fill", "transparent")
+  //     .on("click", () => setSelectedBubble(null));
+
+  //   const tooltip = d3.select("#bubble-tooltip");
+
+  //   svg
+  //     .selectAll("circle.parent")
+  //     .data(root.children)
+  //     .join("circle")
+  //     .attr("cx", (d) => d.x)
+  //     .attr("cy", (d) => d.y)
+  //     .attr("r", (d) => d.r + 3)
+  //     .attr("fill", "#F9F9F9")
+  //     .attr("stroke", "#ccc");
+
+  //   svg
+  //     .selectAll("circle.student")
+  //     .data(root.leaves())
+  //     .join("circle")
+  //     .attr("cx", (d) => d.x)
+  //     .attr("cy", (d) => d.y)
+  //     .attr("r", (d) => d.r)
+  //     .attr("fill", (d) => getColorByInactivity(d.data.lastAction))
+  //     .attr("opacity", (d) =>
+  //       selectedBubble ? (d.data.raw === selectedBubble.raw ? 1 : 0.2) : 1
+  //     )
+  //     .attr("stroke", "#1E3A8A")
+  //     .attr("stroke-width", 0.5)
+  //     .on("mouseover", (event, d) => {
+  //       d3.select(event.currentTarget)
+  //         .transition()
+  //         .duration(200)
+  //         .attr("filter", "url(#hover-shadow)")
+  //         .attr("opacity", 1);
+
+  //       tooltip.style("opacity", 1).html(getTooltipHtml(d));
+  //     })
+  //     .on("mousemove", (event) => {
+  //       tooltip
+  //         .style("left", `${event.clientX}px`)
+  //         .style("top", `${event.clientY}px`);
+  //     })
+  //     .on("mouseout", (event, d) => {
+  //       d3.select(event.currentTarget)
+  //         .transition()
+  //         .duration(0)
+  //         .attr("filter", null)
+  //         .attr("opacity", () => {
+  //           const isSelected =
+  //             selectedBubble && d.data.raw === selectedBubble.raw;
+  //           return selectedBubble ? (isSelected ? 1 : 0.2) : 1;
+  //         });
+
+  //       tooltip.style("opacity", 0);
+  //     })
+  //     .on("click", (_, d) => setSelectedBubble(d.data));
+
+  //   svg
+  //     .selectAll("text.label")
+  //     .data(root.children)
+  //     .join("text")
+  //     .attr("x", (d) => d.x)
+  //     .attr("y", (d) => d.y - d.r - 5)
+  //     .attr("text-anchor", "middle")
+  //     .attr("font-size", (d) => `${Math.max(10, d.r / 5, 14)}px`)
+  //     .attr("font-weight", "bold")
+  //     .attr("fill", "#444")
+  //     .style("paint-order", "stroke")
+  //     .style("stroke", "#fff")
+  //     .style("stroke-width", "3px")
+  //     .text((d) => d.data.category);
+  // }, [viewMode, groupedMode, inactiveBubbleData, dimensions, selectedYears, courseRange, selectedBubble]);
+
+  const renderGroupedBubbles = (configKey) => {
+    const config = groupedModeConfig[configKey];
+    if (!config || !inactiveBubbleData.length || !dimensions.width || !config.packedRef.current) return;
 
     const filtered = inactiveBubbleData.filter(
       (b) =>
@@ -535,17 +702,13 @@ const ActiveStudentsChart = () => {
         b.r <= courseRange.end
     );
 
-    const grouped = d3.group(filtered, (d) => getInactivityCategory(d.size));
-
+    const grouped = d3.group(filtered, config.groupBy);
     const hierarchy = {
-      children: [...grouped.entries()].map(([cat, students]) => ({
-        category: cat,
-        children: students.map((s) => ({ ...s, value: 1 })),
+      children: [...grouped.entries()].map(([key, items]) => ({
+        [config.labelKey]: key,
+        children: items.map((s) => ({ ...s, value: 1 })),
       })),
     };
-
-    const width = dimensions.width;
-    const height = dimensions.height;
 
     const root = d3
       .hierarchy(hierarchy)
@@ -553,10 +716,9 @@ const ActiveStudentsChart = () => {
       .sort((a, b) => b.value - a.value);
 
     d3.pack()
-      .size([width, height])
+      .size([dimensions.width, dimensions.height])
       .padding(8)(root);
 
-    // Shrink each group and reposition children
     root.children.forEach((group) => {
       group.r *= 0.8;
       group.children.forEach((child) => {
@@ -568,16 +730,17 @@ const ActiveStudentsChart = () => {
       });
     });
 
+    d3.select(config.packedRef.current).selectAll("*").remove();
     const svg = d3
-      .select(categoryPackedRef.current)
+      .select(config.packedRef.current)
       .append("svg")
-      .attr("viewBox", `0 0 ${width} ${height}`)
+      .attr("viewBox", `0 0 ${dimensions.width} ${dimensions.height}`)
       .attr("width", "100%")
-      .attr("height", height);
+      .attr("height", dimensions.height);
 
     svg.append("rect")
-      .attr("width", width)
-      .attr("height", height)
+      .attr("width", dimensions.width)
+      .attr("height", dimensions.height)
       .attr("fill", "transparent")
       .on("click", () => setSelectedBubble(null));
 
@@ -625,12 +788,9 @@ const ActiveStudentsChart = () => {
           .transition()
           .duration(0)
           .attr("filter", null)
-          .attr("opacity", () => {
-            const isSelected =
-              selectedBubble && d.data.raw === selectedBubble.raw;
-            return selectedBubble ? (isSelected ? 1 : 0.2) : 1;
-          });
-
+          .attr("opacity", () =>
+            selectedBubble && d.data.raw !== selectedBubble.raw ? 0.2 : 1
+          );
         tooltip.style("opacity", 0);
       })
       .on("click", (_, d) => setSelectedBubble(d.data));
@@ -648,9 +808,15 @@ const ActiveStudentsChart = () => {
       .style("paint-order", "stroke")
       .style("stroke", "#fff")
       .style("stroke-width", "3px")
-      .text((d) => d.data.category);
-  }, [viewMode, groupedMode, inactiveBubbleData, dimensions, selectedYears, courseRange, selectedBubble]);
+      .text(config.getLabel);
+  };
 
+
+  useEffect(() => {
+    if (viewMode === "grouped") {
+      renderGroupedBubbles(groupedMode);
+    }
+  }, [viewMode, groupedMode, inactiveBubbleData, dimensions, selectedYears, courseRange, selectedBubble]);
 
   return (
     <div className="mb-10">
