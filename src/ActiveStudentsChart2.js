@@ -106,7 +106,7 @@ const ActiveStudentsChart = () => {
 
   useEffect(() => {
     const observeTarget =
-      viewMode === "all"
+      viewMode === "individual"
         ? containerRef.current
         : (viewMode === "grouped" && groupedMode === "byYear")
           ? yearContainerRef.current
