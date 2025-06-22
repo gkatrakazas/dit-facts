@@ -59,6 +59,9 @@ const ActiveStudentsChart = () => {
   const categoryPackedRef = useRef(null);
   const categoryContainerRef = useRef(null);
 
+  const admissionPackedRef = useRef(null);
+  const admissionContainerRef = useRef(null);
+
   //////////////////// about year filter
   const [availableYears, setAvailableYears] = useState([]);
   const [selectedYears, setSelectedYears] = useState([]);
@@ -92,6 +95,14 @@ const ActiveStudentsChart = () => {
       getLabel: (d) => d.data.category,
       containerRef: categoryContainerRef,
       packedRef: categoryPackedRef,
+    },
+    byAdmissionType: {
+      label: "Ανά τρόπο εισαγωγής",
+      groupBy: (d) => d.raw["ΤΡΟΠΟΣ ΕΙΣΑΓΩΓΗΣ"],
+      labelKey: "admissionType",
+      getLabel: (d) => d.data.admissionType,
+      containerRef: admissionContainerRef, // Reuse category layout or make a new one
+      packedRef: admissionPackedRef,
     },
   };
 
@@ -191,7 +202,7 @@ const ActiveStudentsChart = () => {
           let month, day;
 
 
-          month =  parseInt(str.slice(4, 6))
+          month = parseInt(str.slice(4, 6))
           day = parseInt(str.slice(6, 7));
 
           const lastActionDate = new Date(`${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`);
@@ -717,10 +728,10 @@ const ActiveStudentsChart = () => {
 
     d3.pack()
       .size([dimensions.width, dimensions.height])
-      .padding(8)(root);
+      .padding(3)(root);
 
     root.children.forEach((group) => {
-      group.r *= 0.8;
+      group.r *= 0.9;
       group.children.forEach((child) => {
         const dx = child.x - group.x;
         const dy = child.y - group.y;
@@ -800,14 +811,14 @@ const ActiveStudentsChart = () => {
       .data(root.children)
       .join("text")
       .attr("x", (d) => d.x)
-      .attr("y", (d) => d.y - d.r - 5)
+      .attr("y", (d) => d.y - d.r)
       .attr("text-anchor", "middle")
-      .attr("font-size", (d) => `${Math.max(10, d.r / 5, 14)}px`)
+      .attr("font-size", (d) => `${Math.max(8, d.r / 5)}px`)
       .attr("font-weight", "bold")
       .attr("fill", "#444")
       .style("paint-order", "stroke")
-      .style("stroke", "#fff")
-      .style("stroke-width", "3px")
+      // .style("stroke", "#fff")
+      // .style("stroke-width", "3px")
       .text(config.getLabel);
   };
 
@@ -846,6 +857,7 @@ const ActiveStudentsChart = () => {
                 >
                   <option value="byYear">Ανά έτος εγγραφής</option>
                   <option value="byCategory">Ανά κατηγορία ανενεργών</option>
+                  <option value="byAdmissionType">Ανά τρόπο εισαγωγής</option>
                 </select>
               )}
             </div>
@@ -931,6 +943,12 @@ const ActiveStudentsChart = () => {
               {(viewMode === "grouped" && groupedMode === "byCategory") && (
                 <div ref={categoryContainerRef} style={{ height: "90vh", width: "100%" }} className="relative">
                   <div ref={categoryPackedRef} className="absolute inset-0" />
+                </div>
+              )}
+
+              {viewMode === "grouped" && groupedMode === "byAdmissionType" && (
+                <div ref={admissionContainerRef} style={{ height: "90vh", width: "100%" }} className="relative">
+                  <div ref={admissionPackedRef} className="absolute inset-0" />
                 </div>
               )}
             </div>
