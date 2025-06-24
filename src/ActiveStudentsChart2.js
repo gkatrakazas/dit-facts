@@ -79,6 +79,9 @@ const ActiveStudentsChart = () => {
   const [groupedMode, setGroupedMode] = useState("byYear"); // only used when grouped
 
 
+  const [admissionTypes, setAdmissionTypes] = useState([]);
+  const [selectedAdmissionTypes, setSelectedAdmissionTypes] = useState([]);
+
   const groupedModeConfig = {
     byYear: {
       label: "Ανά έτος εγγραφής",
@@ -249,6 +252,10 @@ const ActiveStudentsChart = () => {
         end: Math.max(...years),
       });
 
+      const admissions = [...new Set(bubbles.map(b => b.raw["ΤΡΟΠΟΣ ΕΙΣΑΓΩΓΗΣ"]).filter(Boolean))];
+      setAdmissionTypes(admissions);
+      setSelectedAdmissionTypes(admissions); // default: all selected
+
       const courses = [...new Set(bubbles.map(b => b.r))].sort((a, b) => a - b);
       setAvailableCourses(courses);
 
@@ -266,9 +273,11 @@ const ActiveStudentsChart = () => {
     const filteredData = inactiveBubbleData.filter(b =>
       selectedYears.includes(b.raw["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"]) &&
       b.r >= courseRange.start &&
-      b.r <= courseRange.end
+      b.r <= courseRange.end &&
+      selectedAdmissionTypes.includes(b.raw["ΤΡΟΠΟΣ ΕΙΣΑΓΩΓΗΣ"])
     );
-    if (!filteredData.length || viewMode !== "individual") return;
+
+    if (viewMode !== "individual") return;
 
     const fallbackSize = 800;
     const width = dimensions.width || fallbackSize;
@@ -295,6 +304,8 @@ const ActiveStudentsChart = () => {
       .on("click", () => {
         setSelectedBubble(null); // Clear when background is clicked
       });
+
+    if (!filteredData.length) return; // ✅ draw empty chart only
 
     const tooltip = d3.select("#bubble-tooltip");
 
@@ -325,6 +336,7 @@ const ActiveStudentsChart = () => {
       .attr("stdDeviation", 3)
       .attr("flood-color", "#000")
       .attr("flood-opacity", 0.3);
+
 
 
     pack(root);
@@ -382,7 +394,7 @@ const ActiveStudentsChart = () => {
       .on("click", (_, d) => {
         setSelectedBubble(d.data); // 🟢 Store data for details panel
       });
-  }, [inactiveBubbleData, viewMode, groupedMode, dimensions, selectedYears, courseRange, selectedBubble]);
+  }, [inactiveBubbleData, viewMode, groupedMode, dimensions, selectedYears, selectedAdmissionTypes, courseRange, selectedBubble]);
 
 
 
@@ -394,8 +406,25 @@ const ActiveStudentsChart = () => {
       (b) =>
         selectedYears.includes(b.raw["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"]) &&
         b.r >= courseRange.start &&
-        b.r <= courseRange.end
+        b.r <= courseRange.end &&
+        selectedAdmissionTypes.includes(b.raw["ΤΡΟΠΟΣ ΕΙΣΑΓΩΓΗΣ"])
     );
+
+    d3.select(config.packedRef.current).selectAll("*").remove();
+    const svg = d3
+      .select(config.packedRef.current)
+      .append("svg")
+      .attr("viewBox", `0 0 ${dimensions.width} ${dimensions.height}`)
+      .attr("width", "100%")
+      .attr("height", dimensions.height);
+
+    svg.append("rect")
+      .attr("width", dimensions.width)
+      .attr("height", dimensions.height)
+      .attr("fill", "transparent")
+      .on("click", () => setSelectedBubble(null));
+
+    if (!filtered.length) return; // 🟢 Still shows empty chart container
 
     const grouped = d3.group(filtered, config.groupBy);
     const hierarchy = {
@@ -424,20 +453,6 @@ const ActiveStudentsChart = () => {
         child.y = group.y + dy * scale;
       });
     });
-
-    d3.select(config.packedRef.current).selectAll("*").remove();
-    const svg = d3
-      .select(config.packedRef.current)
-      .append("svg")
-      .attr("viewBox", `0 0 ${dimensions.width} ${dimensions.height}`)
-      .attr("width", "100%")
-      .attr("height", dimensions.height);
-
-    svg.append("rect")
-      .attr("width", dimensions.width)
-      .attr("height", dimensions.height)
-      .attr("fill", "transparent")
-      .on("click", () => setSelectedBubble(null));
 
     const tooltip = d3.select("#bubble-tooltip");
 
@@ -501,8 +516,6 @@ const ActiveStudentsChart = () => {
       .attr("font-weight", "bold")
       .attr("fill", "#444")
       .style("paint-order", "stroke")
-      // .style("stroke", "#fff")
-      // .style("stroke-width", "3px")
       .text(config.getLabel);
   };
 
@@ -511,7 +524,7 @@ const ActiveStudentsChart = () => {
     if (viewMode === "grouped") {
       renderGroupedBubbles(groupedMode);
     }
-  }, [viewMode, groupedMode, inactiveBubbleData, dimensions, selectedYears, courseRange, selectedBubble]);
+  }, [viewMode, groupedMode, inactiveBubbleData, dimensions, selectedYears, courseRange, selectedBubble, selectedAdmissionTypes]);
 
   return (
     <div className="mb-10">
@@ -587,6 +600,45 @@ const ActiveStudentsChart = () => {
                   }}
                 />
               )}
+
+<div className="mt-4">
+  <label className="text-sm text-gray-700 font-medium">Τρόπος εισαγωγής</label>
+  <div
+    className="flex flex-col mt-1 text-sm max-h-40 overflow-y-scroll pr-1 border border-gray-300 rounded"
+    style={{ scrollbarGutter: "stable" }}
+  >
+    <label className="flex items-center gap-2 px-2 py-1">
+      <input
+        type="checkbox"
+        checked={selectedAdmissionTypes.length === admissionTypes.length}
+        onChange={(e) => {
+          setSelectedAdmissionTypes(e.target.checked ? admissionTypes : []);
+        }}
+      />
+      Όλα
+    </label>
+
+    {admissionTypes.map((type) => (
+      <label key={type} className="flex items-center gap-2 px-2 py-1">
+        <input
+          type="checkbox"
+          checked={selectedAdmissionTypes.includes(type)}
+          onChange={(e) => {
+            if (e.target.checked) {
+              setSelectedAdmissionTypes((prev) => [...prev, type]);
+            } else {
+              setSelectedAdmissionTypes((prev) => prev.filter((t) => t !== type));
+            }
+          }}
+        />
+        {type}
+      </label>
+    ))}
+  </div>
+</div>
+
+
+
             </div>
 
           </div>
