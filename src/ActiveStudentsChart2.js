@@ -47,7 +47,6 @@ const ActiveStudentsChart = () => {
 
   const [rawData, setRawData] = useState([]);
   const [inactiveBubbleData, setInactiveBubbleData] = useState([]);
-  const [nestedStudentData, setNestedStudentData] = useState(null);
   const [selectedBubble, setSelectedBubble] = useState(null);
 
   const packedRef = useRef(null);
@@ -255,7 +254,6 @@ const ActiveStudentsChart = () => {
       console.log('bubbles', bubbles)
       setRawData(sheetData);
       setInactiveBubbleData(bubbles);
-      setNestedStudentData(nestedHierarchy);
 
       const years = [...new Set(bubbles.map(b => b.raw["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"]))].sort((a, b) => a - b);
       setAvailableYears(years);
