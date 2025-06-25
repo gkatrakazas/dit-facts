@@ -39,6 +39,51 @@ const getTooltipHtml = (d) => {
     .join("<br/>");
 };
 
+const CheckboxFilter = ({ title, options, selected, setSelected }) => {
+  const allSelected = selected.length === options.length;
+
+  const toggleAll = (checked) => {
+    setSelected(checked ? options : []);
+  };
+
+  const toggleOne = (option) => {
+    setSelected((prev) =>
+      prev.includes(option) ? prev.filter((o) => o !== option) : [...prev, option]
+    );
+  };
+
+  return (
+    <div className="mt-4">
+      <label className="block text-sm font-semibold text-gray-700 mb-1">
+        {title}
+      </label>
+      <div className="space-y-1 max-h-44 overflow-y-auto border border-gray-300 rounded-md text-sm bg-white">
+        <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 px-2 py-1 rounded">
+          <input
+            type="checkbox"
+            className="form-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded"
+            checked={allSelected}
+            onChange={(e) => toggleAll(e.target.checked)}
+          />
+          <span className="text-gray-800 font-medium">ΟΛΑ</span>
+        </label>
+        <div className="border-t border-gray-200 my-1" />
+        {options.map((option) => (
+          <label key={option} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 px-2 py-1 rounded">
+            <input
+              type="checkbox"
+              className="form-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded"
+              checked={selected.includes(option)}
+              onChange={() => toggleOne(option)}
+            />
+            <span className="text-gray-800">{option}</span>
+          </label>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 // Main Component
 const ActiveStudentsChart = () => {
   const { t } = useTranslation();
@@ -614,93 +659,19 @@ const ActiveStudentsChart = () => {
                 />
               )}
 
-              <div className="mt-4">
-                <label className="block text-sm font-semibold text-gray-700 mb-1">
-                  Τρόπος εισαγωγής
-                </label>
-                <div
-                  className="space-y-1 max-h-44 overflow-y-auto border border-gray-300 rounded-md text-sm bg-white"
-                  style={{ scrollbarGutter: "stable" }}
-                >
-                  <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 px-2 py-1 rounded">
-                    <input
-                      type="checkbox"
-                      className="form-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded"
-                      checked={selectedAdmissionTypes.length === admissionTypes.length}
-                      onChange={(e) => {
-                        setSelectedAdmissionTypes(e.target.checked ? admissionTypes : []);
-                      }}
-                    />
-                    <span className="text-gray-800 font-medium">ΟΛΑ</span>
-                  </label>
-                  <div className="border-t border-gray-200 my-1" />
+              <CheckboxFilter
+                title="Τρόπος εισαγωγής"
+                options={admissionTypes}
+                selected={selectedAdmissionTypes}
+                setSelected={setSelectedAdmissionTypes}
+              />
 
-                  {admissionTypes.map((type) => (
-                    <label
-                      key={type}
-                      className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 px-2 py-1 rounded"
-                    >
-                      <input
-                        type="checkbox"
-                        className="form-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded"
-                        checked={selectedAdmissionTypes.includes(type)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setSelectedAdmissionTypes((prev) => [...prev, type]);
-                          } else {
-                            setSelectedAdmissionTypes((prev) => prev.filter((t) => t !== type));
-                          }
-                        }}
-                      />
-                      <span className="text-gray-800">{type}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <div className="mt-4">
-                <label className="block text-sm font-semibold text-gray-700 mb-1">
-                  Κατάσταση
-                </label>
-                <div
-                  className="space-y-1 max-h-44 overflow-y-auto border border-gray-300 rounded-md text-sm bg-white"
-                  style={{ scrollbarGutter: "stable" }}
-                >
-                  <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 px-2 py-1 rounded">
-                    <input
-                      type="checkbox"
-                      className="form-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded"
-                      checked={selectedStatuses.length === statuses.length}
-                      onChange={(e) => {
-                        setSelectedStatuses(e.target.checked ? statuses : []);
-                      }}
-                    />
-                    <span className="text-gray-800 font-medium">ΟΛΑ</span>
-                  </label>
-                  <div className="border-t border-gray-200 my-1" />
-                  {statuses.map((status) => (
-                    <label
-                      key={status}
-                      className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 px-2 py-1 rounded"
-                    >
-                      <input
-                        type="checkbox"
-                        className="form-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded"
-                        checked={selectedStatuses.includes(status)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setSelectedStatuses((prev) => [...prev, status]);
-                          } else {
-                            setSelectedStatuses((prev) => prev.filter((s) => s !== status));
-                          }
-                        }}
-                      />
-                      <span className="text-gray-800">{status}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
+              <CheckboxFilter
+                title="Κατάσταση"
+                options={statuses}
+                selected={selectedStatuses}
+                setSelected={setSelectedStatuses}
+              />
             </div>
 
           </div>
