@@ -601,42 +601,49 @@ const ActiveStudentsChart = () => {
                 />
               )}
 
-<div className="mt-4">
-  <label className="text-sm text-gray-700 font-medium">Τρόπος εισαγωγής</label>
-  <div
-    className="flex flex-col mt-1 text-sm max-h-40 overflow-y-scroll pr-1 border border-gray-300 rounded"
-    style={{ scrollbarGutter: "stable" }}
-  >
-    <label className="flex items-center gap-2 px-2 py-1">
-      <input
-        type="checkbox"
-        checked={selectedAdmissionTypes.length === admissionTypes.length}
-        onChange={(e) => {
-          setSelectedAdmissionTypes(e.target.checked ? admissionTypes : []);
-        }}
-      />
-      Όλα
-    </label>
+              <div className="mt-4">
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  Τρόπος εισαγωγής
+                </label>
+                <div
+                  className="space-y-1 max-h-44 overflow-y-auto border border-gray-300 rounded-md text-sm bg-white"
+                  style={{ scrollbarGutter: "stable" }}
+                >
+                  <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 px-2 py-1 rounded">
+                    <input
+                      type="checkbox"
+                      className="form-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded"
+                      checked={selectedAdmissionTypes.length === admissionTypes.length}
+                      onChange={(e) => {
+                        setSelectedAdmissionTypes(e.target.checked ? admissionTypes : []);
+                      }}
+                    />
+                    <span className="text-gray-800 font-medium">ΟΛΑ</span>
+                  </label>
+                  <div className="border-t border-gray-200 my-1" />
 
-    {admissionTypes.map((type) => (
-      <label key={type} className="flex items-center gap-2 px-2 py-1">
-        <input
-          type="checkbox"
-          checked={selectedAdmissionTypes.includes(type)}
-          onChange={(e) => {
-            if (e.target.checked) {
-              setSelectedAdmissionTypes((prev) => [...prev, type]);
-            } else {
-              setSelectedAdmissionTypes((prev) => prev.filter((t) => t !== type));
-            }
-          }}
-        />
-        {type}
-      </label>
-    ))}
-  </div>
-</div>
-
+                  {admissionTypes.map((type) => (
+                    <label
+                      key={type}
+                      className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 px-2 py-1 rounded"
+                    >
+                      <input
+                        type="checkbox"
+                        className="form-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded"
+                        checked={selectedAdmissionTypes.includes(type)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedAdmissionTypes((prev) => [...prev, type]);
+                          } else {
+                            setSelectedAdmissionTypes((prev) => prev.filter((t) => t !== type));
+                          }
+                        }}
+                      />
+                      <span className="text-gray-800">{type}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
 
 
             </div>
