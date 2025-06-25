@@ -62,6 +62,8 @@ const ActiveStudentsChart = () => {
   const admissionPackedRef = useRef(null);
   const admissionContainerRef = useRef(null);
 
+  const statusPackedRef = useRef(null);
+  const statusContainerRef = useRef(null);
 
   //////////////////// about year filter
   const [availableYears, setAvailableYears] = useState([]);
@@ -110,6 +112,14 @@ const ActiveStudentsChart = () => {
       getLabel: (d) => d.data.admissionType,
       containerRef: admissionContainerRef, // Reuse category layout or make a new one
       packedRef: admissionPackedRef,
+    },
+    byStatus: {
+      label: "Ανά κατάσταση",
+      groupBy: (d) => d.raw["ΚΑΤΑΣΤΑΣΗ"],
+      labelKey: "status",
+      getLabel: (d) => d.data.status,
+      containerRef: statusContainerRef,
+      packedRef: statusPackedRef,
     },
   };
 
@@ -567,6 +577,7 @@ const ActiveStudentsChart = () => {
                   <option value="byYear">Ανά έτος εγγραφής</option>
                   <option value="byCategory">Ανά κατηγορία ανενεργών</option>
                   <option value="byAdmissionType">Ανά τρόπο εισαγωγής</option>
+                  <option value="byStatus">Ανά κατάσταση</option>
                 </select>
               )}
             </div>
@@ -746,6 +757,11 @@ const ActiveStudentsChart = () => {
               {viewMode === "grouped" && groupedMode === "byAdmissionType" && (
                 <div ref={admissionContainerRef} style={{ height: "90vh", width: "100%" }} className="relative">
                   <div ref={admissionPackedRef} className="absolute inset-0" />
+                </div>
+              )}
+              {viewMode === "grouped" && groupedMode === "byStatus" && (
+                <div ref={statusContainerRef} style={{ height: "90vh", width: "100%" }} className="relative">
+                  <div ref={statusPackedRef} className="absolute inset-0" />
                 </div>
               )}
             </div>
