@@ -510,7 +510,9 @@ const ActiveStudentsChart = () => {
     const hierarchy = {
       children: [...grouped.entries()].map(([key, items]) => ({
         [config.labelKey]: key,
-        children: items.map((s) => ({ ...s, value: 1 })),
+        children: [...items]
+          .sort((a, b) => new Date(a.lastAction) - new Date(b.lastAction))
+          .map((s) => ({ ...s, value: 1 })),
       })),
     };
 
