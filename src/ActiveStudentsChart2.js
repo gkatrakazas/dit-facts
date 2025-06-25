@@ -147,8 +147,9 @@ const ActiveStudentsChart = () => {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
   // Grouping Config
-  const groupedModeConfig = {
-    byYear: {
+  const groupOptions = [
+    {
+      key: "byYear",
       label: "Ανά έτος εγγραφής",
       groupBy: (d) => d.raw["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"],
       labelKey: "year",
@@ -156,7 +157,8 @@ const ActiveStudentsChart = () => {
       containerRef: yearContainerRef,
       packedRef: yearPackedRef,
     },
-    byCategory: {
+    {
+      key: "byCategory",
       label: "Ανά κατηγορία ανενεργών",
       groupBy: (d) => getInactivityCategory(d.size),
       labelKey: "category",
@@ -164,15 +166,17 @@ const ActiveStudentsChart = () => {
       containerRef: categoryContainerRef,
       packedRef: categoryPackedRef,
     },
-    byAdmissionType: {
+    {
+      key: "byAdmissionType",
       label: "Ανά τρόπο εισαγωγής",
       groupBy: (d) => d.raw["ΤΡΟΠΟΣ ΕΙΣΑΓΩΓΗΣ"],
       labelKey: "admissionType",
       getLabel: (d) => d.data.admissionType,
-      containerRef: admissionContainerRef, // Reuse category layout or make a new one
+      containerRef: admissionContainerRef,
       packedRef: admissionPackedRef,
     },
-    byStatus: {
+    {
+      key: "byStatus",
       label: "Ανά κατάσταση",
       groupBy: (d) => d.raw["ΚΑΤΑΣΤΑΣΗ"],
       labelKey: "status",
@@ -180,7 +184,9 @@ const ActiveStudentsChart = () => {
       containerRef: statusContainerRef,
       packedRef: statusPackedRef,
     },
-  };
+  ];
+
+  const groupedModeConfig = Object.fromEntries(groupOptions.map((opt) => [opt.key, opt]));
 
   useEffect(() => {
     console.log('availableYears', availableYears)
@@ -625,10 +631,11 @@ const ActiveStudentsChart = () => {
                   onChange={(e) => setGroupedMode(e.target.value)}
                   className="px-4 py-2 text-sm rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  <option value="byYear">Ανά έτος εγγραφής</option>
-                  <option value="byCategory">Ανά κατηγορία ανενεργών</option>
-                  <option value="byAdmissionType">Ανά τρόπο εισαγωγής</option>
-                  <option value="byStatus">Ανά κατάσταση</option>
+                  {groupOptions.map((opt) => (
+                    <option key={opt.key} value={opt.key}>
+                      {opt.label}
+                    </option>
+                  ))}
                 </select>
               )}
             </div>
