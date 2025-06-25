@@ -57,7 +57,7 @@ const CheckboxFilter = ({ title, options, selected, setSelected }) => {
 
   return (
     <div className="mt-4">
-      <label className="block text-sm font-semibold text-gray-700 mb-1">
+      <label className="block text-sm font-medium text-gray-700 mb-1">
         {title}
       </label>
       <div className="space-y-1 max-h-44 overflow-y-auto border border-gray-300 rounded-md text-sm bg-white">
@@ -703,7 +703,7 @@ const ActiveStudentsChart = () => {
           <div className="flex flex-row bg-white shadow shadow-lg rounded-lg mt-6 w-full">
             {/* Legend */}
             <div className="flex flex-wrap gap-4 items-baseline">
-              <div className="flex flex-col justify-center items-left gap-2 text-sm bg-white border-gray-300 border-[1px] shadow-sm m-4 px-2 py-3.5">
+              <div className="flex flex-col justify-center items-left gap-2 text-sm bg-white border-gray-300 border-[1px] shadow-sm m-4 px-2 py-2">
                 <span className="text-gray-600">Έτη Ανενεργός</span>
                 <div className="flex flex-col gap-2 mt-2 text-sm flex-wrap">
                   {inactivityLevels.map(({ label, color }) => (
