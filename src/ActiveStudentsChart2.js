@@ -62,6 +62,7 @@ const ActiveStudentsChart = () => {
   const admissionPackedRef = useRef(null);
   const admissionContainerRef = useRef(null);
 
+
   //////////////////// about year filter
   const [availableYears, setAvailableYears] = useState([]);
   const [selectedYears, setSelectedYears] = useState([]);
@@ -81,6 +82,9 @@ const ActiveStudentsChart = () => {
 
   const [admissionTypes, setAdmissionTypes] = useState([]);
   const [selectedAdmissionTypes, setSelectedAdmissionTypes] = useState([]);
+
+  const [statuses, setStatuses] = useState([]);
+  const [selectedStatuses, setSelectedStatuses] = useState([]);
 
   const groupedModeConfig = {
     byYear: {
@@ -256,6 +260,11 @@ const ActiveStudentsChart = () => {
       setAdmissionTypes(admissions);
       setSelectedAdmissionTypes(admissions); // default: all selected
 
+      const uniqueStatuses = [...new Set(bubbles.map(b => b.raw["ΚΑΤΑΣΤΑΣΗ"]).filter(Boolean))];
+      setStatuses(uniqueStatuses);
+      setSelectedStatuses(uniqueStatuses); // Default: all selected
+
+
       const courses = [...new Set(bubbles.map(b => b.r))].sort((a, b) => a - b);
       setAvailableCourses(courses);
 
@@ -274,7 +283,9 @@ const ActiveStudentsChart = () => {
       selectedYears.includes(b.raw["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"]) &&
       b.r >= courseRange.start &&
       b.r <= courseRange.end &&
-      selectedAdmissionTypes.includes(b.raw["ΤΡΟΠΟΣ ΕΙΣΑΓΩΓΗΣ"])
+      selectedAdmissionTypes.includes(b.raw["ΤΡΟΠΟΣ ΕΙΣΑΓΩΓΗΣ"]) &&
+      selectedStatuses.includes(b.raw["ΚΑΤΑΣΤΑΣΗ"])
+
     );
 
     if (viewMode !== "individual") return;
@@ -394,7 +405,7 @@ const ActiveStudentsChart = () => {
       .on("click", (_, d) => {
         setSelectedBubble(d.data); // 🟢 Store data for details panel
       });
-  }, [inactiveBubbleData, viewMode, groupedMode, dimensions, selectedYears, selectedAdmissionTypes, courseRange, selectedBubble]);
+  }, [inactiveBubbleData, viewMode, groupedMode, dimensions, selectedYears, selectedAdmissionTypes, courseRange, selectedBubble, selectedStatuses]);
 
 
 
@@ -407,7 +418,8 @@ const ActiveStudentsChart = () => {
         selectedYears.includes(b.raw["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"]) &&
         b.r >= courseRange.start &&
         b.r <= courseRange.end &&
-        selectedAdmissionTypes.includes(b.raw["ΤΡΟΠΟΣ ΕΙΣΑΓΩΓΗΣ"])
+        selectedAdmissionTypes.includes(b.raw["ΤΡΟΠΟΣ ΕΙΣΑΓΩΓΗΣ"]) &&
+        selectedStatuses.includes(b.raw["ΚΑΤΑΣΤΑΣΗ"])
     );
 
     d3.select(config.packedRef.current).selectAll("*").remove();
@@ -524,7 +536,7 @@ const ActiveStudentsChart = () => {
     if (viewMode === "grouped") {
       renderGroupedBubbles(groupedMode);
     }
-  }, [viewMode, groupedMode, inactiveBubbleData, dimensions, selectedYears, courseRange, selectedBubble, selectedAdmissionTypes]);
+  }, [viewMode, groupedMode, inactiveBubbleData, dimensions, selectedYears, courseRange, selectedBubble, selectedAdmissionTypes, selectedStatuses]);
 
   return (
     <div className="mb-10">
@@ -645,6 +657,48 @@ const ActiveStudentsChart = () => {
                 </div>
               </div>
 
+              <div className="mt-4">
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  Κατάσταση
+                </label>
+                <div
+                  className="space-y-1 max-h-44 overflow-y-auto border border-gray-300 rounded-md text-sm bg-white"
+                  style={{ scrollbarGutter: "stable" }}
+                >
+                  <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 px-2 py-1 rounded">
+                    <input
+                      type="checkbox"
+                      className="form-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded"
+                      checked={selectedStatuses.length === statuses.length}
+                      onChange={(e) => {
+                        setSelectedStatuses(e.target.checked ? statuses : []);
+                      }}
+                    />
+                    <span className="text-gray-800 font-medium">ΟΛΑ</span>
+                  </label>
+                  <div className="border-t border-gray-200 my-1" />
+                  {statuses.map((status) => (
+                    <label
+                      key={status}
+                      className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 px-2 py-1 rounded"
+                    >
+                      <input
+                        type="checkbox"
+                        className="form-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded"
+                        checked={selectedStatuses.includes(status)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedStatuses((prev) => [...prev, status]);
+                          } else {
+                            setSelectedStatuses((prev) => prev.filter((s) => s !== status));
+                          }
+                        }}
+                      />
+                      <span className="text-gray-800">{status}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
 
             </div>
 
