@@ -544,7 +544,20 @@ const ActiveStudentsChart = () => {
       .attr("cy", (d) => d.y)
       .attr("r", (d) => d.r + 3)
       .attr("fill", "#F9F9F9")
-      .attr("stroke", "#ccc");
+      .attr("stroke", "#ccc")
+      .on("mouseover", (event, d) => {
+        tooltip
+          .style("opacity", 1)
+          .html(`<b>${config.labelKey}:</b> ${config.getLabel(d)}<br/><b>Φοιτητές:</b> ${d.children?.length ?? 0}`);
+      })
+      .on("mousemove", (event) => {
+        tooltip
+          .style("left", `${event.clientX}px`)
+          .style("top", `${event.clientY}px`);
+      })
+      .on("mouseout", () => {
+        tooltip.style("opacity", 0);
+      });
 
     svg
       .selectAll("circle.student")
@@ -596,7 +609,21 @@ const ActiveStudentsChart = () => {
       .attr("font-weight", "bold")
       .attr("fill", "#444")
       .style("paint-order", "stroke")
-      .text(config.getLabel);
+      .text(config.getLabel)
+      .on("mouseover", (event, d) => {
+        tooltip
+          .style("opacity", 1)
+          .html(`<b>${config.label}</b> ${config.getLabel(d)}<br/><b>Φοιτητές:</b> ${d.children?.length ?? 0}`);
+      })
+      .on("mousemove", (event) => {
+        tooltip
+          .style("left", `${event.clientX}px`)
+          .style("top", `${event.clientY}px`);
+      })
+      .on("mouseout", () => {
+        tooltip.style("opacity", 0);
+      });
+
   };
 
   useEffect(() => {
