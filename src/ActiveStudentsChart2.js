@@ -5,22 +5,25 @@ import excelFile from "./data/di_stats.xlsx";
 import { useTranslation } from "react-i18next";
 import MultiRangeSlider from "./components/MultiRangeSlider";
 
+const inactivityLevels = [
+  { min: 20, color: "#8B0000", label: "> 20" },
+  { min: 10, color: "#FF4500", label: "10–20" },
+  { min: 5, color: "#FFA500", label: "5–10" },
+  { min: 2, color: "#FFD700", label: "2–5" },
+  { min: 0, color: "#32CD32", label: "< 2" },
+];
+
 // Utils
 const getColorByInactivity = (lastActionDate) => {
   const yearsInactive = (new Date() - new Date(lastActionDate)) / (1000 * 60 * 60 * 24 * 365.25);
-  if (yearsInactive > 20) return "#8B0000";
-  if (yearsInactive > 10) return "#FF4500";
-  if (yearsInactive > 5) return "#FFA500";
-  if (yearsInactive > 2) return "#FFD700";
-  return "#32CD32";
+
+  const level = inactivityLevels.find(lvl => yearsInactive > lvl.min);
+  return level?.color ?? "#525252";
 };
 
 const getInactivityCategory = (yearsInactive) => {
-  if (yearsInactive > 20) return ">20";
-  if (yearsInactive > 10) return "10–20";
-  if (yearsInactive > 5) return "5–10";
-  if (yearsInactive > 2) return "2–5";
-  return "<2";
+  const level = inactivityLevels.find((lvl) => yearsInactive > lvl.min);
+  return level?.label ?? "-";
 };
 
 const getTooltipHtml = (d) => {
@@ -84,6 +87,21 @@ const CheckboxFilter = ({ title, options, selected, setSelected }) => {
   );
 };
 
+function filterStudents({
+  data,
+  selectedYears,
+  courseRange,
+  selectedAdmissionTypes,
+  selectedStatuses
+}) {
+  return data.filter(b =>
+    selectedYears.includes(b.raw["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"]) &&
+    b.r >= courseRange.start &&
+    b.r <= courseRange.end &&
+    selectedAdmissionTypes.includes(b.raw["ΤΡΟΠΟΣ ΕΙΣΑΓΩΓΗΣ"]) &&
+    selectedStatuses.includes(b.raw["ΚΑΤΑΣΤΑΣΗ"])
+  );
+}
 // Main Component
 const ActiveStudentsChart = () => {
   const { t } = useTranslation();
@@ -327,14 +345,13 @@ const ActiveStudentsChart = () => {
   }, []);
 
   useEffect(() => {
-    const filteredData = inactiveBubbleData.filter(b =>
-      selectedYears.includes(b.raw["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"]) &&
-      b.r >= courseRange.start &&
-      b.r <= courseRange.end &&
-      selectedAdmissionTypes.includes(b.raw["ΤΡΟΠΟΣ ΕΙΣΑΓΩΓΗΣ"]) &&
-      selectedStatuses.includes(b.raw["ΚΑΤΑΣΤΑΣΗ"])
-
-    );
+    const filteredData = filterStudents({
+      data: inactiveBubbleData,
+      selectedYears,
+      courseRange,
+      selectedAdmissionTypes,
+      selectedStatuses
+    });
 
     if (viewMode !== "individual") return;
 
@@ -459,14 +476,13 @@ const ActiveStudentsChart = () => {
     const config = groupedModeConfig[configKey];
     if (!config || !inactiveBubbleData.length || !dimensions.width || !config.packedRef.current) return;
 
-    const filtered = inactiveBubbleData.filter(
-      (b) =>
-        selectedYears.includes(b.raw["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"]) &&
-        b.r >= courseRange.start &&
-        b.r <= courseRange.end &&
-        selectedAdmissionTypes.includes(b.raw["ΤΡΟΠΟΣ ΕΙΣΑΓΩΓΗΣ"]) &&
-        selectedStatuses.includes(b.raw["ΚΑΤΑΣΤΑΣΗ"])
-    );
+    const filtered = filterStudents({
+      data: inactiveBubbleData,
+      selectedYears,
+      courseRange,
+      selectedAdmissionTypes,
+      selectedStatuses
+    });
 
     d3.select(config.packedRef.current).selectAll("*").remove();
     const svg = d3
@@ -683,12 +699,14 @@ const ActiveStudentsChart = () => {
               <div className="flex flex-col justify-center items-left gap-2 text-sm bg-white border-gray-300 border-[1px] shadow-sm m-4 px-2 py-3.5">
                 <span className="text-gray-600">Έτη Ανενεργός</span>
                 <div className="flex flex-col gap-2 mt-2 text-sm flex-wrap">
-                  <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-full bg-[#8B0000]"></div> &gt; 20</div>
-                  <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-full bg-[#FF4500]"></div> 10–20</div>
-                  <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-full bg-[#FFA500]"></div> 5–10</div>
-                  <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-full bg-[#FFD700]"></div> 2–5</div>
-                  <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-full bg-[#32CD32]"></div> &lt; 2</div>
+                  {inactivityLevels.map(({ label, color }) => (
+                    <div key={label} className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded-full" style={{ backgroundColor: color }} />
+                      {label}
+                    </div>
+                  ))}
                 </div>
+
               </div>
             </div>
 
