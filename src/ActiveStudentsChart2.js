@@ -5,16 +5,15 @@ import excelFile from "./data/di_stats.xlsx";
 import { useTranslation } from "react-i18next";
 import MultiRangeSlider from "./components/MultiRangeSlider";
 
+// Utils
 const getColorByInactivity = (lastActionDate) => {
   const yearsInactive = (new Date() - new Date(lastActionDate)) / (1000 * 60 * 60 * 24 * 365.25);
-
   if (yearsInactive > 20) return "#8B0000";
   if (yearsInactive > 10) return "#FF4500";
   if (yearsInactive > 5) return "#FFA500";
   if (yearsInactive > 2) return "#FFD700";
   return "#32CD32";
 };
-
 
 const getInactivityCategory = (yearsInactive) => {
   if (yearsInactive > 20) return ">20";
@@ -40,19 +39,37 @@ const getTooltipHtml = (d) => {
     .join("<br/>");
 };
 
-
-
+// Main Component
 const ActiveStudentsChart = () => {
   const { t } = useTranslation();
 
+  // States
   const [rawData, setRawData] = useState([]);
   const [inactiveBubbleData, setInactiveBubbleData] = useState([]);
   const [selectedBubble, setSelectedBubble] = useState(null);
 
+  const [availableYears, setAvailableYears] = useState([]);
+  const [selectedYears, setSelectedYears] = useState([]);
+  const [range, setRange] = useState({ start: null, end: null });
+  const [minYear, setMinYear] = useState(null);
+  const [maxYear, setMaxYear] = useState(null);
+
+  const [courseRange, setCourseRange] = useState({ start: null, end: null });
+  const [availableCourses, setAvailableCourses] = useState([]);
+
+  const [admissionTypes, setAdmissionTypes] = useState([]);
+  const [selectedAdmissionTypes, setSelectedAdmissionTypes] = useState([]);
+  const [statuses, setStatuses] = useState([]);
+  const [selectedStatuses, setSelectedStatuses] = useState([]);
+
+  const [viewMode, setViewMode] = useState("individual");
+  const [groupedMode, setGroupedMode] = useState("byYear");
+
+  // Refs for D3 containers
   const packedRef = useRef(null);
-  const yearPackedRef = useRef(null);
   const containerRef = useRef(null);
-  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+
+  const yearPackedRef = useRef(null);
   const yearContainerRef = useRef(null);
 
   const categoryPackedRef = useRef(null);
@@ -64,29 +81,9 @@ const ActiveStudentsChart = () => {
   const statusPackedRef = useRef(null);
   const statusContainerRef = useRef(null);
 
-  //////////////////// about year filter
-  const [availableYears, setAvailableYears] = useState([]);
-  const [selectedYears, setSelectedYears] = useState([]);
-  const [range, setRange] = useState({ start: null, end: null });
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
-  const [minYear, setMinYear] = useState(null);
-  const [maxYear, setMaxYear] = useState(null);
-  ////////////////////
-
-  const [courseRange, setCourseRange] = useState({ start: null, end: null });
-  const [availableCourses, setAvailableCourses] = useState([]);
-
-
-  const [viewMode, setViewMode] = useState("individual"); // 'individual' or 'grouped'
-  const [groupedMode, setGroupedMode] = useState("byYear"); // only used when grouped
-
-
-  const [admissionTypes, setAdmissionTypes] = useState([]);
-  const [selectedAdmissionTypes, setSelectedAdmissionTypes] = useState([]);
-
-  const [statuses, setStatuses] = useState([]);
-  const [selectedStatuses, setSelectedStatuses] = useState([]);
-
+  // Grouping Config
   const groupedModeConfig = {
     byYear: {
       label: "Ανά έτος εγγραφής",
@@ -129,7 +126,6 @@ const ActiveStudentsChart = () => {
       setMaxYear(Math.max(...availableYears));
     }
   }, [availableYears])
-  // 
 
   useEffect(() => {
     const observeTarget =
