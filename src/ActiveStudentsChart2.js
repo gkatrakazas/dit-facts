@@ -168,7 +168,6 @@ const ActiveStudentsChart = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-
   useEffect(() => {
     setSelectedBubble(null);
   }, [selectedYears, courseRange]);
@@ -411,8 +410,6 @@ const ActiveStudentsChart = () => {
       });
   }, [inactiveBubbleData, viewMode, groupedMode, dimensions, selectedYears, selectedAdmissionTypes, courseRange, selectedBubble, selectedStatuses]);
 
-
-
   const renderGroupedBubbles = (configKey) => {
     const config = groupedModeConfig[configKey];
     if (!config || !inactiveBubbleData.length || !dimensions.width || !config.packedRef.current) return;
@@ -534,7 +531,6 @@ const ActiveStudentsChart = () => {
       .style("paint-order", "stroke")
       .text(config.getLabel);
   };
-
 
   useEffect(() => {
     if (viewMode === "grouped") {
