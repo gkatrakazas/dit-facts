@@ -767,7 +767,7 @@ const ActiveStudentsChart = () => {
 
         <div className="flex flex-row gap-6 w-full">
           {/* Sidebar: Display options */}
-          <div className="flex flex-col gap-4 mt-6 bg-white p-4 rounded shadow max-w-60">
+          <div className="flex flex-col gap-2 mt-6 bg-white p-4 rounded shadow w-60">
             <h2 className="text-md font-semibold">Επιλογή προβολής</h2>
             <div className="flex flex-col gap-2">
               {/* <label className="text-sm font-medium">Επιλογή προβολής</label> */}
@@ -797,45 +797,50 @@ const ActiveStudentsChart = () => {
 
 
             <div className="mt-4 ">
-              <h2 className="text-md font-semibold mb-2">Φίλτρα</h2>
+              <h2 className="text-md font-semibold">Φίλτρα</h2>
 
-              <label className="text-sm text-gray-700 font-medium">Έτος εγγραφής</label>
+              <div className="mt-4">
 
-              {minYear && maxYear && (
-                <MultiRangeSlider
-                  min={minYear}
-                  max={maxYear}
-                  value={{
-                    min: range.start,
-                    max: range.end,
-                  }}
-                  onChange={({ min, max }) => {
-                    setRange({
-                      start: min,
-                      end: max,
-                    });
-                  }}
-                />
-              )}
+                <label className="text-sm text-gray-700 font-medium">Έτος εγγραφής</label>
 
-              <label className="text-sm text-gray-700 font-medium mt-4">Πλήθος μαθημάτων</label>
+                {minYear && maxYear && (
+                  <MultiRangeSlider
+                    min={minYear}
+                    max={maxYear}
+                    value={{
+                      min: range.start,
+                      max: range.end,
+                    }}
+                    onChange={({ min, max }) => {
+                      setRange({
+                        start: min,
+                        end: max,
+                      });
+                    }}
+                  />
+                )}
+              </div>
 
-              {availableCourses.length > 0 && (
-                <MultiRangeSlider
-                  min={Math.min(...availableCourses)}
-                  max={Math.max(...availableCourses)}
-                  value={{
-                    min: courseRange.start,
-                    max: courseRange.end,
-                  }}
-                  onChange={({ min, max }) => {
-                    setCourseRange({
-                      start: min,
-                      end: max,
-                    });
-                  }}
-                />
-              )}
+              <div className="mt-4">
+                <label className="text-sm text-gray-700 font-medium mt-4">Πλήθος μαθημάτων</label>
+
+                {availableCourses.length > 0 && (
+                  <MultiRangeSlider
+                    min={Math.min(...availableCourses)}
+                    max={Math.max(...availableCourses)}
+                    value={{
+                      min: courseRange.start,
+                      max: courseRange.end,
+                    }}
+                    onChange={({ min, max }) => {
+                      setCourseRange({
+                        start: min,
+                        end: max,
+                      });
+                    }}
+                  />
+                )}
+              </div>
 
               <CheckboxFilter
                 title="Τρόπος εισαγωγής"
