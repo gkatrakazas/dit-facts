@@ -4,7 +4,8 @@ import * as XLSX from "xlsx";
 import excelFile from "./data/di_stats.xlsx";
 import { useTranslation } from "react-i18next";
 import MultiRangeSlider from "./components/MultiRangeSlider";
-
+import { usePagination } from "./hooks/usePagination";
+import PaginationControls from "./components/PaginationControls";
 
 export const admissionTypeDescriptions = {
   CIV: "Civis",
@@ -234,6 +235,20 @@ const ActiveStudentsChart = () => {
 
   // States
   const [rawData, setRawData] = useState([]);
+  const [showRawData, setShowRawData] = useState(false);
+
+  const {
+    currentPage,
+    totalPages,
+    currentData,
+    nextPage,
+    prevPage,
+    goToPage,
+    canGoNext,
+    canGoPrev,
+  } = usePagination(rawData, 100);
+
+
   const [inactiveBubbleData, setInactiveBubbleData] = useState([]);
   const [selectedBubble, setSelectedBubble] = useState(null);
 
@@ -923,7 +938,7 @@ const ActiveStudentsChart = () => {
                 Σύνολο Φοιτητών: {inactiveBubbleData.filter(b => selectedYears.includes(b.raw["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"])).length}
               </p>
             </div>
-            {(viewMode === "grouped" && groupedMode === "byYear") && (
+            {/* {(viewMode === "grouped" && groupedMode === "byYear") && (
               <div className="relative w-full p-2 text-sm bg-white shadow shadow-lg rounded-lg mt-2">
                 <div className="text-sm">
                   <p className="font-semibold mb-1">Φοιτητές ανά έτος:</p>
@@ -942,7 +957,7 @@ const ActiveStudentsChart = () => {
                   </div>
                 </div>
               </div>
-            )}
+            )} */}
 
             {/* Details panel */}
             {selectedBubble && (
@@ -974,7 +989,67 @@ const ActiveStudentsChart = () => {
           className="fixed text-xs bg-white border border-gray-300 text-gray-900 px-2 py-1 rounded shadow-lg z-50 opacity-0 pointer-events-none whitespace-pre-line"
         ></div>
       </div>
+
+      <div className="mx-5 mt-5">
+        <button
+          onClick={() => setShowRawData(!showRawData)}
+          className="flex items-center justify-between w-full px-4 py-3 text-sm font-medium text-white bg-[#36abcc] rounded transition hover:bg-[#2c9cb7]"
+        >
+          <span>{showRawData ? "Απόκρυψη δεδομένων" : "Εμφάνιση δεδομένων"}</span>
+          <svg
+            className={`w-5 h-5 transform transition-transform duration-300 ${showRawData ? "rotate-180" : "rotate-0"}`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+
+        <div
+          className={`transition-[max-height] duration-500 ease-in-out overflow-hidden ${showRawData ? "max-h-[1000px]" : "max-h-0"}`}
+        >
+          <div className="bg-white p-4 rounded-b shadow">
+            {/* Pagination Controls */}
+            <PaginationControls
+              currentPage={currentPage}
+              totalPages={totalPages}
+              goToPage={goToPage}
+              nextPage={nextPage}
+              prevPage={prevPage}
+              canGoNext={canGoNext}
+              canGoPrev={canGoPrev}
+            />
+
+            {/* Table */}
+            <div className="overflow-x-auto bg-gray-50 mt-4 border rounded max-h-[400px] overflow-y-auto text-sm">
+              <table className="min-w-full border text-xs text-left">
+                <thead className="bg-gray-100 sticky top-0 z-10">
+                  <tr>
+                    {(rawData.length > 0 ? Object.keys(rawData[0]) : []).map((key) => (
+                      <th key={key} className="px-2 py-1 border-b whitespace-nowrap">{key}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentData.map((row, i) => (
+                    <tr key={i} className="hover:bg-white border-t">
+                      {Object.keys(row).map((key, j) => (
+                        <td key={j} className="px-2 py-1 border-b whitespace-nowrap">
+                          {row[key] != null && row[key] !== "" ? String(row[key]) : "-"}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+
   );
 };
 
