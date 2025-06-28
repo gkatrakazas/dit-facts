@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import * as d3 from "d3";
 import * as XLSX from "xlsx";
 import excelFile from "./data/di_stats.xlsx";
@@ -237,6 +237,7 @@ const ActiveStudentsChart = () => {
   const [rawData, setRawData] = useState([]);
   const [showRawData, setShowRawData] = useState(false);
 
+  console.log('raw', rawData)
   const {
     currentPage,
     totalPages,
@@ -247,7 +248,6 @@ const ActiveStudentsChart = () => {
     canGoNext,
     canGoPrev,
   } = usePagination(rawData, 100);
-
 
   const [inactiveBubbleData, setInactiveBubbleData] = useState([]);
   const [selectedBubble, setSelectedBubble] = useState(null);
@@ -775,6 +775,15 @@ const ActiveStudentsChart = () => {
     }
   }, [viewMode, groupedMode, inactiveBubbleData, dimensions, selectedYears, courseRange, selectedBubble, selectedAdmissionTypes, selectedStatuses]);
 
+
+  const allKeys = useMemo(() => {
+    const keySet = new Set();
+    rawData.forEach((row) => {
+      Object.keys(row || {}).forEach((key) => keySet.add(key));
+    });
+    return Array.from(keySet);
+  }, [rawData]);
+
   return (
     <div className="mb-10">
       <div className="flex flex-col mx-5 mt-5">
@@ -1025,19 +1034,19 @@ const ActiveStudentsChart = () => {
             {/* Table */}
             <div className="overflow-x-auto bg-gray-50 mt-4 border rounded max-h-[400px] overflow-y-auto text-sm">
               <table className="min-w-full border text-xs text-left">
-                <thead className="bg-gray-100 sticky top-0 z-10">
+                <thead className="bg-white sticky top-0 z-10">
                   <tr>
-                    {(rawData.length > 0 ? Object.keys(rawData[0]) : []).map((key) => (
+                    {allKeys.map((key) => (
                       <th key={key} className="px-2 py-1 border-b whitespace-nowrap">{key}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {currentData.map((row, i) => (
-                    <tr key={i} className="hover:bg-white border-t">
-                      {Object.keys(row).map((key, j) => (
+                    <tr key={i} className="hover:bg-gray-100 border-t">
+                      {allKeys.map((key, j) => (
                         <td key={j} className="px-2 py-1 border-b whitespace-nowrap">
-                          {row[key] != null && row[key] !== "" ? String(row[key]) : "-"}
+                          {row && row[key] != null && row[key] !== "" ? String(row[key]) : "-"}
                         </td>
                       ))}
                     </tr>

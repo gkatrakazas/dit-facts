@@ -8,7 +8,7 @@ const Header = () => {
       <div className="flex items-center">
         <img src="/logo.png" alt="DI Visualization Logo" className="h-12 mr-4" />
         <h1 className="text-2xl font-bold text-gray-800">
-          <Link to="/">DI Visualizations</Link>
+          <Link to="/">DIT Visualizations</Link>
         </h1>
       </div>
       <LanguageSelector />

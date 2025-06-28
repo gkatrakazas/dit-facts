@@ -33,7 +33,7 @@ const PaginationControls = ({
   };
 
   return (
-    <div className="flex items-center justify-between mt-4 text-sm">
+    <div className="flex items-center justify-between text-sm">
       <button
         onClick={prevPage}
         disabled={!canGoPrev}
@@ -52,8 +52,8 @@ const PaginationControls = ({
               key={i}
               onClick={() => goToPage(page)}
               className={`px-2 py-1 border rounded ${page === currentPage
-                  ? "bg-blue-600 text-white"
-                  : "hover:bg-gray-100"
+                ? "bg-blue-600 text-white"
+                : "hover:bg-gray-100"
                 }`}
             >
               {page + 1}

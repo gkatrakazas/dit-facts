@@ -1,6 +1,6 @@
 {
   "homepage": {
-    "welcome": "Welcome to DI Visualizations! Explore interactive charts and insights. Click on a visualization to dive deeper.",
+    "welcome": "Welcome to DIT Visualizations! Explore interactive charts and insights. Click on a visualization to dive deeper.",
     "view_button": "View Visualization →",
     "visualizations": {
       "active_students": {
