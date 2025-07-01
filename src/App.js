@@ -17,7 +17,7 @@ const App = () => {
             <Route path="/" element={<HomePage />} />
             <Route path="/echel-performance" element={<EchelD3Visualization />} />
             <Route path="/active-students-chart" element={<ActiveStudentsChart />} />
-            <Route path="/active-students-chart2" element={<ActiveStudentsChart2 />} />
+            <Route path="/inactive_students" element={<ActiveStudentsChart2 />} />
           </Routes>
         </Layout>
       </Router>

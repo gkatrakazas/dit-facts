@@ -6,6 +6,10 @@
       "active_students": {
         "title": "Active Students Chart",
         "description": "A bar chart and tree map illustrating the number of active students with passed courses across over the years."
+      },
+      "inactive_students":{
+        "title": "Inactive Students by Status and Admission Year",
+        "description": "Visualization of students based on status, admission year, and admission type using filters and interactive bubble charts."
       }
     }
   },

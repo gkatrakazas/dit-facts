@@ -787,7 +787,7 @@ const ActiveStudentsChart = () => {
   return (
     <div className="mb-10">
       <div className="flex flex-col mx-5 mt-5">
-        <h2 className="text-xl font-semibold">Visualization of Student Inactivity and Enrollment Years</h2>
+        <h2 className="text-xl font-semibold">{t("homepage.visualizations.inactive_students.title")}</h2>
 
         <div className="flex flex-row gap-6 w-full">
           {/* Sidebar: Display options */}
