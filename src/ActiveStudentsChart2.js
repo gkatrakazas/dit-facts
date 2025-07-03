@@ -150,7 +150,7 @@ const getInactivityCategory = (yearsInactive) => {
 const getTooltipHtml = (d) => {
   const fieldsToShow = [
     { label: "Έτος τελευταίας ενέργειας", value: d.data.year },
-    { label: "Πλήθος μαθημάτων", value: d.data.r },
+    { label: "Πλήθος περασμένων μαθημάτων", value: d.data.r },
     { label: "Ημερομηνία τελευταίας ενέργειας", value: d.data.lastAction },
     { label: "Τρόπος εισαγωγής", value: d.data.raw?.["ΤΡΟΠΟΣ ΕΙΣΑΓΩΓΗΣ"] },
     { label: "Έτος εγγραφής", value: d.data.raw?.["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"] },
@@ -285,6 +285,9 @@ const ActiveStudentsChart = () => {
   const statusPackedRef = useRef(null);
   const statusContainerRef = useRef(null);
 
+  const durationContainerRef = useRef(null);
+  const durationPackedRef = useRef(null);
+
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
   // Grouping Config
@@ -325,6 +328,26 @@ const ActiveStudentsChart = () => {
       containerRef: statusContainerRef,
       packedRef: statusPackedRef,
     },
+    {
+      key: "byStudyDuration",
+      label: "Ανά διάρκεια φοίτησης",
+      groupBy: (d) => {
+        const enrollmentYear = d.raw?.["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"];
+        const maxDataYear = Math.max(...availableYears); // from state
+        const yearsStudied = maxDataYear - enrollmentYear;
+        const n = 4;
+
+        if (yearsStudied <= n) return `0 εώς και ν`;
+        if (yearsStudied === n + 1) return `ν εώς και ν+1`;
+        if (yearsStudied === n + 2) return `ν+1 εώς και ν+2`;
+        return `>ν+2`;
+      },
+      labelKey: "durationCategory",
+      getLabel: (d) => d.data.durationCategory,
+      containerRef: durationContainerRef,
+      packedRef: durationPackedRef,
+    }
+
   ];
 
   const groupedModeConfig = Object.fromEntries(groupOptions.map((opt) => [opt.key, opt]));
@@ -429,11 +452,16 @@ const ActiveStudentsChart = () => {
           const lastActionDate = new Date(`${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`);
           const yearsInactive = (today - lastActionDate) / (1000 * 60 * 60 * 24 * 365.25);
 
-          if (!str || !year || !month || !day || !lastActionDate) {
-            console.log('-->', str, year, month, day)
-            console.log('--> lastActionDate', lastActionDate)
-            console.log('-->', row)
-          }
+          const currentYear = today.getFullYear();
+          const enrollmentYear = row["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"];
+          const yearsStudied = currentYear - enrollmentYear;
+          const n = 4;
+
+          let durationCategory;
+          if (yearsStudied <= n) durationCategory = `0 έως και ${n}`;
+          else if (yearsStudied === n + 1) durationCategory = `${n + 1}`;
+          else if (yearsStudied === n + 2) durationCategory = `${n + 2}`;
+          else durationCategory = `${n + 3}+`;
 
           return {
             r: row["ΠΛΗΘΟΣ ΜΑΘΗΜΑΤΩΝ"] || 0,
@@ -441,6 +469,7 @@ const ActiveStudentsChart = () => {
             year,
             lastActionDate,
             lastAction: `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`,
+            durationCategory,
             raw: row
           };
         })
@@ -937,6 +966,11 @@ const ActiveStudentsChart = () => {
                   <div ref={statusPackedRef} className="absolute inset-0" />
                 </div>
               )}
+              {viewMode === "grouped" && groupedMode === "byStudyDuration" && (
+                <div ref={durationContainerRef} style={{ height: "90vh", width: "100%" }} className="relative">
+                  <div ref={durationPackedRef} className="absolute inset-0" />
+                </div>
+              )}
             </div>
           </div>
 
@@ -983,7 +1017,7 @@ const ActiveStudentsChart = () => {
                   <p><span className="font-semibold">Ημ/νία τελευταίας ενέργειας:</span> {selectedBubble.lastAction}</p>
                   <p><span className="font-semibold">Έτη ανενεργός:</span> {selectedBubble.size.toFixed(1)}</p>
                   <p><span className="font-semibold">Έτος εγγραφής:</span> {selectedBubble.raw?.["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"]}</p>
-                  <p><span className="font-semibold">Πλήθος μαθημάτων:</span> {selectedBubble.r}</p>
+                  <p><span className="font-semibold">Πλήθος περασμένων μαθημάτων:</span> {selectedBubble.r}</p>
                   <p><span className="font-semibold">Κατάσταση:</span> {selectedBubble.raw?.["ΚΑΤΑΣΤΑΣΗ"]}</p>
                   <p><span className="font-semibold">Τρόπος εισαγωγής:</span> {selectedBubble.raw?.["ΤΡΟΠΟΣ ΕΙΣΑΓΩΓΗΣ"]}</p>
                 </div>
