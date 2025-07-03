@@ -185,7 +185,7 @@ const CheckboxFilter = ({ title, options, selected, setSelected, descriptions = 
         <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 px-2 py-1 rounded">
           <input
             type="checkbox"
-            className="form-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded"
+            className="form-checkbox h-4 w-4 text-primary border-gray-300 rounded"
             checked={allSelected}
             onChange={(e) => toggleAll(e.target.checked)}
           />
@@ -196,7 +196,7 @@ const CheckboxFilter = ({ title, options, selected, setSelected, descriptions = 
           <label key={option} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 px-2 py-1 rounded">
             <input
               type="checkbox"
-              className="form-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded"
+              className="form-checkbox h-4 w-4 text-primary border-gray-300 rounded"
               checked={selected.includes(option)}
               onChange={() => toggleOne(option)}
             />
@@ -822,22 +822,37 @@ const ActiveStudentsChart = () => {
           {/* Sidebar: Display options */}
           <div className="flex flex-col gap-2 mt-6 bg-white p-4 rounded shadow w-60">
             <h2 className="text-md font-semibold">Επιλογή προβολής</h2>
-            <div className="flex flex-col gap-2">
-              {/* <label className="text-sm font-medium">Επιλογή προβολής</label> */}
-              <select
-                value={viewMode}
-                onChange={(e) => setViewMode(e.target.value)}
-                className="px-4 py-2 text-sm rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="individual">Όλοι οι φοιτητές</option>
-                <option value="grouped">Ομαδοποιημένα</option>
-              </select>
 
+            <div className="flex flex-col gap-2 text-sm">
+              <div className="flex border border-gray-300 rounded overflow-hidden">
+                {[
+                  { value: "individual", label: "Ατομικά" },
+                  { value: "grouped", label: "Ομαδοποιημένα" }
+                ].map((option) => (
+                  <label
+                    key={option.value}
+                    className={`w-full text-center px-3 py-2 cursor-pointer transition-all duration-200
+          ${viewMode === option.value
+                        ? "bg-primary text-white"
+                        : "bg-white text-gray-700 hover:bg-gray-100"}`}
+                  >
+                    <input
+                      type="radio"
+                      name="viewMode"
+                      value={option.value}
+                      checked={viewMode === option.value}
+                      onChange={() => setViewMode(option.value)}
+                      className="hidden"
+                    />
+                    {option.label}
+                  </label>
+                ))}
+              </div>
               {viewMode === "grouped" && (
                 <select
                   value={groupedMode}
                   onChange={(e) => setGroupedMode(e.target.value)}
-                  className="px-4 py-2 text-sm rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="px-4 py-2 text-sm w-full rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
                 >
                   {groupOptions.map((opt) => (
                     <option key={opt.key} value={opt.key}>
@@ -847,8 +862,6 @@ const ActiveStudentsChart = () => {
                 </select>
               )}
             </div>
-
-
             <div className="mt-4 ">
               <h2 className="text-md font-semibold">Φίλτρα</h2>
 
@@ -914,7 +927,6 @@ const ActiveStudentsChart = () => {
             </div>
 
           </div>
-
           {/* Main content (bubble chart and legend) */}
           <div className="flex flex-row bg-white shadow shadow-lg rounded-lg mt-6 w-full">
             {/* Legend */}
