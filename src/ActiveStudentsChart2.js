@@ -949,9 +949,9 @@ const ActiveStudentsChart = () => {
           <div className="flex flex-row bg-white shadow shadow-lg rounded-lg mt-6 w-full">
             {/* Legend */}
             <div className="flex flex-wrap gap-4 items-baseline">
-              <div className="flex flex-col justify-center items-left gap-2 text-sm bg-white border-gray-300 border-[1px] shadow-sm m-4 px-2 py-2">
+              <div className="flex flex-col justify-center items-left gap-2 text-sm bg-white border-gray-300 border-[1px] shadow-sm m-2 px-2 py-2">
                 <span className="text-gray-600">Έτη ανενεργός/ή</span>
-                <div className="flex flex-col gap-2 mt-2 text-sm flex-wrap">
+                <div className="flex flex-col gap-2 mt-2 flex-wrap">
                   {inactivityLevels.map(({ label, color }) => (
                     <div key={label} className="flex items-center gap-2">
                       <div className="w-4 h-4 rounded-full" style={{ backgroundColor: color }} />
