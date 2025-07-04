@@ -1007,9 +1007,25 @@ const ActiveStudentsChart = () => {
 
           <div className="max-w-[20%] mt-6 w-full">
             <div className="p-2 relative w-full bg-white shadow shadow-lg rounded-lg w-full">
-              <p className="text-sm font-medium">
-                Σύνολο Φοιτητών/τριών: {inactiveBubbleData.filter(b => selectedYears.includes(b.raw["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"])).length}
+              <p className="text-lg font-medium">
+                {inactiveBubbleData.filter(b => selectedYears.includes(b.raw["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"])).length} Φοιτητές/ριες
               </p>
+              <p className="text-xs text-gray-600 mt-1 leading-relaxed whitespace-pre-line">
+                Με έτος εγγραφής
+                {range.start !== range.end
+                  ? ` ${range.start}–${range.end}`
+                  : ` ${range.start}`}
+                , πλήθος περασμένων μαθημάτων {courseRange.start}–{courseRange.end}
+
+                , κατάσταση {selectedStatuses.length > 0
+                  ? selectedStatuses.map(s => s).join(", ")
+                  : "Καμία"}
+                {` `}
+                και τρόπους εισαγωγής {selectedAdmissionTypes.length > 0
+                  ? selectedAdmissionTypes.map(a => a).join(", ")
+                  : "Καμία"}
+              </p>
+
             </div>
             {/* {(viewMode === "grouped" && groupedMode === "byYear") && (
               <div className="relative w-full p-2 text-sm bg-white shadow shadow-lg rounded-lg mt-2">
