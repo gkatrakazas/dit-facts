@@ -1027,26 +1027,6 @@ const ActiveStudentsChart = () => {
               </p>
 
             </div>
-            {/* {(viewMode === "grouped" && groupedMode === "byYear") && (
-              <div className="relative w-full p-2 text-sm bg-white shadow shadow-lg rounded-lg mt-2">
-                <div className="text-sm">
-                  <p className="font-semibold mb-1">Φοιτητές ανά έτος:</p>
-                  <div className="max-h-40 overflow-y-auto pr-1">
-                    <ul className="space-y-1">
-                      {selectedYears.map(year => {
-                        const count = inactiveBubbleData.filter(b => b.raw["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"] === year).length;
-                        return (
-                          <li key={year} className="flex justify-between border-b border-gray-100 pb-1 mr-2">
-                            <span className="text-gray-700">{year}: </span>
-                            <span className="text-gray-900 font-semibold">{count}</span>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            )} */}
 
             {/* Details panel */}
             {selectedBubble && (
