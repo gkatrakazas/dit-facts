@@ -155,7 +155,7 @@ const getTooltipHtml = (d) => {
     { label: "Τρόπος εισαγωγής", value: d.data.raw?.["ΤΡΟΠΟΣ ΕΙΣΑΓΩΓΗΣ"] },
     { label: "Έτος εγγραφής", value: d.data.raw?.["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"] },
     { label: "Κατάσταση", value: d.data.raw?.["ΚΑΤΑΣΤΑΣΗ"] },
-    { label: "Έτη ανενεργός", value: d.data.size.toFixed(1) },
+    { label: "Έτη ανενεργός/ή", value: d.data.size.toFixed(1) },
   ];
 
   return fieldsToShow
@@ -720,7 +720,7 @@ const ActiveStudentsChart = () => {
       .on("mouseover", (event, d) => {
         tooltip
           .style("opacity", 1)
-          .html(`<b>${config.labelKey}:</b> ${config.getLabel(d)}<br/><b>Φοιτητές:</b> ${d.children?.length ?? 0}`);
+          .html(`<b>${config.labelKey}:</b> ${config.getLabel(d)}<br/><b>Φοιτητές/τριες:</b> ${d.children?.length ?? 0}`);
       })
       .on("mousemove", (event) => {
         tooltip
@@ -785,7 +785,7 @@ const ActiveStudentsChart = () => {
       .on("mouseover", (event, d) => {
         tooltip
           .style("opacity", 1)
-          .html(`<b>${config.label}</b> ${config.getLabel(d)}<br/><b>Φοιτητές:</b> ${d.children?.length ?? 0}`);
+          .html(`<b>${config.label}</b> ${config.getLabel(d)}<br/><b>Φοιτητές/τριες:</b> ${d.children?.length ?? 0}`);
       })
       .on("mousemove", (event) => {
         tooltip
@@ -932,7 +932,7 @@ const ActiveStudentsChart = () => {
             {/* Legend */}
             <div className="flex flex-wrap gap-4 items-baseline">
               <div className="flex flex-col justify-center items-left gap-2 text-sm bg-white border-gray-300 border-[1px] shadow-sm m-4 px-2 py-2">
-                <span className="text-gray-600">Έτη Ανενεργός</span>
+                <span className="text-gray-600">Έτη ανενεργός/ή</span>
                 <div className="flex flex-col gap-2 mt-2 text-sm flex-wrap">
                   {inactivityLevels.map(({ label, color }) => (
                     <div key={label} className="flex items-center gap-2">
@@ -990,7 +990,7 @@ const ActiveStudentsChart = () => {
           <div className="max-w-[20%] mt-6 w-full">
             <div className="p-2 relative w-full bg-white shadow shadow-lg rounded-lg w-full">
               <p className="text-sm font-medium">
-                Σύνολο Φοιτητών: {inactiveBubbleData.filter(b => selectedYears.includes(b.raw["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"])).length}
+                Σύνολο Φοιτητών/τριών: {inactiveBubbleData.filter(b => selectedYears.includes(b.raw["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"])).length}
               </p>
             </div>
             {/* {(viewMode === "grouped" && groupedMode === "byYear") && (
@@ -1024,10 +1024,10 @@ const ActiveStudentsChart = () => {
                 >
                   &times;
                 </button>
-                <p className="mb-2"><b>Επιλεγμένος φοιτητής</b></p>
+                <p className="mb-2"><b>Επιλεγμένος/η φοιτητής/τρια</b></p>
                 <div className="text-sm space-y-1">
                   <p><span className="font-semibold">Ημ/νία τελευταίας ενέργειας:</span> {selectedBubble.lastAction}</p>
-                  <p><span className="font-semibold">Έτη ανενεργός:</span> {selectedBubble.size.toFixed(1)}</p>
+                  <p><span className="font-semibold">Έτη ανενεργός/ή:</span> {selectedBubble.size.toFixed(1)}</p>
                   <p><span className="font-semibold">Έτος εγγραφής:</span> {selectedBubble.raw?.["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"]}</p>
                   <p><span className="font-semibold">Πλήθος περασμένων μαθημάτων:</span> {selectedBubble.r}</p>
                   <p><span className="font-semibold">Κατάσταση:</span> {selectedBubble.raw?.["ΚΑΤΑΣΤΑΣΗ"]}</p>
