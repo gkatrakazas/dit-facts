@@ -185,7 +185,16 @@ const CheckboxFilter = ({ title, options, selected, setSelected, descriptions = 
         <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 px-2 py-1 rounded">
           <input
             type="checkbox"
-            className="form-checkbox h-4 w-4 text-primary border-gray-300 rounded"
+            className="appearance-none h-4 w-4 shrink-0 rounded bg-white border border-gray-300
+            checked:bg-[#36abcc] checked:border-[#36abcc]
+            flex items-center justify-center
+            focus:outline-none"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 20 20' fill='white' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M16.704 5.29a1 1 0 010 1.42l-7.292 7.292a1 1 0 01-1.42 0L3.296 9.29a1 1 0 011.408-1.42L8 11.172l6.296-6.296a1 1 0 011.408 0z'/%3E%3C/svg%3E")`,
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
+              backgroundSize: '1rem'
+            }}
             checked={allSelected}
             onChange={(e) => toggleAll(e.target.checked)}
           />
@@ -196,7 +205,16 @@ const CheckboxFilter = ({ title, options, selected, setSelected, descriptions = 
           <label key={option} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 px-2 py-1 rounded">
             <input
               type="checkbox"
-              className="form-checkbox h-4 w-4 text-primary border-gray-300 rounded"
+              className="appearance-none h-4 w-4 shrink-0 rounded bg-white border border-gray-300
+              checked:bg-[#36abcc] checked:border-[#36abcc]
+              flex items-center justify-center
+              focus:outline-none"
+              style={{
+                backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 20 20' fill='white' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M16.704 5.29a1 1 0 010 1.42l-7.292 7.292a1 1 0 01-1.42 0L3.296 9.29a1 1 0 011.408-1.42L8 11.172l6.296-6.296a1 1 0 011.408 0z'/%3E%3C/svg%3E")`,
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+                backgroundSize: '1rem'
+              }}
               checked={selected.includes(option)}
               onChange={() => toggleOne(option)}
             />
@@ -833,7 +851,7 @@ const ActiveStudentsChart = () => {
                     key={option.value}
                     className={`w-full text-center px-3 py-2 cursor-pointer transition-all duration-200
           ${viewMode === option.value
-                        ? "bg-primary text-white"
+                        ? "bg-secondary text-white"
                         : "bg-white text-gray-700 hover:bg-gray-100"}`}
                   >
                     <input
@@ -852,7 +870,7 @@ const ActiveStudentsChart = () => {
                 <select
                   value={groupedMode}
                   onChange={(e) => setGroupedMode(e.target.value)}
-                  className="px-2 py-2 bg-primary text-white text-sm w-full rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="px-2 py-2 bg-secondary text-white text-sm w-full rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-secondary"
                 >
                   {groupOptions.map((opt) => (
                     <option key={opt.key} value={opt.key}>
