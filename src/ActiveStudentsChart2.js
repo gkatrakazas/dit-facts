@@ -154,7 +154,7 @@ const getTooltipHtml = (d) => {
     { label: "Ημερομηνία τελευταίας ενέργειας", value: d.data.lastAction },
     { label: "Τρόπος εισαγωγής", value: d.data.raw?.["ΤΡΟΠΟΣ ΕΙΣΑΓΩΓΗΣ"] },
     { label: "Έτος εγγραφής", value: d.data.raw?.["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"] },
-    { label: "Κατάσταση", value: d.data.raw?.["ΚΑΤΑΣΤΑΣΗ"] },
+    { label: "Κατάσταση φοίτησης", value: d.data.raw?.["ΚΑΤΑΣΤΑΣΗ"] },
     { label: "Έτη ανενεργός/ή", value: d.data.size.toFixed(1) },
   ];
 
@@ -339,7 +339,7 @@ const ActiveStudentsChart = () => {
     },
     {
       key: "byStatus",
-      label: "Ανά κατάσταση",
+      label: "Ανά κατάσταση φοίτησης",
       groupBy: (d) => d.raw["ΚΑΤΑΣΤΑΣΗ"],
       labelKey: "status",
       getLabel: (d) => d.data.status,
@@ -936,7 +936,7 @@ const ActiveStudentsChart = () => {
               />
 
               <CheckboxFilter
-                title="Κατάσταση"
+                title="Κατάσταση φοίτησης"
                 options={statuses}
                 selected={selectedStatuses}
                 setSelected={setSelectedStatuses}
@@ -975,30 +975,43 @@ const ActiveStudentsChart = () => {
 
               {(viewMode === "grouped" && groupedMode === "byYear") && (
                 <div>
+                  <h3 className="text-lg font-medium">Ομαδοποίηση ανά έτος εγγραφής</h3>
                   <div ref={yearContainerRef} style={{ height: "90vh", width: "100%" }} className="relative">
                     <div ref={yearPackedRef} className="absolute inset-0"></div>
                   </div>
                 </div>
               )}
               {(viewMode === "grouped" && groupedMode === "byCategory") && (
-                <div ref={categoryContainerRef} style={{ height: "90vh", width: "100%" }} className="relative">
-                  <div ref={categoryPackedRef} className="absolute inset-0" />
+                <div>
+                  <h3 className="text-lg font-medium">Ομαδοποίηση ανά κατηγορία ανενεργών</h3>
+                  <div ref={categoryContainerRef} style={{ height: "90vh", width: "100%" }} className="relative">
+                    <div ref={categoryPackedRef} className="absolute inset-0" />
+                  </div>
                 </div>
               )}
 
               {viewMode === "grouped" && groupedMode === "byAdmissionType" && (
-                <div ref={admissionContainerRef} style={{ height: "90vh", width: "100%" }} className="relative">
-                  <div ref={admissionPackedRef} className="absolute inset-0" />
+                <div>
+                  <h3 className="text-lg font-medium">Ομαδοποίηση ανά τρόπο εισαγωγής</h3>
+                  <div ref={admissionContainerRef} style={{ height: "90vh", width: "100%" }} className="relative">
+                    <div ref={admissionPackedRef} className="absolute inset-0" />
+                  </div>
                 </div>
               )}
               {viewMode === "grouped" && groupedMode === "byStatus" && (
-                <div ref={statusContainerRef} style={{ height: "90vh", width: "100%" }} className="relative">
-                  <div ref={statusPackedRef} className="absolute inset-0" />
+                <div>
+                  <h3 className="text-lg font-medium">Ομαδοποίηση ανά κατάσταση φοίτησης</h3>
+                  <div ref={statusContainerRef} style={{ height: "90vh", width: "100%" }} className="relative">
+                    <div ref={statusPackedRef} className="absolute inset-0" />
+                  </div>
                 </div>
               )}
               {viewMode === "grouped" && groupedMode === "byStudyDuration" && (
-                <div ref={durationContainerRef} style={{ height: "90vh", width: "100%" }} className="relative">
-                  <div ref={durationPackedRef} className="absolute inset-0" />
+                <div>
+                  <h3 className="text-lg font-medium">	Ομαδοποίηση ανά διάρκεια φοίτησης</h3>
+                  <div ref={durationContainerRef} style={{ height: "90vh", width: "100%" }} className="relative">
+                    <div ref={durationPackedRef} className="absolute inset-0" />
+                  </div>
                 </div>
               )}
             </div>
@@ -1017,7 +1030,7 @@ const ActiveStudentsChart = () => {
                   : ` ${range.start}`}
                 , πλήθος περασμένων μαθημάτων {courseRange.start}–{courseRange.end}
 
-                , κατάσταση {selectedStatuses.length > 0
+                , κατάσταση φοίτησης {selectedStatuses.length > 0
                   ? selectedStatuses.map(s => s).join(", ")
                   : "Καμία"}
                 {` `}
@@ -1044,7 +1057,7 @@ const ActiveStudentsChart = () => {
                   <p><span className="font-semibold">Έτη ανενεργός/ή:</span> {selectedBubble.size.toFixed(1)}</p>
                   <p><span className="font-semibold">Έτος εγγραφής:</span> {selectedBubble.raw?.["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"]}</p>
                   <p><span className="font-semibold">Πλήθος περασμένων μαθημάτων:</span> {selectedBubble.r}</p>
-                  <p><span className="font-semibold">Κατάσταση:</span> {selectedBubble.raw?.["ΚΑΤΑΣΤΑΣΗ"]}</p>
+                  <p><span className="font-semibold">Κατάσταση φοίτησης:</span> {selectedBubble.raw?.["ΚΑΤΑΣΤΑΣΗ"]}</p>
                   <p><span className="font-semibold">Τρόπος εισαγωγής:</span> {selectedBubble.raw?.["ΤΡΟΠΟΣ ΕΙΣΑΓΩΓΗΣ"]}</p>
                 </div>
               </div>
