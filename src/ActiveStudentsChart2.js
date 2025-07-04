@@ -820,10 +820,10 @@ const ActiveStudentsChart = () => {
 
         <div className="flex flex-row gap-6 w-full">
           {/* Sidebar: Display options */}
-          <div className="flex flex-col gap-2 mt-6 bg-white p-4 rounded shadow w-60">
-            <h2 className="text-md font-semibold">Επιλογή προβολής</h2>
-
+          <div className="flex flex-col gap-5 mt-6 bg-white p-4 rounded shadow w-60">
             <div className="flex flex-col gap-2 text-sm">
+              <h2 className="text-md font-semibold text-md">Επιλογή προβολής</h2>
+
               <div className="flex border border-gray-300 rounded overflow-hidden">
                 {[
                   { value: "individual", label: "Ατομικά" },
@@ -852,7 +852,7 @@ const ActiveStudentsChart = () => {
                 <select
                   value={groupedMode}
                   onChange={(e) => setGroupedMode(e.target.value)}
-                  className="px-4 py-2 text-sm w-full rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="px-2 py-2 bg-primary text-white text-sm w-full rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
                 >
                   {groupOptions.map((opt) => (
                     <option key={opt.key} value={opt.key}>
@@ -862,10 +862,10 @@ const ActiveStudentsChart = () => {
                 </select>
               )}
             </div>
-            <div className="mt-4 ">
+            <div className="flex flex-col gap-2 text-sm">
               <h2 className="text-md font-semibold">Φίλτρα</h2>
 
-              <div className="mt-4">
+              <div className="">
 
                 <label className="text-sm text-gray-700 font-medium">Έτος εγγραφής</label>
 
@@ -888,7 +888,7 @@ const ActiveStudentsChart = () => {
               </div>
 
               <div className="mt-4">
-                <label className="text-sm text-gray-700 font-medium mt-4">Πλήθος μαθημάτων</label>
+                <label className="text-sm text-gray-700 font-medium mt-4">Πλήθος περασμένων μαθημάτων</label>
 
                 {availableCourses.length > 0 && (
                   <MultiRangeSlider
