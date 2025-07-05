@@ -279,7 +279,8 @@ const ActiveStudentsChart = () => {
   const [rawData, setRawData] = useState([]);
   const [showRawData, setShowRawData] = useState(false);
 
-  console.log('raw', rawData)
+  const [showFullDetails, setShowFullDetails] = useState(false);
+
   const {
     currentPage,
     totalPages,
@@ -391,6 +392,10 @@ const ActiveStudentsChart = () => {
     }
 
   ];
+
+  const displayedAdmissions = selectedAdmissionTypes.length > 5 && !showFullDetails
+    ? `${selectedAdmissionTypes.slice(0, 5).join(", ")}... και άλλοι ${selectedAdmissionTypes.length - 5}`
+    : selectedAdmissionTypes.join(", ");
 
   const groupedModeConfig = Object.fromEntries(groupOptions.map((opt) => [opt.key, opt]));
 
@@ -956,21 +961,21 @@ const ActiveStudentsChart = () => {
               </div>
 
               <CheckboxFilter
-                title="Τρόπος εισαγωγής"
-                options={admissionTypes}
-                selected={selectedAdmissionTypes}
-                setSelected={setSelectedAdmissionTypes}
-                descriptions={admissionTypeDescriptions}
-
-              />
-
-              <CheckboxFilter
                 title="Κατάσταση φοίτησης"
                 options={statuses}
                 selected={selectedStatuses}
                 setSelected={setSelectedStatuses}
                 descriptions={statusDescriptions}
               />
+
+              <CheckboxFilter
+                title="Τρόπος εισαγωγής"
+                options={admissionTypes}
+                selected={selectedAdmissionTypes}
+                setSelected={setSelectedAdmissionTypes}
+                descriptions={admissionTypeDescriptions}
+              />
+
             </div>
 
           </div>
@@ -1054,20 +1059,20 @@ const ActiveStudentsChart = () => {
               </p>
               <p className="text-xs text-gray-600 mt-1 leading-relaxed whitespace-pre-line">
                 Με έτος εγγραφής
-                {range.start !== range.end
-                  ? ` ${range.start}–${range.end}`
-                  : ` ${range.start}`}
-                , περασμένα μαθημάτα {courseRange.start}–{courseRange.end}
-
-                , κατάσταση φοίτησης {selectedStatuses.length > 0
-                  ? selectedStatuses.map(s => s).join(", ")
-                  : "Καμία"}
-                {` `}
-                και τρόπους εισαγωγής {selectedAdmissionTypes.length > 0
-                  ? selectedAdmissionTypes.map(a => a).join(", ")
-                  : "Καμία"}
+                {range.start !== range.end ? ` ${range.start}–${range.end}` : ` ${range.start}`}
+                , περασμένα μαθήματα {courseRange.start}–{courseRange.end}
+                , κατάσταση φοίτησης {selectedStatuses.length > 0 ? selectedStatuses.join(", ") : "Καμία"}
+                {' '} και τρόπους εισαγωγής {selectedAdmissionTypes.length > 0 ? displayedAdmissions : "Κανένα"}
               </p>
 
+              {selectedAdmissionTypes.length > 5 && (
+                <button
+                  onClick={() => setShowFullDetails(!showFullDetails)}
+                  className="text-xs text-blue-600 hover:underline mt-1"
+                >
+                  {showFullDetails ? "Προβολή συνοπτικά" : "Προβολή αναλυτικά"}
+                </button>
+              )}
             </div>
 
             {/* Details panel */}
