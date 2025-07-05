@@ -1054,8 +1054,14 @@ const ActiveStudentsChart = () => {
                 >
                   &times;
                 </button>
-                <p className="mb-2"><b>Επιλεγμένος/η φοιτητής/τρια</b></p>
-                <div className="text-sm space-y-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <div
+                    className="w-4 h-4 rounded-full border border-gray-300"
+                    style={{ backgroundColor: getColorByInactivity(selectedBubble.lastAction) }}
+                  />
+                  <b>Επιλεγμένος/η φοιτητής/τρια</b>
+                </div>
+                <div className="text-xs space-y-1">
                   <p><span className="font-semibold">Ημ/νία τελευταίας ενέργειας:</span> {selectedBubble.lastAction}</p>
                   <p><span className="font-semibold">Έτη ανενεργός/ή:</span> {selectedBubble.size.toFixed(1)}</p>
                   <p><span className="font-semibold">Έτος εγγραφής:</span> {selectedBubble.raw?.["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"]}</p>
