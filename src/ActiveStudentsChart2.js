@@ -177,7 +177,7 @@ const CheckboxFilter = ({ title, options, selected, setSelected, descriptions = 
   };
 
   return (
-    <div className="mt-4">
+    <div>
       <label className="block text-sm font-medium text-gray-700 mb-1">
         {title}
       </label>
@@ -838,7 +838,7 @@ const ActiveStudentsChart = () => {
 
         <div className="flex flex-row gap-6 w-full">
           {/* Sidebar: Display options */}
-          <div className="flex flex-col gap-5 mt-6 bg-white p-4 rounded shadow w-60">
+          <div className="flex flex-col gap-3 mt-6 bg-white p-4 rounded shadow w-60">
             <div className="flex flex-col gap-2 text-sm">
               <h2 className="text-md font-semibold text-md">Επιλογή προβολής</h2>
 
@@ -850,7 +850,7 @@ const ActiveStudentsChart = () => {
                   <label
                     key={option.value}
                     className={`w-full text-center px-3 py-2 cursor-pointer transition-all duration-200
-          ${viewMode === option.value
+                        ${viewMode === option.value
                         ? "bg-secondary text-white"
                         : "bg-white text-gray-700 hover:bg-gray-100"}`}
                   >
@@ -880,12 +880,15 @@ const ActiveStudentsChart = () => {
                 </select>
               )}
             </div>
+
+            <div className="border-t border-gray-200"></div>
+
             <div className="flex flex-col gap-2 text-sm">
               <h2 className="text-md font-semibold">Φίλτρα</h2>
 
-              <div className="">
+              <div className="text-sm text-gray-700 font-base">
 
-                <label className="text-sm text-gray-700 font-medium">Έτος εγγραφής</label>
+                <p>Έτος εγγραφής</p>
 
                 {minYear && maxYear && (
                   <MultiRangeSlider
@@ -905,8 +908,8 @@ const ActiveStudentsChart = () => {
                 )}
               </div>
 
-              <div className="mt-4">
-                <label className="text-sm text-gray-700 font-medium mt-4">Πλήθος περασμένων μαθημάτων</label>
+              <div className="text-sm text-gray-700 font-base">
+                <label className="">Πλήθος περασμένων μαθημάτων</label>
 
                 {availableCourses.length > 0 && (
                   <MultiRangeSlider
