@@ -402,21 +402,21 @@ const ActiveStudentsChart = () => {
   }, [viewMode, groupedMode]);
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      const chartContainers = [containerRef.current, yearContainerRef.current];
-      const detailsPanel = document.querySelector(".text-sm.space-y-1")?.parentElement;
+    const graphEl = document.getElementById("graph");
 
-      const clickedInside = chartContainers.some(ref =>
-        ref && ref.contains(event.target)
-      ) || (detailsPanel && detailsPanel.contains(event.target));
+    const handleClick = (event) => {
+      if (!graphEl) return;
 
-      if (!clickedInside) {
+      // Only clear if the click was *directly* on the #graph element
+      if (event.target === graphEl) {
         setSelectedBubble(null);
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    graphEl?.addEventListener("mousedown", handleClick);
+    return () => {
+      graphEl?.removeEventListener("mousedown", handleClick);
+    };
   }, []);
 
   useEffect(() => {
@@ -949,7 +949,7 @@ const ActiveStudentsChart = () => {
 
           </div>
           {/* Main content (bubble chart and legend) */}
-          <div className="flex flex-row bg-white shadow shadow-lg rounded-lg mt-6 w-full">
+          <div id="graph" className="flex flex-row bg-white shadow shadow-lg rounded-lg mt-6 w-full">
             {/* Legend */}
             <div className="flex flex-wrap gap-4 items-baseline">
               <div className="flex flex-col justify-center items-left gap-2 text-sm bg-white border-gray-300 border-[1px] shadow-sm m-2 px-2 py-2">
