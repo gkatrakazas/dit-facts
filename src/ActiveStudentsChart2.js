@@ -629,6 +629,7 @@ const ActiveStudentsChart = () => {
       )
       .attr("stroke", "#222")
       .attr("stroke-width", 0.3)
+      .style("cursor", "pointer")
       .on("mouseover", (event, d) => {
         d3.select(event.currentTarget)
           .transition()
@@ -762,6 +763,7 @@ const ActiveStudentsChart = () => {
       )
       .attr("stroke", "#1E3A8A")
       .attr("stroke-width", 0.5)
+      .style("cursor", "pointer")
       .on("mouseover", (event, d) => {
         d3.select(event.currentTarget)
           .transition()
@@ -1059,7 +1061,7 @@ const ActiveStudentsChart = () => {
                     className="w-4 h-4 rounded-full border border-gray-300"
                     style={{ backgroundColor: getColorByInactivity(selectedBubble.lastAction) }}
                   />
-                  <b>Επιλεγμένος/η φοιτητής/τρια</b>
+                  <p className="text-md font-semibold">Επιλεγμένος/η φοιτητής/τρια</p>
                 </div>
                 <div className="text-xs space-y-1">
                   <p><span className="font-semibold">Ημ/νία τελευταίας ενέργειας:</span> {selectedBubble.lastAction}</p>
