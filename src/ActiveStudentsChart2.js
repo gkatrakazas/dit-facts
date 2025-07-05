@@ -135,6 +135,30 @@ const inactivityLevels = [
 ];
 
 // Utils
+const formatYearsAndMonths = (yearsDecimal) => {
+  const fullYears = Math.floor(yearsDecimal);
+  const months = Math.round((yearsDecimal - fullYears) * 12);
+
+  const yearLabel = fullYears === 1 ? "έτος" : "έτη";
+  const monthLabel = months === 1 ? "μήνα" : "μήνες";
+
+  if (fullYears > 0 && months > 0) {
+    return `${fullYears} ${yearLabel} και ${months} ${monthLabel}`;
+  } else if (fullYears > 0) {
+    return `${fullYears} ${yearLabel}`;
+  } else {
+    return `${months} ${monthLabel}`;
+  }
+};
+
+const formatDateToYearMonth = (dateStr) => {
+  const date = new Date(dateStr);
+  if (isNaN(date)) return "-";
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  return `${year}/${month}`;
+};
+
 const getColorByInactivity = (lastActionDate) => {
   const yearsInactive = (new Date() - new Date(lastActionDate)) / (1000 * 60 * 60 * 24 * 365.25);
 
@@ -150,12 +174,12 @@ const getInactivityCategory = (yearsInactive) => {
 const getTooltipHtml = (d) => {
   const fieldsToShow = [
     { label: "Έτος τελευταίας ενέργειας", value: d.data.year },
-    { label: "Πλήθος περασμένων μαθημάτων", value: d.data.r },
-    { label: "Ημερομηνία τελευταίας ενέργειας", value: d.data.lastAction },
+    { label: "Περασμένων μαθημάτα", value: d.data.r },
+    { label: "Ημ/νία τελευταίας ενέργειας", value: formatDateToYearMonth(d.data.lastAction) },
     { label: "Τρόπος εισαγωγής", value: d.data.raw?.["ΤΡΟΠΟΣ ΕΙΣΑΓΩΓΗΣ"] },
     { label: "Έτος εγγραφής", value: d.data.raw?.["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"] },
     { label: "Κατάσταση φοίτησης", value: d.data.raw?.["ΚΑΤΑΣΤΑΣΗ"] },
-    { label: "Έτη ανενεργός/ή", value: d.data.size.toFixed(1) },
+    { label: "Έτη ανενεργός/ή", value: formatYearsAndMonths(d.data.size) },
   ];
 
   return fieldsToShow
@@ -890,7 +914,7 @@ const ActiveStudentsChart = () => {
 
               <div className="text-sm text-gray-700 font-base">
 
-                <p>Έτος εγγραφής</p>
+                <label className="font-medium">Έτος εγγραφής</label>
 
                 {minYear && maxYear && (
                   <MultiRangeSlider
@@ -911,7 +935,7 @@ const ActiveStudentsChart = () => {
               </div>
 
               <div className="text-sm text-gray-700 font-base">
-                <label className="">Πλήθος περασμένων μαθημάτων</label>
+                <label className="font-medium">Περασμένα μαθημάτα</label>
 
                 {availableCourses.length > 0 && (
                   <MultiRangeSlider
@@ -1033,7 +1057,7 @@ const ActiveStudentsChart = () => {
                 {range.start !== range.end
                   ? ` ${range.start}–${range.end}`
                   : ` ${range.start}`}
-                , πλήθος περασμένων μαθημάτων {courseRange.start}–{courseRange.end}
+                , περασμένα μαθημάτα {courseRange.start}–{courseRange.end}
 
                 , κατάσταση φοίτησης {selectedStatuses.length > 0
                   ? selectedStatuses.map(s => s).join(", ")
@@ -1064,8 +1088,8 @@ const ActiveStudentsChart = () => {
                   <p className="text-md font-semibold">Επιλεγμένος/η φοιτητής/τρια</p>
                 </div>
                 <div className="text-xs space-y-1">
-                  <p><span className="font-semibold">Ημ/νία τελευταίας ενέργειας:</span> {selectedBubble.lastAction}</p>
-                  <p><span className="font-semibold">Έτη ανενεργός/ή:</span> {selectedBubble.size.toFixed(1)}</p>
+                  <p><span className="font-semibold">Ημ/νία τελευταίας ενέργειας:</span>   {formatDateToYearMonth(selectedBubble.lastAction)}</p>
+                  <p><span className="font-semibold">Έτη ανενεργός/ή:</span>{formatYearsAndMonths(selectedBubble.size)}</p>
                   <p><span className="font-semibold">Έτος εγγραφής:</span> {selectedBubble.raw?.["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"]}</p>
                   <p><span className="font-semibold">Πλήθος περασμένων μαθημάτων:</span> {selectedBubble.r}</p>
                   <p><span className="font-semibold">Κατάσταση φοίτησης:</span> {selectedBubble.raw?.["ΚΑΤΑΣΤΑΣΗ"]}</p>
