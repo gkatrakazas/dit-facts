@@ -1,15 +1,15 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 import * as XLSX from "xlsx";
-import excelFile from "./data/active-students.xlsx";
-import YearSelection from "./YearSelection"; // Import the new component
+import excelFile from "../../data/active-students.xlsx";
+import YearSelection from "../../YearSelection"; // Import the new component
 import { MdOutlineCleaningServices } from "react-icons/md";
-import PassedCoursesSelection from "./PassedCoursesSelection";
-import course, { ReactComponent as CourseIcon } from './assets/course.svg';
-import student, { ReactComponent as StudentIcon } from './assets/student.svg';
+import PassedCoursesSelection from "../../PassedCoursesSelection";
+import course, { ReactComponent as CourseIcon } from '../../assets/course.svg';
+import student, { ReactComponent as StudentIcon } from '../../assets/student.svg';
 import { useTranslation } from "react-i18next";
 
-const ActiveStudentsChart = () => {
+const ActiveStudents = () => {
 
   const { t } = useTranslation();
 
@@ -558,4 +558,4 @@ const ActiveStudentsChart = () => {
   );
 };
 
-export default ActiveStudentsChart;
+export default ActiveStudents;

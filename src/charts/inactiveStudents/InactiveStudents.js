@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import * as d3 from "d3";
 import * as XLSX from "xlsx";
-import excelFile from "./data/di_stats.xlsx";
+import excelFile from "../../data/di_stats.xlsx";
 import { useTranslation } from "react-i18next";
-import MultiRangeSlider from "./components/MultiRangeSlider";
-import { usePagination } from "./hooks/usePagination";
-import PaginationControls from "./components/PaginationControls";
+import MultiRangeSlider from "../../components/MultiRangeSlider";
+import { usePagination } from "../../hooks/usePagination";
+import PaginationControls from "../../components/PaginationControls";
 
 export const admissionTypeDescriptions = {
   CIV: "Civis",
@@ -272,7 +272,7 @@ function filterStudents({
   );
 }
 // Main Component
-const ActiveStudentsChart = () => {
+const InactiveStudents = () => {
   const { t } = useTranslation();
 
   // States
@@ -1175,4 +1175,4 @@ const ActiveStudentsChart = () => {
   );
 };
 
-export default ActiveStudentsChart;
+export default InactiveStudents;
