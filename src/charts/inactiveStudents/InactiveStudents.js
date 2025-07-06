@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useMemo } from "react";
+import React, { useEffect, useRef, useState, useMemo,useCallback } from "react";
 import * as d3 from "d3";
 import * as XLSX from "xlsx";
 import excelFile from "../../data/di_stats.xlsx";
@@ -522,17 +522,6 @@ const InactiveStudents = () => {
         })
         .filter(d => !isNaN(d.lastActionDate));
 
-      const groupedByYear = d3.group(bubbles, d => d.raw["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"]);
-      const nestedHierarchy = {
-        children: [...groupedByYear.entries()].map(([year, students]) => ({
-          year,
-          children: students.map(s => ({ ...s, value: 1 }))
-        }))
-      };
-
-      // 🔽 Add this to log 2024 students
-      // console.log("2024 Students", bubbles.filter(b => b.raw["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"] === 2024));
-      console.log('bubbles', bubbles)
       setRawData(sheetData);
       setInactiveBubbleData(bubbles);
 
@@ -696,7 +685,7 @@ const InactiveStudents = () => {
       });
   }, [inactiveBubbleData, viewMode, groupedMode, dimensions, selectedYears, selectedAdmissionTypes, courseRange, selectedBubble, selectedStatuses]);
 
-  const renderGroupedBubbles = (configKey) => {
+  const renderGroupedBubbles = useCallback((configKey) => {
     const config = groupedModeConfig[configKey];
     if (!config || !inactiveBubbleData.length || !dimensions.width || !config.packedRef.current) return;
 
@@ -845,13 +834,13 @@ const InactiveStudents = () => {
         tooltip.style("opacity", 0);
       });
 
-  };
-
+  }, [groupedModeConfig, inactiveBubbleData, dimensions, selectedYears, courseRange, selectedAdmissionTypes, selectedStatuses, selectedBubble,]);
+  
   useEffect(() => {
     if (viewMode === "grouped") {
       renderGroupedBubbles(groupedMode);
     }
-  }, [viewMode, groupedMode, inactiveBubbleData, dimensions, selectedYears, courseRange, selectedBubble, selectedAdmissionTypes, selectedStatuses]);
+  }, [viewMode, groupedMode, inactiveBubbleData, dimensions, selectedYears, courseRange, selectedBubble, selectedAdmissionTypes, selectedStatuses, renderGroupedBubbles]);
 
 
   const allKeys = useMemo(() => {
