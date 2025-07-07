@@ -527,26 +527,6 @@ const ActiveStudents = () => {
                       {t("chart.activeStudents.student_distribution_title")}
                     </h2>
 
-                    <div className="flex">
-                      <div className="text-sm flex flex-col justify-center items-left gap-2 text-sm bg-white border-gray-300 text-gray-600 border-[1px] shadow-sm mx-2 px-2 py-2">
-                        <div className="mb-1">
-                          <p className="">{t("chart.activeStudents.legend.passed_courses_title2")}</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-600">{minPassedCourses}</span>
-                          <svg width="150" height="12">
-                            <defs>
-                              <linearGradient id="legend-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                                <stop offset="0%" stopColor={colorScale(minPassedCourses)} />
-                                <stop offset="100%" stopColor={colorScale(maxPassedCourses)} />
-                              </linearGradient>
-                            </defs>
-                            <rect x="0" y="0" width="150" height="12" fill="url(#legend-gradient)" />
-                          </svg>
-                          <span className="text-gray-600">{maxPassedCourses}</span>
-                        </div>
-                      </div>
-
                       <div className="text-sm flex flex-col justify-center items-left gap-2 text-sm bg-white border-gray-300 text-gray-600 border-[1px] shadow-sm mx-2 px-2 py-2">
                         <div className="mb-1">
                           <p className="">{t("chart.activeStudents.legend.students_per_box")}</p>
@@ -569,7 +549,6 @@ const ActiveStudents = () => {
                           </div>
                         </div>
                       </div>
-                    </div>
 
                   </div>
                   {/* Treemap Size Legend */}
