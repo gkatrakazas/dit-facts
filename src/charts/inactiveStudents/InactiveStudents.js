@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useMemo,useCallback } from "react";
+import React, { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import * as d3 from "d3";
 import * as XLSX from "xlsx";
 import excelFile from "../../data/di_stats.xlsx";
@@ -835,7 +835,7 @@ const InactiveStudents = () => {
       });
 
   }, [groupedModeConfig, inactiveBubbleData, dimensions, selectedYears, courseRange, selectedAdmissionTypes, selectedStatuses, selectedBubble,]);
-  
+
   useEffect(() => {
     if (viewMode === "grouped") {
       renderGroupedBubbles(groupedMode);
@@ -852,7 +852,7 @@ const InactiveStudents = () => {
   }, [rawData]);
 
   return (
-    <div className="mb-10">
+    <>
       <div className="flex flex-col mx-5 mt-5">
         <h2 className="text-xl font-semibold">{t("homepage.visualizations.inactive_students.title")}</h2>
 
@@ -1159,7 +1159,7 @@ const InactiveStudents = () => {
           </div>
         </div>
       </div>
-    </div>
+    </>
 
   );
 };

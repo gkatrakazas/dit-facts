@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import * as d3 from "d3";
 import * as XLSX from "xlsx";
 import excelFile from "../../data/active-students.xlsx";
@@ -8,12 +8,14 @@ import PassedCoursesSelection from "../../PassedCoursesSelection";
 import course, { ReactComponent as CourseIcon } from '../../assets/course.svg';
 import student, { ReactComponent as StudentIcon } from '../../assets/student.svg';
 import { useTranslation } from "react-i18next";
+import MultiRangeSlider from "../../components/MultiRangeSlider";
 
 const ActiveStudents = () => {
 
   const { t } = useTranslation();
 
   const [rawData, setRawData] = useState([]);
+  const [showRawData, setShowRawData] = useState(false);
 
   const chartRef = useRef(null);
   const treeMapRef = useRef(null);
@@ -22,10 +24,14 @@ const ActiveStudents = () => {
   const [chartWidth, setChartWidth] = useState(0);
   const [availableYears, setAvailableYears] = useState([]);
   const [selectedYears, setSelectedYears] = useState([]);
-  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [range, setRange] = useState({ start: null, end: null });
+  const [minYear, setMinYear] = useState(null);
+  const [maxYear, setMaxYear] = useState(null);
 
   const [availableCourses, setAvailableCourses] = useState([]);
   const [selectedCourses, setSelectedCourses] = useState([]);
+  const [courseRange, setCourseRange] = useState({ start: null, end: null });
+
   const [isCoursePopupOpen, setIsCoursePopupOpen] = useState(false);
 
   const [minPassedCourses, setMinPassedCourses] = useState(0);
@@ -74,13 +80,49 @@ const ActiveStudents = () => {
     });
 
     setPivotedData(transformedData);
-    setAvailableYears(Array.from(yearsSet).sort());
+    const years = Array.from(yearsSet).sort();
+    setAvailableYears(years);
+    setSelectedYears(years);
+    setRange({
+      start: Math.min(...years),
+      end: Math.max(...years),
+    });
+
     const sortedCourses = Array.from(coursesSet).sort((a, b) => a - b);
     setAvailableCourses(sortedCourses);
+    setCourseRange({
+      start: Math.min(...sortedCourses),
+      end: Math.max(...sortedCourses),
+    });
     setMinPassedCourses(sortedCourses[0]);
     setMaxPassedCourses(sortedCourses[sortedCourses.length - 1]);
 
   };
+
+  useEffect(() => {
+    if (availableYears.length > 0) {
+      setMinYear(Math.min(...availableYears));
+      setMaxYear(Math.max(...availableYears));
+    }
+  }, [availableYears])
+
+  useEffect(() => {
+    if (range.start !== null && range.end !== null) {
+      const filtered = availableYears.filter(
+        (y) => y >= range.start && y <= range.end
+      );
+      setSelectedYears(filtered);
+    }
+  }, [range, availableYears]);
+
+  useEffect(() => {
+    if (courseRange.start !== null && courseRange.end !== null) {
+      const filtered = availableCourses.filter(
+        (y) => y >= courseRange.start && y <= courseRange.end
+      );
+      setSelectedCourses(filtered);
+    }
+  }, [courseRange, availableCourses]);
 
   const colorScale = d3
     .scaleSequential(d3.interpolateOranges)
@@ -359,6 +401,14 @@ const ActiveStudents = () => {
     loadExcelData();
   }, []);
 
+  const allKeys = useMemo(() => {
+    const keySet = new Set();
+    rawData.forEach((row) => {
+      Object.keys(row || {}).forEach((key) => keySet.add(key));
+    });
+    return Array.from(keySet);
+  }, [rawData]);
+
   useEffect(() => {
     createChart();
     createTreeMap();
@@ -372,187 +422,236 @@ const ActiveStudents = () => {
 
 
   return (
-    <div className="mb-10">
-      {isPopupOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-20">
-          <div className="bg-white p-6 rounded shadow-xl w-96 space-y-4">
-            <h2 className="text-lg font-semibold">Filter Years</h2>
+    <div>
+      <div className="flex flex-col mx-5 mt-5">
+        <h2 className="text-xl font-semibold">{t("homepage.visualizations.active_students.title")}</h2>
+        <div className="flex flex-row gap-6 w-full">
 
-            {/* Year Selection Component */}
-            <YearSelection
-              availableYears={availableYears}
-              selectedYears={selectedYears} // Pass current selected years
-              setSelectedYears={setSelectedYears}
-              onClose={() => setIsPopupOpen(false)}
-              filterType={filterType} // Pass filterType to YearSelection
-              setFilterType={setFilterType} // Pass setFilterType to YearSelection
-            />
-          </div>
-        </div>
-      )}
-      {isCoursePopupOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-20">
-          <div className="bg-white p-6 rounded shadow-xl w-96 space-y-4">
-            <h2 className="text-lg font-semibold">Filter by Passed Courses</h2>
+          <div className="flex flex-col gap-3 mt-6 bg-white p-4 rounded shadow w-60">
+            <div className="flex flex-col gap-2 text-sm">
+              <div className="flex flex-col gap-2 text-sm">
+                <h2 className="text-md font-semibold">Φίλτρα</h2>
 
-            <PassedCoursesSelection
-              availableCourses={availableCourses}
-              selectedCourses={selectedCourses}
-              setSelectedCourses={setSelectedCourses}
-              onClose={() => setIsCoursePopupOpen(false)}
-              filterType={filterType}
-              setFilterType={setFilterType}
-            />
-          </div>
-        </div>
-      )}
+                <div className="text-sm text-gray-700 font-base">
 
+                  <label className="font-medium">Έτος εγγραφής</label>
 
-
-      <div className="flex gap-6 flex-col mx-5">
-
-        <div className="flex gap-4 items-baseline">
-          {/* filters */}
-          <div className="max-w-max px-4 py-2 text-sm flex items-center gap-6 mt-4 bg-white rounded-lg shadow">
-            <p className="font-bold">{t("chart.activeStudents.filters")}:</p>
-            <div className="flex flex-center">
-              <button
-                onClick={() => setIsPopupOpen(true)}
-                className={`px-4 py-1.5 text-sm  shadow bg-gray-300 font-medium ${selectedYears.length > 0 ? 'text-blue-600  border-b-2 border-blue-600' : 'text-gray-800'} rounded`}
-              >
-                {t("chart.activeStudents.year")}
-              </button>
-              {selectedYears.length > 0 && (
-                <button
-                  onClick={() => setSelectedYears([])}
-                  className=" px-2 py-2 text-gray-500 rounded"
-                >
-                  <MdOutlineCleaningServices size={20} />
-                </button>
-              )}
-            </div>
-            {/* Passed Courses Filter */}
-            <div className="flex flex-center">
-              <button
-                onClick={() => setIsCoursePopupOpen(true)}
-                className={`px-4 py-1.5 text-sm shadow bg-gray-300 font-medium ${selectedCourses.length > 0 ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-800'} rounded`}
-              >
-                {t("chart.activeStudents.passed_courses")}
-              </button>
-              {selectedCourses.length > 0 && (
-                <button onClick={() => setSelectedCourses([])} className="px-2 py-2 text-gray-500 rounded">
-                  <MdOutlineCleaningServices size={20} />
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Legend */}
-          <div className="flex items-center gap-2 text-sm bg-white rounded-lg shadow px-4 py-3.5">
-            <span className="text-gray-600">{minPassedCourses}</span>
-            <svg width="120" height="12">
-              <defs>
-                <linearGradient id="legend-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor={colorScale(minPassedCourses)} />
-                  <stop offset="100%" stopColor={colorScale(maxPassedCourses)} />
-                </linearGradient>
-              </defs>
-              <rect x="0" y="0" width="120" height="12" fill="url(#legend-gradient)" />
-            </svg>
-            <span className="text-gray-600">{maxPassedCourses}</span>
-            <span className="ml-2 text-gray-500">({t("chart.activeStudents.passed_courses")})</span>
-          </div>
-
-        </div>
-
-
-        {/* chart */}
-        <div className="bg-white shadow shadow-lg rounded-lg">
-          <h2 className="text-md text-left pt-2 font-medium mx-6">{t("chart.activeStudents.students_chart_title")}</h2>
-          <div ref={chartRef} className="w-full relative"></div>
-        </div>
-
-        {/* treemap */}
-        <div className="bg-white shadow shadow-lg rounded-lg">
-          <div className="flex justify-between mx-6">
-
-            <h2 className="text-md text-left pt-2 font-medium text-gray-700">
-              <StudentIcon className="w-4 h-4 inline-block align-text-bottom mr-1 fill-gray-700" />
-              {t("chart.activeStudents.student_distribution_title")}&nbsp;
-              <CourseIcon className="w-4 h-4 inline-block align-text-bottom mx-1 fill-gray-700" />
-              {t("chart.activeStudents.passed_courses")}
-            </h2>
-
-
-            {/* Treemap Size Legend */}
-            <div className="flex flex-row text-xs text-gray-600 px-4 items-center mt-2">
-              <span className="mb-1 text-xm font-medium mr-2">{t("chart.activeStudents.size_legend")}</span>
-              <div className="flex items-center gap-4">
-                {/* Large box */}
-                <div className="flex flex-row items-center">
-                  <svg width="30" height="30">
-                    <rect width="30" height="30" fill="#ddd" />
-                  </svg>
-                  <span className="ml-1">{maxStudents}+</span>
+                  {minYear && maxYear && (
+                    <MultiRangeSlider
+                      min={minYear}
+                      max={maxYear}
+                      value={{
+                        min: range.start,
+                        max: range.end,
+                      }}
+                      onChange={({ min, max }) => {
+                        setRange({
+                          start: min,
+                          end: max,
+                        });
+                      }}
+                    />
+                  )}
                 </div>
-                {/* Medium box */}
-                <div className="flex flex-row items-center">
-                  <svg width="23" height="23">
-                    <rect width="23" height="23" fill="#ddd" />
-                  </svg>
-                  <span className="ml-1">~{midStudents}</span>
+                <div className="text-sm text-gray-700 font-base">
+                  <label className="font-medium">Περασμένα μαθημάτα</label>
+
+                  {availableCourses.length > 0 && (
+                    <MultiRangeSlider
+                      min={Math.min(...availableCourses)}
+                      max={Math.max(...availableCourses)}
+                      value={{
+                        min: courseRange.start,
+                        max: courseRange.end,
+                      }}
+                      onChange={({ min, max }) => {
+                        setCourseRange({
+                          start: min,
+                          end: max,
+                        });
+                      }}
+                    />
+                  )}
                 </div>
-                {/* Small box */}
-                <div className="flex flex-row items-center">
-                  <svg width="12" height="12">
-                    <rect width="12" height="12" fill="#ddd" />
-                  </svg>
-                  <span className="ml-1">{minStudents}</span>
-                </div>
+                {/*
+
+              <CheckboxFilter
+                title="Κατάσταση φοίτησης"
+                options={statuses}
+                selected={selectedStatuses}
+                setSelected={setSelectedStatuses}
+                descriptions={statusDescriptions}
+              />
+
+              <CheckboxFilter
+                title="Τρόπος εισαγωγής"
+                options={admissionTypes}
+                selected={selectedAdmissionTypes}
+                setSelected={setSelectedAdmissionTypes}
+                descriptions={admissionTypeDescriptions}
+              /> */}
+
               </div>
+
             </div>
           </div>
-          <div ref={treeMapRef} className="w-full relative"></div>
-        </div>
+          {/* Main content (bubble chart and legend) */}
+          <div id="graph" className="flex flex-row bg-white shadow shadow-lg rounded-lg mt-6 w-full">
+            {/* Legend */}
 
+            {/* Chart container */}
+            <div className="w-full m-4">
+              {/* chart */}
+              <div>
+                <div className="flex flex-row justify-between">
+                  <h2 className="text-lg text-left pt-2 font-medium mx-6">{t("chart.activeStudents.students_chart_title")}</h2>
+                  <div className="flex gap-4 items-baseline">
+                    {/* Legend */}
+
+                    <div className="text-sm flex flex-col justify-center items-left gap-2 text-sm bg-white border-gray-300 text-gray-600 border-[1px] shadow-sm m-2 px-2 py-2 mx-6">
+                      <div className="mb-1">
+                        <p className="">{t("chart.activeStudents.legend.passed_courses_title")}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-600">{minPassedCourses}</span>
+                        <svg width="150" height="12">
+                          <defs>
+                            <linearGradient id="legend-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                              <stop offset="0%" stopColor={colorScale(minPassedCourses)} />
+                              <stop offset="100%" stopColor={colorScale(maxPassedCourses)} />
+                            </linearGradient>
+                          </defs>
+                          <rect x="0" y="0" width="150" height="12" fill="url(#legend-gradient)" />
+                        </svg>
+                        <span className="text-gray-600">{maxPassedCourses}</span>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+                <div ref={chartRef} className="w-full relative"></div>
+              </div>
+
+              <div className="border-t border-gray-300 py-2 mx-6"></div>
+              {/* treemap */}
+              <div className="">
+                <div className="flex mx-6">
+
+                  <div className="flex flex-row justify-between w-full">
+
+                    <h2 className="text-lg text-left pt-2 font-medium text-gray-700">
+                      {t("chart.activeStudents.student_distribution_title")}
+                    </h2>
+
+                    <div className="flex">
+                      <div className="text-sm flex flex-col justify-center items-left gap-2 text-sm bg-white border-gray-300 text-gray-600 border-[1px] shadow-sm mx-2 px-2 py-2">
+                        <div className="mb-1">
+                          <p className="">{t("chart.activeStudents.legend.passed_courses_title2")}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-gray-600">{minPassedCourses}</span>
+                          <svg width="150" height="12">
+                            <defs>
+                              <linearGradient id="legend-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stopColor={colorScale(minPassedCourses)} />
+                                <stop offset="100%" stopColor={colorScale(maxPassedCourses)} />
+                              </linearGradient>
+                            </defs>
+                            <rect x="0" y="0" width="150" height="12" fill="url(#legend-gradient)" />
+                          </svg>
+                          <span className="text-gray-600">{maxPassedCourses}</span>
+                        </div>
+                      </div>
+
+                      <div className="text-sm flex flex-col justify-center items-left gap-2 text-sm bg-white border-gray-300 text-gray-600 border-[1px] shadow-sm mx-2 px-2 py-2">
+                        <div className="mb-1">
+                          <p className="">{t("chart.activeStudents.legend.students_per_box")}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="text-sm  text-gray-600 flex items-center gap-4">
+                            <div className="flex flex-row items-center">
+                              <svg width="12" height="12"><rect width="12" height="12" fill="#ddd" /></svg>
+                              <span className="ml-1">5</span>
+                            </div>
+                            <div className="flex flex-row items-center">
+                              <svg width="23" height="23"><rect width="23" height="23" fill="#ddd" /></svg>
+                              <span className="ml-1">50</span>
+                            </div>
+                            <div className="flex flex-row items-center">
+                              <svg width="30" height="30"><rect width="30" height="30" fill="#ddd" /></svg>
+
+                              <span className="ml-1">500</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                  {/* Treemap Size Legend */}
+                </div>
+                <div ref={treeMapRef} className="w-full relative"></div>
+              </div>
+
+            </div>
+          </div>
+        </div>
       </div>
+
+
       <div
         ref={tooltipRef}
         className="fixed bg-white/90 border border-gray-200 text-xs p-2 rounded pointer-events-none opacity-0 z-10 shadow-lg max-w-xs"
       ></div>
 
-      {/* Raw Excel Data Table */}
-      {rawData.length > 0 && (
-        <div className="bg-white shadow shadow-lg rounded-lg mt-6 mx-5">
-          <div className="overflow-auto">
-            <h2 className="text-md text-left pt-2 font-medium mx-6 text-gray-700">
-              {t("chart.activeStudents.original_data")}
-            </h2>
-            <table className="table-auto text-xs text-left text-gray-600 mx-6 my-4">
-              <thead className="bg-gray-100 text-gray-700">
-                <tr>
-                  {Object.keys(rawData[0]).map((key) => (
-                    <th key={key} className="px-4 py-2 whitespace-nowrap">
-                      {key}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {rawData.map((row, rowIndex) => (
-                  <tr key={rowIndex} className="border-b">
-                    {Object.values(row).map((value, colIndex) => (
-                      <td key={colIndex} className="px-4 py-2 whitespace-nowrap">
-                        {value}
-                      </td>
+
+      <div className="mx-5 mt-5">
+        <button
+          onClick={() => setShowRawData(!showRawData)}
+          className="flex items-center justify-between w-full px-4 py-3 text-sm font-medium text-white bg-[#36abcc] rounded transition hover:bg-[#2c9cb7]"
+        >
+          <span>{showRawData ? "Απόκρυψη δεδομένων" : "Εμφάνιση δεδομένων"}</span>
+          <svg
+            className={`w-5 h-5 transform transition-transform duration-300 ${showRawData ? "rotate-180" : "rotate-0"}`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+
+        <div
+          className={`transition-[max-height] duration-500 ease-in-out overflow-hidden ${showRawData ? "max-h-[1000px]" : "max-h-0"}`}
+        >
+          <div className="bg-white p-4 rounded-b shadow">
+            {/* Table */}
+            <div className="overflow-x-auto bg-gray-50 mt-4 border rounded max-h-[400px] overflow-y-auto text-sm">
+              <table className="min-w-full border text-xs text-left">
+                <thead className="bg-white sticky top-0 z-10">
+                  <tr>
+                    {allKeys.map((key) => (
+                      <th key={key} className="px-2 py-1 border-b whitespace-nowrap">{key}</th>
                     ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {rawData.map((row, i) => (
+                    <tr key={i} className="hover:bg-gray-100 border-t">
+                      {allKeys.map((key, j) => (
+                        <td key={j} className="px-2 py-1 border-b whitespace-nowrap">
+                          {row && row[key] != null && row[key] !== "" ? String(row[key]) : "-"}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
-      )}
+      </div>
 
     </div>
   );
