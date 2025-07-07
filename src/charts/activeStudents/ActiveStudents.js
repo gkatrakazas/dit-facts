@@ -2,11 +2,10 @@ import React, { useEffect, useRef, useState, useMemo } from "react";
 import * as d3 from "d3";
 import * as XLSX from "xlsx";
 import excelFile from "../../data/active-students.xlsx";
-import YearSelection from "../../YearSelection"; // Import the new component
-import { MdOutlineCleaningServices } from "react-icons/md";
-import PassedCoursesSelection from "../../PassedCoursesSelection";
-import course, { ReactComponent as CourseIcon } from '../../assets/course.svg';
-import student, { ReactComponent as StudentIcon } from '../../assets/student.svg';
+// import YearSelection from "../../YearSelection"; // Import the new component
+// import PassedCoursesSelection from "../../PassedCoursesSelection";
+import course from '../../assets/course.svg';
+import student from '../../assets/student.svg';
 import { useTranslation } from "react-i18next";
 import MultiRangeSlider from "../../components/MultiRangeSlider";
 
@@ -32,16 +31,9 @@ const ActiveStudents = () => {
   const [selectedCourses, setSelectedCourses] = useState([]);
   const [courseRange, setCourseRange] = useState({ start: null, end: null });
 
-  const [isCoursePopupOpen, setIsCoursePopupOpen] = useState(false);
 
   const [minPassedCourses, setMinPassedCourses] = useState(0);
   const [maxPassedCourses, setMaxPassedCourses] = useState(52);
-
-  const [minStudents, setMinStudents] = useState(null);
-  const [midStudents, setMidStudents] = useState(null);
-  const [maxStudents, setMaxStudents] = useState(null);
-  // Popup State
-  const [filterType, setFilterType] = useState("multi");
 
   const [highlightedYear, setHighlightedYear] = useState(null);
   const [highlightedCourse, setHighlightedCourse] = useState(null);
@@ -312,14 +304,6 @@ const ActiveStudents = () => {
       })
       .sum((d) => d.students);
 
-    const studentCounts = root.leaves().map((d) => d.data.students);
-    const min = d3.min(studentCounts);
-    const max = d3.max(studentCounts);
-    const mid = Math.round((min + max) / 2);
-
-    setMinStudents(min);
-    setMidStudents(mid);
-    setMaxStudents(max);
     // ✅ Sort children descending by student count
     root.children.sort((a, b) => b.data.students - a.data.students);
 
