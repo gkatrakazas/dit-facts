@@ -186,7 +186,7 @@ const ActiveStudents = () => {
       .attr("transform", `translate(${-margin.left + 25}, ${height / 2}) rotate(-90)`)
       .attr("fill", "black")
       .attr("font-size", "10px")
-      .text("Number of Students");
+      .text("Πλήθος φοιτητ(ρι)ών");
 
     groupedData.forEach(([year, values]) => {
       let cumulative = 0;
