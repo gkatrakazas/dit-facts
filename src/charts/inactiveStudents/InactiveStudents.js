@@ -983,8 +983,8 @@ const InactiveStudents = () => {
                   ))}
                 </div>
                 <p className="font-medium  mb-2 italic text-xs text-gray-600">
-                * Υπολογίζεται απο την πιο πρόσφατη Ημ/νία: «Τελευταία Δήλωση», «Τελευταία Επιτυχής Εξέταση», «Τελευταία Αποτυχία» και «Έτος Εγγραφής».
-              </p>
+                  * Υπολογίζεται απο την πιο πρόσφατη Ημ/νία: «Τελευταία Δήλωση», «Τελευταία Επιτυχής Εξέταση», «Τελευταία Αποτυχία» και «Έτος Εγγραφής».
+                </p>
               </div>
             </div>
 
@@ -1046,7 +1046,13 @@ const InactiveStudents = () => {
           <div className="max-w-[20%] mt-6 w-full">
             <div className="p-2 relative w-full bg-white shadow shadow-lg rounded-lg w-full">
               <p className="text-lg font-medium">
-                {inactiveBubbleData.filter(b => selectedYears.includes(b.raw["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"])).length} Φοιτητές/ριες
+                {filterStudents({
+                  data: inactiveBubbleData,
+                  selectedYears,
+                  courseRange,
+                  selectedAdmissionTypes,
+                  selectedStatuses
+                }).length} Φοιτητές/ριες
               </p>
               <p className="text-xs text-gray-600 mt-1 leading-relaxed whitespace-pre-line">
                 Με έτος εγγραφής
