@@ -823,7 +823,7 @@ const InactiveStudents = () => {
       .on("mouseover", (event, d) => {
         tooltip
           .style("opacity", 1)
-          .html(`<b>${config.label}</b> ${config.getLabel(d)}<br/><b>Φοιτητές/τριες:</b> ${d.children?.length ?? 0}`);
+          .html(`<b>${config.label}:</b> ${config.getLabel(d)}<br/><b>Φοιτητές/τριες:</b> ${d.children?.length ?? 0}`);
       })
       .on("mousemove", (event) => {
         tooltip
@@ -971,7 +971,7 @@ const InactiveStudents = () => {
           {/* Main content (bubble chart and legend) */}
           <div id="graph" className="flex flex-row bg-white shadow shadow-lg rounded-lg mt-6 w-full">
             {/* Legend */}
-            <div className="flex flex-wrap gap-4 items-baseline">
+            <div className="flex flex-wrap gap-4 items-baseline w-[220px]">
               <div className="flex flex-col justify-center items-left gap-2 text-sm bg-white border-gray-300 border-[1px] shadow-sm m-2 px-2 py-2">
                 <span className="text-gray-600">Έτη ανενεργός/ή</span>
                 <div className="flex flex-col gap-2 mt-2 flex-wrap">
@@ -982,7 +982,9 @@ const InactiveStudents = () => {
                     </div>
                   ))}
                 </div>
-
+                <p className="font-medium  mb-2 italic text-xs text-gray-600">
+                * Υπολογίζεται απο την πιο πρόσφατη Ημ/νία: «Τελευταία Δήλωση», «Τελευταία Επιτυχής Εξέταση», «Τελευταία Αποτυχία» και «Έτος Εγγραφής».
+              </p>
               </div>
             </div>
 
@@ -1099,7 +1101,7 @@ const InactiveStudents = () => {
           id="bubble-tooltip"
           className="fixed text-xs bg-white border border-gray-300 text-gray-900 px-2 py-1 rounded shadow-lg z-50 opacity-0 pointer-events-none whitespace-pre-line"
         ></div>
-      </div>
+      </div >
 
       <div className="mx-5 mt-5">
         <button
