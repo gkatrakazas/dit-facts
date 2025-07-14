@@ -331,6 +331,9 @@ const InactiveStudents = () => {
   const durationContainerRef = useRef(null);
   const durationPackedRef = useRef(null);
 
+  const categoryBarRef = useRef(null);
+  const [barChartWidth, setBarChartWidth] = useState(0);
+
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
   // Grouping Config
@@ -398,6 +401,21 @@ const InactiveStudents = () => {
     : selectedAdmissionTypes.join(", ");
 
   const groupedModeConfig = Object.fromEntries(groupOptions.map((opt) => [opt.key, opt]));
+
+  useEffect(() => {
+    const el = categoryBarRef.current;
+    if (!el) return;
+
+    const resizeObserver = new ResizeObserver(entries => {
+      for (let entry of entries) {
+        const newWidth = entry.contentRect.width;
+        setBarChartWidth(newWidth);
+      }
+    });
+
+    resizeObserver.observe(el);
+    return () => resizeObserver.disconnect();
+  }, []);
 
   useEffect(() => {
     console.log('availableYears', availableYears)
@@ -842,6 +860,146 @@ const InactiveStudents = () => {
     }
   }, [viewMode, groupedMode, inactiveBubbleData, dimensions, selectedYears, courseRange, selectedBubble, selectedAdmissionTypes, selectedStatuses, renderGroupedBubbles]);
 
+  useEffect(() => {
+    if (!inactiveBubbleData.length || !categoryBarRef.current) return;
+
+    const filtered = filterStudents({
+      data: inactiveBubbleData,
+      selectedYears,
+      courseRange,
+      selectedAdmissionTypes,
+      selectedStatuses
+    });
+
+    const categoryCounts = d3.rollups(
+      filtered,
+      v => v.length,
+      d => getInactivityCategory(d.size)
+    );
+
+    console.log('categoryCounts', categoryCounts)
+    categoryCounts.sort(
+      (a, b) =>
+        inactivityLevels.findIndex(l => l.label === a[0]) -
+        inactivityLevels.findIndex(l => l.label === b[0])
+    );
+    const container = d3.select(categoryBarRef.current);
+    container.selectAll("*").remove();
+
+    const width = barChartWidth;
+    const height = 160;
+    const margin = { top: 10, right: 35, bottom: 40, left: 50 };
+
+    const svg = container.append("svg")
+      .attr("width", width)
+      .attr("height", height);
+
+    const x = d3.scaleLinear()
+      .domain([0, d3.max(categoryCounts, d => d[1]) || 1])
+      .range([margin.left, width - margin.right]);
+
+    const y = d3.scaleBand()
+      .domain(categoryCounts.map(d => d[0]))
+      .range([margin.top, height - margin.bottom])
+      .padding(0.2);
+
+    const colorByLabel = inactivityLevels.reduce((acc, lvl) => {
+      acc[lvl.label] = lvl.color;
+      return acc;
+    }, {});
+
+    const tooltip = d3.select("#bubble-tooltip");
+
+    // Bars
+    svg.append("g")
+      .selectAll("path")
+      .data(categoryCounts)
+      .join("path")
+      .attr("d", d => {
+        const barWidth = x(d[1]) - margin.left;
+        const barHeight = y.bandwidth();
+        const r = Math.min(barHeight / 2, 3); // round only if space allows
+        const x0 = margin.left;
+        const y0 = y(d[0]);
+
+        return `
+        M${x0},${y0}
+        h${barWidth - r}
+        a${r},${r} 0 0 1 ${r},${r}
+        v${barHeight - 2 * r}
+        a${r},${r} 0 0 1 ${-r},${r}
+        h${-barWidth + r}
+        Z
+      `;
+      })
+      .attr("fill", d => colorByLabel[d[0]] || "#36abcc")
+      .on("mouseover", (event, d) => {
+        tooltip
+          .style("opacity", 1)
+          .html(`<b>${d[0]}</b>: ${d[1]} φοιτητές/τριες`);
+      })
+      .on("mousemove", (event) => {
+        tooltip
+          .style("left", `${event.clientX}px`)
+          .style("top", `${event.clientY}px`);
+      })
+      .on("mouseout", (event, d) => {
+        tooltip.style("opacity", 0);
+      });
+
+    // Value labels
+    svg.append("g")
+      .selectAll("text.count")
+      .data(categoryCounts)
+      .join("text")
+      .attr("x", d => x(d[1]) + 5)
+      .attr("y", d => y(d[0]) + y.bandwidth() / 2 + 4)
+      .text(d => d[1])
+      .attr("fill", "#333")
+      .attr("font-size", "10px");
+
+    // Y Axis
+    svg.append("g")
+      .attr("transform", `translate(${margin.left},0)`)
+      .call(d3.axisLeft(y).tickSize(0))
+      .selectAll("text")
+      .style("font-size", "11px")
+      .style("fill", "#333");
+
+    // X Axis
+    svg.append("g")
+      .attr("transform", `translate(0,${height - margin.bottom})`)
+      .call(d3.axisBottom(x).ticks(5))
+      .selectAll("text")
+      .style("font-size", "10px");
+
+    // Y Axis Label (vertical, rotated)
+    svg.append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("x", -height / 2)
+      .attr("y", 14) // closer or further from axis
+      .attr("text-anchor", "middle")
+      .attr("fill", "#333")
+      .attr("font-size", "11px")
+      .text("Κατηγορίες ανενεργών");
+
+    // X Axis Label (horizontal)
+    svg.append("text")
+      .attr("x", width / 2)
+      .attr("y", height - 2) // increase this for more spacing
+      .attr("text-anchor", "middle")
+      .attr("fill", "#333")
+      .attr("font-size", "11px")
+      .text("Πλήθος Φοιτητών/τριών");
+  }, [
+    inactiveBubbleData,
+    selectedYears,
+    courseRange,
+    selectedAdmissionTypes,
+    selectedStatuses,
+    barChartWidth
+  ]);
+
 
   const allKeys = useMemo(() => {
     const keySet = new Set();
@@ -1045,7 +1203,7 @@ const InactiveStudents = () => {
 
           <div className="max-w-[20%] mt-6 w-full">
             <div className="p-2 relative w-full bg-white shadow shadow-lg rounded-lg w-full">
-              <p className="text-lg font-medium">
+              <p className="text-lg font-semibold text-primary">
                 {filterStudents({
                   data: inactiveBubbleData,
                   selectedYears,
@@ -1099,6 +1257,13 @@ const InactiveStudents = () => {
                 </div>
               </div>
             )}
+
+            <div className="w-full p-2 mt-2 bg-white shadow rounded-lg">
+
+              <h4 className="text-sm font-semibold mb-1">Κατηγορίες ανενεργών</h4>
+              <div ref={categoryBarRef} className="w-full" />
+            </div>
+
           </div>
         </div>
 
