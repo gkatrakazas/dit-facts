@@ -746,9 +746,21 @@ const InactiveStudents = () => {
       .sum((d) => d.value || 0)
       .sort((a, b) => b.value - a.value);
 
+    // Define margins
+    const margin = { top: 10, right: 0, bottom: 0, left: 0 };
+    const innerWidth = dimensions.width - margin.left - margin.right;
+    const innerHeight = dimensions.height - margin.top - margin.bottom;
+
     d3.pack()
-      .size([dimensions.width, dimensions.height])
+      .size([innerWidth, innerHeight])
       .padding(3)(root);
+
+    // Shift root coordinates to account for margin
+    root.descendants().forEach((d) => {
+      d.x += margin.left;
+      d.y += margin.top;
+    });
+
 
     root.children.forEach((group) => {
       group.r *= 0.9;
