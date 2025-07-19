@@ -312,6 +312,8 @@ const InactiveStudents = () => {
   const [viewMode, setViewMode] = useState("individual");
   const [groupedMode, setGroupedMode] = useState("byYear");
 
+  const [filterMode, setFilterMode] = useState('hide');
+
   // Refs for D3 containers
   const packedRef = useRef(null);
   const containerRef = useRef(null);
@@ -575,13 +577,26 @@ const InactiveStudents = () => {
   }, []);
 
   useEffect(() => {
-    const filteredData = filterStudents({
-      data: inactiveBubbleData,
-      selectedYears,
-      courseRange,
-      selectedAdmissionTypes,
-      selectedStatuses
-    });
+    // const filteredData = filterStudents({
+    //   data: inactiveBubbleData,
+    //   selectedYears,
+    //   courseRange,
+    //   selectedAdmissionTypes,
+    //   selectedStatuses
+    // });
+
+    const isVisible = (student) =>
+      filterStudents({
+        data: [student],
+        selectedYears,
+        courseRange,
+        selectedAdmissionTypes,
+        selectedStatuses,
+      }).length > 0;
+
+    const visibleData = filterMode === 'hide'
+      ? inactiveBubbleData.filter(isVisible)
+      : inactiveBubbleData;
 
     if (viewMode !== "individual") return;
 
@@ -611,11 +626,11 @@ const InactiveStudents = () => {
         setSelectedBubble(null); // Clear when background is clicked
       });
 
-    if (!filteredData.length) return; // ✅ draw empty chart only
+    if (!visibleData.length) return; // ✅ draw empty chart only
 
     const tooltip = d3.select("#bubble-tooltip");
 
-    const sortedData = [...filteredData].sort(
+    const sortedData = [...visibleData].sort(
       (a, b) => new Date(a.lastAction) - new Date(b.lastAction)
     );
 
@@ -660,9 +675,20 @@ const InactiveStudents = () => {
       .attr("cy", d => d.y)
       .attr("r", d => d.r)
       .attr("fill", d => getColorByInactivity(d.data.lastAction))
-      .attr("opacity", d =>
-        selectedBubble ? (d.data === selectedBubble ? 1 : 0.2) : 1
-      )
+      .attr("opacity", (d) => {
+        const isMatch = isVisible(d.data);
+        const isSelected = selectedBubble && d.data === selectedBubble;
+
+        if (selectedBubble) {
+          return isSelected ? 1 : (isMatch ? 0.35 : 0.1);
+        }
+
+        if (filterMode === 'dim') {
+          return isMatch ? 1 : 0.1;
+        }
+
+        return 1;
+      })
       .attr("stroke", "#222")
       .attr("stroke-width", 0.3)
       .style("cursor", "pointer")
@@ -682,6 +708,10 @@ const InactiveStudents = () => {
           .style("left", `${event.clientX + 0}px`)
           .style("top", `${event.clientY + 0}px`);
       })
+      .attr("pointer-events", (d) => {
+        const match = isVisible(d.data);
+        return filterMode === 'dim' && !match ? "none" : "auto";
+      })
       .on("mouseout", (event, d) => {
         d3.select(event.currentTarget)
           .transition()
@@ -692,7 +722,7 @@ const InactiveStudents = () => {
               selectedBubble &&
               d.data === selectedBubble
 
-            return selectedBubble ? (isSelected ? 1 : 0.2) : 1;
+            return selectedBubble ? (isSelected ? 1 : 0.35) : 1;
           });
 
         tooltip.style("opacity", 0);
@@ -701,19 +731,25 @@ const InactiveStudents = () => {
       .on("click", (_, d) => {
         setSelectedBubble(d.data); // 🟢 Store data for details panel
       });
-  }, [inactiveBubbleData, viewMode, groupedMode, dimensions, selectedYears, selectedAdmissionTypes, courseRange, selectedBubble, selectedStatuses]);
+  }, [inactiveBubbleData, viewMode, groupedMode, dimensions, selectedYears, selectedAdmissionTypes, courseRange, selectedBubble, selectedStatuses, filterMode]);
 
   const renderGroupedBubbles = useCallback((configKey) => {
     const config = groupedModeConfig[configKey];
     if (!config || !inactiveBubbleData.length || !dimensions.width || !config.packedRef.current) return;
 
-    const filtered = filterStudents({
-      data: inactiveBubbleData,
-      selectedYears,
-      courseRange,
-      selectedAdmissionTypes,
-      selectedStatuses
-    });
+    const isVisible = (student) =>
+      filterStudents({
+        data: [student],
+        selectedYears,
+        courseRange,
+        selectedAdmissionTypes,
+        selectedStatuses,
+      }).length > 0;
+
+    const filtered =
+      filterMode === "hide"
+        ? inactiveBubbleData.filter(isVisible)
+        : inactiveBubbleData;
 
     d3.select(config.packedRef.current).selectAll("*").remove();
     const svg = d3
@@ -806,9 +842,24 @@ const InactiveStudents = () => {
       .attr("cy", (d) => d.y)
       .attr("r", (d) => d.r)
       .attr("fill", (d) => getColorByInactivity(d.data.lastAction))
-      .attr("opacity", (d) =>
-        selectedBubble ? (d.data.raw === selectedBubble.raw ? 1 : 0.2) : 1
-      )
+      .attr("opacity", (d) => {
+        const isMatch = isVisible(d.data);
+        const isSelected = selectedBubble && d.data === selectedBubble;
+
+        if (selectedBubble) {
+          return isSelected ? 1 : (isMatch ? 0.35 : 0.1);
+        }
+
+        if (filterMode === 'dim') {
+          return isMatch ? 1 : 0.1;
+        }
+
+        return 1;
+      })
+      .attr("pointer-events", (d) => {
+        const match = isVisible(d.data);
+        return filterMode === 'dim' && !match ? "none" : "auto";
+      })
       .attr("stroke", "#1E3A8A")
       .attr("stroke-width", 0.5)
       .style("cursor", "pointer")
@@ -832,7 +883,7 @@ const InactiveStudents = () => {
           .duration(0)
           .attr("filter", null)
           .attr("opacity", () =>
-            selectedBubble && d.data.raw !== selectedBubble.raw ? 0.2 : 1
+            selectedBubble && d.data.raw !== selectedBubble.raw ? 0.35 : 1
           );
         tooltip.style("opacity", 0);
       })
@@ -864,7 +915,7 @@ const InactiveStudents = () => {
         tooltip.style("opacity", 0);
       });
 
-  }, [groupedModeConfig, inactiveBubbleData, dimensions, selectedYears, courseRange, selectedAdmissionTypes, selectedStatuses, selectedBubble,]);
+  }, [groupedModeConfig, inactiveBubbleData, dimensions, selectedYears, courseRange, selectedAdmissionTypes, selectedStatuses, selectedBubble,filterMode]);
 
   useEffect(() => {
     if (viewMode === "grouped") {
@@ -913,7 +964,7 @@ const InactiveStudents = () => {
     const y = d3.scaleBand()
       .domain(categoryCounts.map(d => d[0]))
       .range([margin.top, height - margin.bottom])
-      .padding(0.2);
+      .padding(0.35);
 
     const colorByLabel = inactivityLevels.reduce((acc, lvl) => {
       acc[lvl.label] = lvl.color;
@@ -1070,6 +1121,38 @@ const InactiveStudents = () => {
                 </select>
               )}
             </div>
+
+            <div className="border-t border-gray-200"></div>
+
+            <div className="flex flex-col gap-2 text-sm">
+              <h2 className="text-md font-semibold text-md">Λειτουργία Φίλτρων</h2>
+
+              <div className="flex border border-gray-300 rounded overflow-hidden">
+                {[
+                  { value: "hide", label: "Απόκρυψη" },
+                  { value: "dim", label: "Εξασθένιση" }
+                ].map((option) => (
+                  <label
+                    key={option.value}
+                    className={`w-full text-center px-3 py-2 cursor-pointer transition-all duration-200
+          ${filterMode === option.value
+                        ? "bg-secondary text-white"
+                        : "bg-white text-gray-700 hover:bg-gray-100"}`}
+                  >
+                    <input
+                      type="radio"
+                      name="filterMode"
+                      value={option.value}
+                      checked={filterMode === option.value}
+                      onChange={() => setFilterMode(option.value)}
+                      className="hidden"
+                    />
+                    {option.label}
+                  </label>
+                ))}
+              </div>
+            </div>
+
 
             <div className="border-t border-gray-200"></div>
 
