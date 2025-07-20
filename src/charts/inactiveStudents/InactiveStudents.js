@@ -117,6 +117,37 @@ export const admissionTypeDescriptions = {
   ΦΣΓ: "Εκ του καταργηθέντος φυσιογνωστικού"
 };
 
+export const admissionTypeGroups = {
+  // Πανελλήνιες
+  ΠΑΝ: "Πανελλήνιες",
+  ΠΑΣ: "Πανελλήνιες",
+  ΠΑΔΕ: "Πανελλήνιες",
+  ΠΠΟ: "Πανελλήνιες",
+  ΠΚΚ: "Πανελλήνιες",
+  ΠΤΡ: "Πανελλήνιες",
+  ΠΣΕ: "Πανελλήνιες",
+
+  // Μετεγγραφές
+  ΜΕΣ: "Μετεγγραφές",
+  ΜΕΤ: "Μετεγγραφές",
+  ΜΕΞ: "Μετεγγραφές",
+  ΜΛΘ: "Μετεγγραφές",
+  ΜΛΑ: "Μετεγγραφές",
+  ΜΛΜ: "Μετεγγραφές",
+  ΜΛΓ: "Μετεγγραφές",
+  ΜΛΣ: "Μετεγγραφές",
+  ΜΘΓ: "Μετεγγραφές",
+  ΜΘΡ: "Μετεγγραφές",
+  ΜΚΥ: "Μετεγγραφές",
+  ΜΟΡ: "Μετεγγραφές",
+  ΜΙΣ: "Μετεγγραφές",
+  ΜΤΘ: "Μετεγγραφές",
+  ΜΤΛ: "Μετεγγραφές",
+  ΜΤΠ: "Μετεγγραφές",
+
+  // All others not explicitly listed will fall under "Άλλο" (handled in logic)
+};
+
 export const statusDescriptions = {
   ΑΝ: "Αναστολή φοίτησης",
   ΑΝΕ: "Ανενεργός",
@@ -261,6 +292,7 @@ function filterStudents({
   selectedYears,
   courseRange,
   selectedAdmissionTypes,
+  selectedAdmissionGroups,
   selectedStatuses
 }) {
   return data.filter(b =>
@@ -268,9 +300,11 @@ function filterStudents({
     b.r >= courseRange.start &&
     b.r <= courseRange.end &&
     selectedAdmissionTypes.includes(b.raw["ΤΡΟΠΟΣ ΕΙΣΑΓΩΓΗΣ"]) &&
+    selectedAdmissionGroups.includes(b.admissionGroup) &&
     selectedStatuses.includes(b.raw["ΚΑΤΑΣΤΑΣΗ"])
   );
 }
+
 // Main Component
 const InactiveStudents = () => {
   const { t } = useTranslation();
@@ -314,6 +348,9 @@ const InactiveStudents = () => {
 
   const [filterMode, setFilterMode] = useState('hide');
 
+  const [admissionGroups, setAdmissionGroups] = useState([]);
+  const [selectedAdmissionGroups, setSelectedAdmissionGroups] = useState([]);
+
   // Refs for D3 containers
   const packedRef = useRef(null);
   const containerRef = useRef(null);
@@ -332,6 +369,9 @@ const InactiveStudents = () => {
 
   const durationContainerRef = useRef(null);
   const durationPackedRef = useRef(null);
+
+  const admissionGroupContainerRef = useRef(null);
+  const admissionGroupPackedRef = useRef(null);
 
   const categoryBarRef = useRef(null);
   const [barChartWidth, setBarChartWidth] = useState(0);
@@ -357,6 +397,15 @@ const InactiveStudents = () => {
       getLabel: (d) => d.data.category,
       containerRef: categoryContainerRef,
       packedRef: categoryPackedRef,
+    },
+    {
+      key: "byAdmissionGroup",
+      label: "Ανά κατηγορία τρόπου εισαγωγής",
+      groupBy: (d) => d.admissionGroup,
+      labelKey: "admissionGroup",
+      getLabel: (d) => d.data.admissionGroup,
+      containerRef: admissionGroupContainerRef,
+      packedRef: admissionGroupPackedRef,
     },
     {
       key: "byAdmissionType",
@@ -530,6 +579,9 @@ const InactiveStudents = () => {
           else if (yearsStudied === n + 2) durationCategory = `${n + 2}`;
           else durationCategory = `${n + 3}+`;
 
+          const admissionCode = row["ΤΡΟΠΟΣ ΕΙΣΑΓΩΓΗΣ"];
+          const admissionGroup = admissionTypeGroups[admissionCode] || "Άλλο";
+
           return {
             r: row["ΠΛΗΘΟΣ ΜΑΘΗΜΑΤΩΝ"] || 0,
             size: yearsInactive || 0.5,
@@ -537,6 +589,7 @@ const InactiveStudents = () => {
             lastActionDate,
             lastAction: `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`,
             durationCategory,
+            admissionGroup,
             raw: row
           };
         })
@@ -562,6 +615,9 @@ const InactiveStudents = () => {
       setStatuses(uniqueStatuses);
       setSelectedStatuses(uniqueStatuses); // Default: all selected
 
+      const uniqueAdmissionGroups = [...new Set(bubbles.map(b => b.admissionGroup))];
+      setAdmissionGroups(uniqueAdmissionGroups);
+      setSelectedAdmissionGroups(uniqueAdmissionGroups); // default: all selected
 
       const courses = [...new Set(bubbles.map(b => b.r))].sort((a, b) => a - b);
       setAvailableCourses(courses);
@@ -577,20 +633,13 @@ const InactiveStudents = () => {
   }, []);
 
   useEffect(() => {
-    // const filteredData = filterStudents({
-    //   data: inactiveBubbleData,
-    //   selectedYears,
-    //   courseRange,
-    //   selectedAdmissionTypes,
-    //   selectedStatuses
-    // });
-
     const isVisible = (student) =>
       filterStudents({
         data: [student],
         selectedYears,
         courseRange,
         selectedAdmissionTypes,
+        selectedAdmissionGroups,
         selectedStatuses,
       }).length > 0;
 
@@ -731,7 +780,7 @@ const InactiveStudents = () => {
       .on("click", (_, d) => {
         setSelectedBubble(d.data); // 🟢 Store data for details panel
       });
-  }, [inactiveBubbleData, viewMode, groupedMode, dimensions, selectedYears, selectedAdmissionTypes, courseRange, selectedBubble, selectedStatuses, filterMode]);
+  }, [inactiveBubbleData, viewMode, groupedMode, dimensions, selectedYears, selectedAdmissionTypes, courseRange, selectedBubble, selectedStatuses, filterMode, selectedAdmissionGroups]);
 
   const renderGroupedBubbles = useCallback((configKey) => {
     const config = groupedModeConfig[configKey];
@@ -743,6 +792,7 @@ const InactiveStudents = () => {
         selectedYears,
         courseRange,
         selectedAdmissionTypes,
+        selectedAdmissionGroups,
         selectedStatuses,
       }).length > 0;
 
@@ -915,7 +965,7 @@ const InactiveStudents = () => {
         tooltip.style("opacity", 0);
       });
 
-  }, [groupedModeConfig, inactiveBubbleData, dimensions, selectedYears, courseRange, selectedAdmissionTypes, selectedStatuses, selectedBubble,filterMode]);
+  }, [groupedModeConfig, inactiveBubbleData, dimensions, selectedYears, courseRange, selectedAdmissionTypes, selectedStatuses, selectedBubble, filterMode, selectedAdmissionGroups]);
 
   useEffect(() => {
     if (viewMode === "grouped") {
@@ -931,6 +981,7 @@ const InactiveStudents = () => {
       selectedYears,
       courseRange,
       selectedAdmissionTypes,
+      selectedAdmissionGroups,
       selectedStatuses
     });
 
@@ -1060,9 +1111,26 @@ const InactiveStudents = () => {
     courseRange,
     selectedAdmissionTypes,
     selectedStatuses,
-    barChartWidth
+    barChartWidth,
+    selectedAdmissionGroups
   ]);
 
+  const filteredAdmissionTypes = useMemo(() => {
+    return admissionTypes.filter((code) => {
+      const group = admissionTypeGroups[code] || "Άλλο";
+      return selectedAdmissionGroups.includes(group);
+    });
+  }, [admissionTypes, selectedAdmissionGroups]);
+
+
+  useEffect(() => {
+    const allowed = new Set(filteredAdmissionTypes);
+    setSelectedAdmissionTypes((prev) => prev.filter((code) => allowed.has(code)));
+  }, [filteredAdmissionTypes]);
+
+  useEffect(() => {
+    setSelectedAdmissionTypes(filteredAdmissionTypes);
+  }, [filteredAdmissionTypes]);
 
   const allKeys = useMemo(() => {
     const keySet = new Set();
@@ -1071,6 +1139,7 @@ const InactiveStudents = () => {
     });
     return Array.from(keySet);
   }, [rawData]);
+
 
   return (
     <>
@@ -1211,8 +1280,15 @@ const InactiveStudents = () => {
               />
 
               <CheckboxFilter
+                title="Κατηγορία τρόπου εισαγωγής"
+                options={admissionGroups}
+                selected={selectedAdmissionGroups}
+                setSelected={setSelectedAdmissionGroups}
+              />
+
+              <CheckboxFilter
                 title="Τρόπος εισαγωγής"
-                options={admissionTypes}
+                options={filteredAdmissionTypes}
                 selected={selectedAdmissionTypes}
                 setSelected={setSelectedAdmissionTypes}
                 descriptions={admissionTypeDescriptions}
@@ -1268,6 +1344,15 @@ const InactiveStudents = () => {
                 </div>
               )}
 
+              {viewMode === "grouped" && groupedMode === "byAdmissionGroup" && (
+                <div>
+                  <h3 className="text-lg font-medium">Ομαδοποίηση ανά κατηγορία τρόπου εισαγωγής</h3>
+                  <div ref={admissionGroupContainerRef} style={{ height: "90vh", width: "100%" }} className="relative">
+                    <div ref={admissionGroupPackedRef} className="absolute inset-0" />
+                  </div>
+                </div>
+              )}
+
               {viewMode === "grouped" && groupedMode === "byAdmissionType" && (
                 <div>
                   <h3 className="text-lg font-medium">Ομαδοποίηση ανά τρόπο εισαγωγής</h3>
@@ -1304,6 +1389,7 @@ const InactiveStudents = () => {
                   selectedYears,
                   courseRange,
                   selectedAdmissionTypes,
+                  selectedAdmissionGroups,
                   selectedStatuses
                 }).length} Φοιτητές/ριες
               </p>
@@ -1312,7 +1398,17 @@ const InactiveStudents = () => {
                 {range.start !== range.end ? ` ${range.start}–${range.end}` : ` ${range.start}`}
                 , περασμένα μαθήματα {courseRange.start}–{courseRange.end}
                 , κατάσταση φοίτησης {selectedStatuses.length > 0 ? selectedStatuses.join(", ") : "Καμία"}
-                {' '} και τρόπους εισαγωγής {selectedAdmissionTypes.length > 0 ? displayedAdmissions : "Κανένα"}
+                {selectedAdmissionGroups.length > 0 ? (
+                  <>
+                    , κατηγορία τρόπου εισαγωγής {selectedAdmissionGroups.join(", ")}
+                    , και τρόπους εισαγωγής {selectedAdmissionTypes.length > 0 ? displayedAdmissions : "Κανέναν"}
+                  </>
+                ) : (
+                  <>
+                    , και κατηγορία τρόπου εισαγωγής Κανέναν
+                  </>
+
+                )}
               </p>
 
               {selectedAdmissionTypes.length > 5 && (
