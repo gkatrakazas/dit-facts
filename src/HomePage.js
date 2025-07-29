@@ -11,15 +11,18 @@ const HomePage = () => {
   const visualizations = [
     {
       title: t("homepage.visualizations.active_students.title"),
-      description: t("homepage.visualizations.active_students.description"),
       route: "/active-students-chart",
       img: "./active-students.png"
     },
     {
       title: t("homepage.visualizations.inactive_students.title"),
-      description: t("homepage.visualizations.inactive_students.description"),
       route: "/inactive_students",
       img: "./inactive_students.png"
+    },
+    {
+      title: t("homepage.visualizations.graduateProgressChart.title"),
+      route: "/students_graduation",
+      img: "./students_graduation.png"
     }
   ];
 
@@ -43,12 +46,9 @@ const HomePage = () => {
             >
               <div>
                 <h2 className="text-xl flex flex-col gap-2 font-semibold text-primary group-hover:text-secondary group-hover:opacity-80 transition duration-200 mb-2">
-                  <img className="h-40 w-auto object-cover" src={viz.img}></img>
+                  <img className="h-40 w-auto object-cover" src={viz.img} alt="vis img"></img>
                   {viz.title}
                   </h2>
-                {/* <p className="text-gray-600 mb-4">
-                  {viz.description}
-                  </p> */}
               </div>
             </div>
           ))}

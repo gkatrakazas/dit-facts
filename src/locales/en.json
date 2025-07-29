@@ -10,6 +10,9 @@
       "inactive_students":{
         "title": "Inactive Students by Status and Admission Year",
         "description": "Visualization of students based on status, admission year, and admission type using filters and interactive bubble charts."
+      },
+      "graduateProgressChart":{
+        "title":"Graduate Progress by Admission Category and Year"
       }
     }
   },
