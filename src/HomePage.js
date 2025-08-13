@@ -37,13 +37,13 @@ const HomePage = () => {
         <p className="text-lg text-gray-600 mb-8 text-center">
           {t("homepage.welcome")}
         </p>
-        <div className="flex flex-wrap justify-center gap-6 w-full max-w-6xl">
+        <div className="flex flex-wrap justify-center gap-6 w-full max-w-7xl">
           {visualizations.map((viz) => (
             <div
               key={viz.title}
               role="button"
               tabIndex={0}
-              className="group bg-white text-center shadow-md rounded-md hover:shadow-lg hover:scale-[1.01] transition-all duration-200 ease-in-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-300 p-6 flex flex-col justify-between w-full sm:w-[48%] lg:w-[30%] border-t-4 border-primary hover:border-secondary"
+              className="group bg-white text-center shadow-md rounded-md hover:shadow-lg hover:scale-[1.01] transition-all duration-200 ease-in-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-300 p-6 flex flex-col justify-between w-full sm:w-[48%] lg:w-[23%] border-t-4 border-primary hover:border-secondary"
               onClick={() => navigate(viz.route)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') navigate(viz.route);
@@ -53,7 +53,7 @@ const HomePage = () => {
                 <h2 className="text-xl flex flex-col gap-2 font-semibold text-primary group-hover:text-secondary group-hover:opacity-80 transition duration-200 mb-2">
                   <img className="h-40 w-auto object-cover" src={viz.img} alt="vis img"></img>
                   {viz.title}
-                  </h2>
+                </h2>
               </div>
             </div>
           ))}
