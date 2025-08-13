@@ -23,7 +23,12 @@ const HomePage = () => {
       title: t("homepage.visualizations.graduateProgressChart.title"),
       route: "/students_graduation",
       img: "./students_graduation.png"
-    }
+    },
+    {
+      title: t("homepage.visualizations.inactive_students.title"),
+      route: "/inactive_grad_students",
+      img: "./grad.png"
+    },
   ];
 
   return (

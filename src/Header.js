@@ -53,6 +53,14 @@ const Header = () => {
                 {t("homepage.visualizations.graduateProgressChart.title")}
               </Link>
             </li>
+            <li>
+              <Link
+                to="/inactive_grad_students"
+                className="block px-4 py-2 hover:bg-secondary hover:text-white text-sm rounded-md text-gray-700"
+              >
+                {t("homepage.visualizations.graduate_students.title")}
+              </Link>
+            </li>
           </ul>
         </div>
       </nav>
