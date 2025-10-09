@@ -2,29 +2,35 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 
-// Import your translations
 import en from './locales/en.json';
 import el from './locales/el.json';
 
 i18n
-    .use(LanguageDetector) // Detect language from browser or localStorage
-    .use(initReactI18next) // Connect with React
+    .use(LanguageDetector)
+    .use(initReactI18next)
     .init({
         resources: {
             en: { translation: en },
             el: { translation: el },
         },
-        fallbackLng: 'en', // Use English if language is not available
-        debug: false, // Change to true if you want console logs
+        fallbackLng: 'en',
+        debug: false,
 
         detection: {
-            order: ['localStorage', 'navigator'], // Try localStorage first, then browser language
-            caches: ['localStorage'], // Save selected language to localStorage
+            // ⬇️ Detect from localStorage first — then browser
+            order: ['localStorage', 'navigator'],
+            caches: ['localStorage'],
+
+            // 👇 Add this to clean browser language (only when using navigator)
+            lookupNavigator: () => {
+                const raw =
+                    navigator.languages?.[0] || navigator.language || navigator.userLanguage || 'en';
+                return raw.split(/[-_]/)[0]; // "en-US" → "en", "el-GR" → "el"
+            },
         },
 
-        interpolation: {
-            escapeValue: false, // React already escapes by default
-        },
+        supportedLngs: ['en', 'el'],
+        interpolation: { escapeValue: false },
     });
 
 export default i18n;
