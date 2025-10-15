@@ -1016,7 +1016,7 @@ const GraduatesDuration = () => {
 
         <div className="flex flex-row gap-6 w-full">
           {/* Sidebar: Display options */}
-          <div className="flex flex-col gap-3 mt-6 bg-white p-4 rounded shadow w-60">
+          <div className="flex flex-col gap-3 mt-6 bg-white p-4 pr-6 rounded shadow w-[30%] max-h-[100vh] overflow-y-auto">
             <div className="flex flex-col gap-2 text-sm">
               <h2 className="text-md font-semibold text-md">{t('visualization.common.view.label')}</h2>
 
@@ -1162,7 +1162,7 @@ const GraduatesDuration = () => {
           {/* Main content (bubble chart and legend) */}
           <div id="graph" className="flex flex-row bg-white shadow shadow-lg rounded-lg mt-6 w-full">
             {/* Legend */}
-            <div className="flex flex-wrap gap-4 items-baseline w-[220px]">
+            {/* <div className="flex flex-wrap gap-4 items-baseline w-[220px]">
               <div className="flex flex-col justify-center items-left gap-2 text-sm bg-white border-gray-300 border-[1px] shadow-sm m-2 px-2 py-2">
                 <span className="text-gray-600">{t('visualization.graduatesDuration.legend.studyDuration')}</span>
                 <div className="flex flex-col gap-2 mt-2 flex-wrap">
@@ -1175,7 +1175,7 @@ const GraduatesDuration = () => {
                 </div>
                 <p className="font-medium  mb-2 italic text-xs text-gray-600">{t('visualization.graduatesDuration.legend.noteN')}</p>
               </div>
-            </div>
+            </div> */}
 
 
             {/* Chart container */}
@@ -1243,6 +1243,23 @@ const GraduatesDuration = () => {
 
 
           <div className="max-w-[25%] mt-6 w-full">
+
+            <div className="flex flex-col justify-center items-left gap-2 text-sm border-gray-300 border-[1px] shadow-sm mb-2 px-2 py-2">
+              <span className="text-gray-600">{t('visualization.graduatesDuration.legend.studyDuration')}</span>
+              <div className="flex wrap-auto gap-2 mt-2 text-xs flex-wrap w-full">
+                {inactivityLevels.map(({ label, color }) => (
+                  <div key={label} className="flex items-center gap-2 border border-1 p-1 bg-gray-50">
+                    <div className="w-4 h-4 rounded-full" style={{ backgroundColor: color }} />
+                    {label}
+                  </div>
+                ))}
+              </div>
+              <p className="font-medium w-auto  mb-2 italic text-xs text-gray-600">
+                {t('visualization.graduatesDuration.legend.noteN')}
+              </p>
+
+            </div>
+
             <div className="p-2 relative w-full bg-white shadow shadow-lg rounded-lg w-full">
               <p className="text-lg font-semibold text-primary">
                 {t("visualization.graduatesDuration.summary.count", {
