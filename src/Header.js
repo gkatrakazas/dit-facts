@@ -97,7 +97,7 @@ const Header = () => {
           </button>
 
           {isOpen && (
-            <ul className="absolute left-0 mt-1 w-80 bg-white border rounded-md shadow-lg z-10">
+            <ul className="absolute left-0 w-80 bg-white border rounded-md shadow-lg z-10">
               <li>
                 <NavLink
                   to="/inactive-students"
