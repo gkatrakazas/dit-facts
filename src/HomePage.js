@@ -10,24 +10,24 @@ const HomePage = () => {
   // Sample visualizations data
   const visualizations = [
     {
-      title: t("homepage.visualizations.active_students.title"),
-      route: "/active-students-chart",
-      img: "./active-students.png"
-    },
-    {
-      title: t("homepage.visualizations.inactive_students.title"),
-      route: "/inactive_students",
+      title: t("visualization.inactiveStudents.title"),
+      route: "/inactive-students",
       img: "./inactive_students.png"
     },
     {
-      title: t("homepage.visualizations.graduateProgressChart.title"),
-      route: "/students_graduation",
-      img: "./students_graduation.png"
+      title: t("visualization.graduationTimelines.title"),
+      route: "/graduation-timelines",
+      img: "./graduation-timelines.png"
     },
     {
-      title: t("homepage.visualizations.inactive_students.title"),
-      route: "/inactive_grad_students",
-      img: "./grad.png"
+      title: t("visualization.graduatesDuration.title"),
+      route: "/graduates-duration",
+      img: "./graduates-duration.png"
+    },
+    {
+      title: t("visualization.passingCourses.title"),
+      route: "/passing-courses",
+      img: "./passing-courses.png"
     },
   ];
 

@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import MultiRangeSlider from "../../components/MultiRangeSlider";
 import { usePagination } from "../../hooks/usePagination";
 import PaginationControls from "../../components/PaginationControls";
-import { admissionTypeDescriptions, admissionTypeGroups, statusDescriptions} from "../../data/students/studentMetadata";
+import { admissionTypeDescriptions, admissionTypeGroups, statusDescriptions } from "../../data/students/studentMetadata";
 
 const inactivityLevels = [
   { min: 20, color: "#8B0000", label: "> 20" },
@@ -17,19 +17,19 @@ const inactivityLevels = [
 ];
 
 // Utils
-const formatYearsAndMonths = (yearsDecimal) => {
+const formatYearsAndMonths = (yearsDecimal, t) => {
   const fullYears = Math.floor(yearsDecimal);
   const months = Math.round((yearsDecimal - fullYears) * 12);
 
-  const yearLabel = fullYears === 1 ? "έτος" : "έτη";
-  const monthLabel = months === 1 ? "μήνα" : "μήνες";
+  const yearLabel = fullYears === 1 ? t("visualization.common.yearOne") : t("visualization.common.yearMany");
+  const monthLabel = months === 1 ? t("visualization.common.monthOne") : t("visualization.common.monthMany");
 
   if (fullYears > 0 && months > 0) {
-    return `${fullYears} ${yearLabel} και ${months} ${monthLabel}`;
+    return t("visualization.common.yearsAndMonths", { years: fullYears, months, and: t("visualization.common.and"), years_label: yearLabel, months_label: monthLabel });
   } else if (fullYears > 0) {
-    return `${fullYears} ${yearLabel}`;
+    return t("visualization.common.onlyYears", { years: fullYears, years_label: yearLabel });
   } else {
-    return `${months} ${monthLabel}`;
+    return t("visualization.common.onlyMonths", { months, months_label: monthLabel });
   }
 };
 
@@ -53,15 +53,15 @@ const getInactivityCategory = (yearsInactive) => {
   return level?.label ?? "-";
 };
 
-const getTooltipHtml = (d) => {
+const getTooltipHtml = (d, t) => {
   const fieldsToShow = [
-    { label: "Έτος τελευταίας ενέργειας", value: d.data.year },
-    { label: "Περασμένων μαθημάτα", value: d.data.r },
-    { label: "Ημ/νία τελευταίας ενέργειας", value: formatDateToYearMonth(d.data.lastAction) },
-    { label: "Τρόπος εισαγωγής", value: d.data.raw?.["ΤΡΟΠΟΣ ΕΙΣΑΓΩΓΗΣ"] },
-    { label: "Έτος εγγραφής", value: d.data.raw?.["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"] },
-    { label: "Κατάσταση φοίτησης", value: d.data.raw?.["ΚΑΤΑΣΤΑΣΗ"] },
-    { label: "Έτη ανενεργός/ή", value: formatYearsAndMonths(d.data.size) },
+    { label: t("visualization.inactiveStudents.tooltip.yearOfLastAction"), value: d.data.year },
+    { label: t("visualization.inactiveStudents.tooltip.passedCourses"), value: d.data.r },
+    { label: t("visualization.inactiveStudents.tooltip.lastActionDate"), value: formatDateToYearMonth(d.data.lastAction, t) },
+    { label: t("visualization.inactiveStudents.tooltip.admissionType"), value: d.data.raw?.["ΤΡΟΠΟΣ ΕΙΣΑΓΩΓΗΣ"] },
+    { label: t("visualization.inactiveStudents.tooltip.admissionYear"), value: d.data.raw?.["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"] },
+    { label: t("visualization.inactiveStudents.tooltip.status"), value: d.data.raw?.["ΚΑΤΑΣΤΑΣΗ"] },
+    { label: t("visualization.inactiveStudents.tooltip.yearsInactive"), value: formatYearsAndMonths(d.data.size, t) },
   ];
 
   return fieldsToShow
@@ -71,6 +71,8 @@ const getTooltipHtml = (d) => {
 
 const CheckboxFilter = ({ title, options, selected, setSelected, descriptions = {} }) => {
   const allSelected = selected.length === options.length;
+
+  const { t } = useTranslation();
 
   const toggleAll = (checked) => {
     setSelected(checked ? options : []);
@@ -104,7 +106,7 @@ const CheckboxFilter = ({ title, options, selected, setSelected, descriptions = 
             checked={allSelected}
             onChange={(e) => toggleAll(e.target.checked)}
           />
-          <span className="text-gray-800 font-medium">ΟΛΑ</span>
+          <span className="text-gray-800 font-medium">{t("visualization.common.all")}</span>
         </label>
         <div className="border-t border-gray-200 my-1" />
         {options.map((option) => (
@@ -233,7 +235,7 @@ const InactiveStudents = () => {
   const groupOptions = [
     {
       key: "byYear",
-      label: "Ανά έτος εγγραφής",
+      label: t("visualization.inactiveStudents.group.byYear"),
       groupBy: (d) => d.raw["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"],
       labelKey: "year",
       getLabel: (d) => d.data.year,
@@ -242,7 +244,7 @@ const InactiveStudents = () => {
     },
     {
       key: "byCategory",
-      label: "Ανά κατηγορία ανενεργών",
+      label: t("visualization.inactiveStudents.group.byCategory"),
       groupBy: (d) => getInactivityCategory(d.size),
       labelKey: "category",
       getLabel: (d) => d.data.category,
@@ -251,7 +253,7 @@ const InactiveStudents = () => {
     },
     {
       key: "byAdmissionGroup",
-      label: "Ανά κατηγορία τρόπου εισαγωγής",
+      label: t("visualization.inactiveStudents.group.byAdmissionGroup"),
       groupBy: (d) => d.admissionGroup,
       labelKey: "admissionGroup",
       getLabel: (d) => d.data.admissionGroup,
@@ -260,7 +262,7 @@ const InactiveStudents = () => {
     },
     {
       key: "byAdmissionType",
-      label: "Ανά τρόπο εισαγωγής",
+      label: t("visualization.inactiveStudents.group.byAdmissionType"),
       groupBy: (d) => d.raw["ΤΡΟΠΟΣ ΕΙΣΑΓΩΓΗΣ"],
       labelKey: "admissionType",
       getLabel: (d) => d.data.admissionType,
@@ -269,7 +271,7 @@ const InactiveStudents = () => {
     },
     {
       key: "byStatus",
-      label: "Ανά κατάσταση φοίτησης",
+      label: t("visualization.inactiveStudents.group.byStatus"),
       groupBy: (d) => d.raw["ΚΑΤΑΣΤΑΣΗ"],
       labelKey: "status",
       getLabel: (d) => d.data.status,
@@ -278,17 +280,17 @@ const InactiveStudents = () => {
     },
     {
       key: "byStudyDuration",
-      label: "Ανά διάρκεια φοίτησης",
+      label: t("visualization.inactiveStudents.group.byStudyDuration"),
       groupBy: (d) => {
         const enrollmentYear = d.raw?.["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"];
         const maxDataYear = Math.max(...availableYears); // from state
         const yearsStudied = maxDataYear - enrollmentYear;
         const n = 4;
 
-        if (yearsStudied <= n) return `0 εώς και ν`;
-        if (yearsStudied === n + 1) return `ν εώς και ν+1`;
-        if (yearsStudied === n + 2) return `ν+1 εώς και ν+2`;
-        return `>ν+2`;
+        if (yearsStudied <= n) return t("visualization.inactiveStudents.studyDuration.uptoN");
+        if (yearsStudied === n + 1) return t("visualization.inactiveStudents.studyDuration.nToN1");
+        if (yearsStudied === n + 2) return t("visualization.inactiveStudents.studyDuration.n1ToN2");
+        return t("visualization.inactiveStudents.studyDuration.gtN2");
       },
       labelKey: "durationCategory",
       getLabel: (d) => d.data.durationCategory,
@@ -299,7 +301,7 @@ const InactiveStudents = () => {
   ];
 
   const displayedAdmissions = selectedAdmissionTypes.length > 5 && !showFullDetails
-    ? `${selectedAdmissionTypes.slice(0, 5).join(", ")}... και άλλοι ${selectedAdmissionTypes.length - 5}`
+    ? `${selectedAdmissionTypes.slice(0, 5).join(", ")}... ${t("visualization.common.andOthers", { count: selectedAdmissionTypes.length - 5 })}`
     : selectedAdmissionTypes.join(", ");
 
   const groupedModeConfig = Object.fromEntries(groupOptions.map((opt) => [opt.key, opt]));
@@ -431,7 +433,7 @@ const InactiveStudents = () => {
           else durationCategory = `${n + 3}+`;
 
           const admissionCode = row["ΤΡΟΠΟΣ ΕΙΣΑΓΩΓΗΣ"];
-          const admissionGroup = admissionTypeGroups[admissionCode] || "Άλλο";
+          const admissionGroup = admissionTypeGroups[admissionCode] || "Άλλοι Τρόποι";
 
           return {
             r: row["ΠΛΗΘΟΣ ΜΑΘΗΜΑΤΩΝ"] || 0,
@@ -601,7 +603,7 @@ const InactiveStudents = () => {
 
         tooltip
           .style("opacity", 1)
-          .html(getTooltipHtml(d));
+          .html(getTooltipHtml(d, t));
       })
       .on("mousemove", (event) => {
         tooltip
@@ -631,7 +633,7 @@ const InactiveStudents = () => {
       .on("click", (_, d) => {
         setSelectedBubble(d.data); // 🟢 Store data for details panel
       });
-  }, [inactiveBubbleData, viewMode, groupedMode, dimensions, selectedYears, selectedAdmissionTypes, courseRange, selectedBubble, selectedStatuses, filterMode, selectedAdmissionGroups]);
+  }, [inactiveBubbleData, viewMode, groupedMode, dimensions, selectedYears, selectedAdmissionTypes, courseRange, selectedBubble, selectedStatuses, filterMode, selectedAdmissionGroups, t]);
 
   const renderGroupedBubbles = useCallback((configKey) => {
     const config = groupedModeConfig[configKey];
@@ -771,7 +773,7 @@ const InactiveStudents = () => {
           .attr("filter", "url(#hover-shadow)")
           .attr("opacity", 1);
 
-        tooltip.style("opacity", 1).html(getTooltipHtml(d));
+        tooltip.style("opacity", 1).html(getTooltipHtml(d, t));
       })
       .on("mousemove", (event) => {
         tooltip
@@ -816,7 +818,7 @@ const InactiveStudents = () => {
         tooltip.style("opacity", 0);
       });
 
-  }, [groupedModeConfig, inactiveBubbleData, dimensions, selectedYears, courseRange, selectedAdmissionTypes, selectedStatuses, selectedBubble, filterMode, selectedAdmissionGroups]);
+  }, [groupedModeConfig, inactiveBubbleData, dimensions, selectedYears, courseRange, selectedAdmissionTypes, selectedStatuses, selectedBubble, filterMode, selectedAdmissionGroups, t]);
 
   useEffect(() => {
     if (viewMode === "grouped") {
@@ -946,7 +948,7 @@ const InactiveStudents = () => {
       .attr("text-anchor", "middle")
       .attr("fill", "#333")
       .attr("font-size", "11px")
-      .text("Κατηγορίες ανενεργών");
+      .text(t("visualization.inactiveStudents.categoryCounts.yAxis"));
 
     // X Axis Label (horizontal)
     svg.append("text")
@@ -955,7 +957,7 @@ const InactiveStudents = () => {
       .attr("text-anchor", "middle")
       .attr("fill", "#333")
       .attr("font-size", "11px")
-      .text("Πλήθος Φοιτητών/τριών");
+      .text(t("visualization.inactiveStudents.categoryCounts.xAxis"));
   }, [
     inactiveBubbleData,
     selectedYears,
@@ -963,12 +965,13 @@ const InactiveStudents = () => {
     selectedAdmissionTypes,
     selectedStatuses,
     barChartWidth,
-    selectedAdmissionGroups
+    selectedAdmissionGroups,
+    t
   ]);
 
   const filteredAdmissionTypes = useMemo(() => {
     return admissionTypes.filter((code) => {
-      const group = admissionTypeGroups[code] || "Άλλο";
+      const group = admissionTypeGroups[code] || "Άλλοι Τρόποι";
       return selectedAdmissionGroups.includes(group);
     });
   }, [admissionTypes, selectedAdmissionGroups]);
@@ -995,18 +998,18 @@ const InactiveStudents = () => {
   return (
     <>
       <div className="flex flex-col mx-5 mt-5">
-        <h2 className="text-xl font-semibold">{t("homepage.visualizations.inactive_students.title")}</h2>
+        <h2 className="text-xl font-semibold">{t("visualization.inactiveStudents.title")}</h2>
 
         <div className="flex flex-row gap-6 w-full">
           {/* Sidebar: Display options */}
-          <div className="flex flex-col gap-3 mt-6 bg-white p-4 rounded shadow w-60">
+          <div className="flex flex-col gap-3 mt-6 bg-white p-4 pr-6 rounded shadow w-[30%] max-h-[100vh] overflow-y-auto">
             <div className="flex flex-col gap-2 text-sm">
-              <h2 className="text-md font-semibold text-md">Επιλογή προβολής</h2>
+              <h2 className="text-md font-semibold text-md">{t("visualization.common.view.label")}</h2>
 
               <div className="flex border border-gray-300 rounded overflow-hidden">
                 {[
-                  { value: "individual", label: "Ατομικά" },
-                  { value: "grouped", label: "Ομαδοποιημένα" }
+                  { value: "individual", label: t("visualization.common.view.individual") },
+                  { value: "grouped", label: t("visualization.common.view.grouped") }
                 ].map((option) => (
                   <label
                     key={option.value}
@@ -1045,12 +1048,12 @@ const InactiveStudents = () => {
             <div className="border-t border-gray-200"></div>
 
             <div className="flex flex-col gap-2 text-sm">
-              <h2 className="text-md font-semibold text-md">Λειτουργία Φίλτρων</h2>
+              <h2 className="text-md font-semibold text-md">{t("visualization.common.filterMode.label")}</h2>
 
               <div className="flex border border-gray-300 rounded overflow-hidden">
                 {[
-                  { value: "hide", label: "Απόκρυψη" },
-                  { value: "dim", label: "Εξασθένιση" }
+                  { value: "hide", label: t("visualization.common.filterMode.hide") },
+                  { value: "dim", label: t("visualization.common.filterMode.dim") }
                 ].map((option) => (
                   <label
                     key={option.value}
@@ -1077,11 +1080,11 @@ const InactiveStudents = () => {
             <div className="border-t border-gray-200"></div>
 
             <div className="flex flex-col gap-2 text-sm">
-              <h2 className="text-md font-semibold">Φίλτρα</h2>
+              <h2 className="text-md font-semibold">{t("visualization.common.filters")}</h2>
 
               <div className="text-sm text-gray-700 font-base">
 
-                <label className="font-medium">Έτος εγγραφής</label>
+                <label className="font-medium">{t("visualization.common.admissionYear")}</label>
 
                 {minYear && maxYear && (
                   <MultiRangeSlider
@@ -1102,7 +1105,7 @@ const InactiveStudents = () => {
               </div>
 
               <div className="text-sm text-gray-700 font-base">
-                <label className="font-medium">Περασμένα μαθημάτα</label>
+                <label className="font-medium">{t("visualization.common.passingCourses")}</label>
 
                 {availableCourses.length > 0 && (
                   <MultiRangeSlider
@@ -1123,7 +1126,7 @@ const InactiveStudents = () => {
               </div>
 
               <CheckboxFilter
-                title="Κατάσταση φοίτησης"
+                title={t("visualization.inactiveStudents.status")}
                 options={statuses}
                 selected={selectedStatuses}
                 setSelected={setSelectedStatuses}
@@ -1131,14 +1134,14 @@ const InactiveStudents = () => {
               />
 
               <CheckboxFilter
-                title="Κατηγορία τρόπου εισαγωγής"
+                title={t("visualization.common.admissionCategory")}
                 options={admissionGroups}
                 selected={selectedAdmissionGroups}
                 setSelected={setSelectedAdmissionGroups}
               />
 
               <CheckboxFilter
-                title="Τρόπος εισαγωγής"
+                title={t("visualization.common.admissionType")}
                 options={filteredAdmissionTypes}
                 selected={selectedAdmissionTypes}
                 setSelected={setSelectedAdmissionTypes}
@@ -1151,9 +1154,9 @@ const InactiveStudents = () => {
           {/* Main content (bubble chart and legend) */}
           <div id="graph" className="flex flex-row bg-white shadow shadow-lg rounded-lg mt-6 w-full">
             {/* Legend */}
-            <div className="flex flex-wrap gap-4 items-baseline w-[220px]">
+            {/* <div className="flex flex-wrap gap-4 items-baseline w-[220px]">
               <div className="flex flex-col justify-center items-left gap-2 text-sm bg-white border-gray-300 border-[1px] shadow-sm m-2 px-2 py-2">
-                <span className="text-gray-600">Έτη ανενεργός/ή</span>
+                <span className="text-gray-600">{t("visualization.inactiveStudents.yearsInactivity")}</span>
                 <div className="flex flex-col gap-2 mt-2 flex-wrap">
                   {inactivityLevels.map(({ label, color }) => (
                     <div key={label} className="flex items-center gap-2">
@@ -1163,10 +1166,10 @@ const InactiveStudents = () => {
                   ))}
                 </div>
                 <p className="font-medium  mb-2 italic text-xs text-gray-600">
-                  * Υπολογίζεται απο την πιο πρόσφατη Ημ/νία: «Τελευταία Δήλωση», «Τελευταία Επιτυχής Εξέταση», «Τελευταία Αποτυχία» και «Έτος Εγγραφής».
+                  {t("visualization.inactiveStudents.legendDiscription")}
                 </p>
               </div>
-            </div>
+            </div> */}
 
             {/* Chart container */}
             <div className="w-full m-4">
@@ -1180,7 +1183,7 @@ const InactiveStudents = () => {
 
               {(viewMode === "grouped" && groupedMode === "byYear") && (
                 <div>
-                  <h3 className="text-lg font-medium">Ομαδοποίηση ανά έτος εγγραφής</h3>
+                  <h3 className="text-lg font-medium">{t("visualization.inactiveStudents.group.byYear")}</h3>
                   <div ref={yearContainerRef} style={{ height: "90vh", width: "100%" }} className="relative">
                     <div ref={yearPackedRef} className="absolute inset-0"></div>
                   </div>
@@ -1188,7 +1191,7 @@ const InactiveStudents = () => {
               )}
               {(viewMode === "grouped" && groupedMode === "byCategory") && (
                 <div>
-                  <h3 className="text-lg font-medium">Ομαδοποίηση ανά κατηγορία ανενεργών</h3>
+                  <h3 className="text-lg font-medium">{t("visualization.inactiveStudents.group.byCategory")}</h3>
                   <div ref={categoryContainerRef} style={{ height: "90vh", width: "100%" }} className="relative">
                     <div ref={categoryPackedRef} className="absolute inset-0" />
                   </div>
@@ -1197,7 +1200,7 @@ const InactiveStudents = () => {
 
               {viewMode === "grouped" && groupedMode === "byAdmissionGroup" && (
                 <div>
-                  <h3 className="text-lg font-medium">Ομαδοποίηση ανά κατηγορία τρόπου εισαγωγής</h3>
+                  <h3 className="text-lg font-medium">{t("visualization.inactiveStudents.group.byAdmissionGroup")}</h3>
                   <div ref={admissionGroupContainerRef} style={{ height: "90vh", width: "100%" }} className="relative">
                     <div ref={admissionGroupPackedRef} className="absolute inset-0" />
                   </div>
@@ -1206,7 +1209,7 @@ const InactiveStudents = () => {
 
               {viewMode === "grouped" && groupedMode === "byAdmissionType" && (
                 <div>
-                  <h3 className="text-lg font-medium">Ομαδοποίηση ανά τρόπο εισαγωγής</h3>
+                  <h3 className="text-lg font-medium">{t("visualization.inactiveStudents.group.byAdmissionType")}</h3>
                   <div ref={admissionContainerRef} style={{ height: "90vh", width: "100%" }} className="relative">
                     <div ref={admissionPackedRef} className="absolute inset-0" />
                   </div>
@@ -1214,7 +1217,7 @@ const InactiveStudents = () => {
               )}
               {viewMode === "grouped" && groupedMode === "byStatus" && (
                 <div>
-                  <h3 className="text-lg font-medium">Ομαδοποίηση ανά κατάσταση φοίτησης</h3>
+                  <h3 className="text-lg font-medium">{t("visualization.inactiveStudents.group.byStatus")}</h3>
                   <div ref={statusContainerRef} style={{ height: "90vh", width: "100%" }} className="relative">
                     <div ref={statusPackedRef} className="absolute inset-0" />
                   </div>
@@ -1222,7 +1225,7 @@ const InactiveStudents = () => {
               )}
               {viewMode === "grouped" && groupedMode === "byStudyDuration" && (
                 <div>
-                  <h3 className="text-lg font-medium">	Ομαδοποίηση ανά διάρκεια φοίτησης</h3>
+                  <h3 className="text-lg font-medium">{t("visualization.inactiveStudents.group.byStudyDuration")}</h3>
                   <div ref={durationContainerRef} style={{ height: "90vh", width: "100%" }} className="relative">
                     <div ref={durationPackedRef} className="absolute inset-0" />
                   </div>
@@ -1232,7 +1235,22 @@ const InactiveStudents = () => {
           </div>
 
 
-          <div className="max-w-[20%] mt-6 w-full">
+          <div className="max-w-[25%] mt-6 w-full">
+            <div className="flex flex-col justify-center items-left gap-2 text-sm border-gray-300 border-[1px] shadow-sm mb-2 px-2 py-2">
+              <span className="text-gray-600">{t("visualization.inactiveStudents.yearsInactivity")}</span>
+              <div className="flex wrap-auto gap-2 mt-2 text-xs flex-wrap w-full">
+                {inactivityLevels.map(({ label, color }) => (
+                  <div key={label} className="flex items-center gap-2 border border-1 p-1 bg-gray-50">
+                    <div className="w-4 h-4 rounded-full" style={{ backgroundColor: color }} />
+                    {label}
+                  </div>
+                ))}
+              </div>
+              <p className="font-medium w-auto  mb-2 italic text-xs text-gray-600">
+                {t("visualization.inactiveStudents.legendDiscription")}
+              </p>
+            </div>
+
             <div className="p-2 relative w-full bg-white shadow shadow-lg rounded-lg w-full">
               <p className="text-lg font-semibold text-primary">
                 {filterStudents({
@@ -1242,21 +1260,21 @@ const InactiveStudents = () => {
                   selectedAdmissionTypes,
                   selectedAdmissionGroups,
                   selectedStatuses
-                }).length} Φοιτητές/ριες
+                }).length} {t("visualization.inactiveStudents.studentsWord")}
               </p>
               <p className="text-xs text-gray-600 mt-1 leading-relaxed whitespace-pre-line">
-                Με έτος εγγραφής
+                {t("visualization.inactiveStudents.summary.prefixAdmissionYear")}
                 {range.start !== range.end ? ` ${range.start}–${range.end}` : ` ${range.start}`}
-                , περασμένα μαθήματα {courseRange.start}–{courseRange.end}
-                , κατάσταση φοίτησης {selectedStatuses.length > 0 ? selectedStatuses.join(", ") : "Καμία"}
+                {t("visualization.inactiveStudents.summary.coursesRangePrefix")} {courseRange.start}–{courseRange.end}
+                {t("visualization.inactiveStudents.summary.statusPrefix")} {selectedStatuses.length > 0 ? selectedStatuses.join(", ") : t("visualization.common.none")}
                 {selectedAdmissionGroups.length > 0 ? (
                   <>
-                    , κατηγορία τρόπου εισαγωγής {selectedAdmissionGroups.join(", ")}
-                    , και τρόπους εισαγωγής {selectedAdmissionTypes.length > 0 ? displayedAdmissions : "Κανέναν"}
+                    {t("visualization.inactiveStudents.summary.admissionGroupPrefix")} {selectedAdmissionGroups.join(", ")}
+                    {t("visualization.inactiveStudents.summary.admissionTypesPrefix")} {selectedAdmissionTypes.length > 0 ? displayedAdmissions : t("visualization.common.none_masc")}
                   </>
                 ) : (
                   <>
-                    , και κατηγορία τρόπου εισαγωγής Κανέναν
+                    {t("visualization.inactiveStudents.summary.admissionGroupPrefix")} {t("visualization.common.none_masc")}
                   </>
 
                 )}
@@ -1267,7 +1285,7 @@ const InactiveStudents = () => {
                   onClick={() => setShowFullDetails(!showFullDetails)}
                   className="text-xs text-blue-600 hover:underline mt-1"
                 >
-                  {showFullDetails ? "Προβολή συνοπτικά" : "Προβολή αναλυτικά"}
+                  {showFullDetails ? t("visualization.common.viewLess") : t("visualization.common.viewMore")}
                 </button>
               )}
             </div>
@@ -1287,22 +1305,52 @@ const InactiveStudents = () => {
                     className="w-4 h-4 rounded-full border border-gray-300"
                     style={{ backgroundColor: getColorByInactivity(selectedBubble.lastAction) }}
                   />
-                  <p className="text-md font-semibold">Επιλεγμένος/η φοιτητής/τρια</p>
+                  <p className="text-md font-semibold">{t("visualization.inactiveStudents.selectedStudent")}</p>
                 </div>
                 <div className="text-xs space-y-1">
-                  <p><span className="font-semibold">Ημ/νία τελευταίας ενέργειας:</span>   {formatDateToYearMonth(selectedBubble.lastAction)}</p>
-                  <p><span className="font-semibold">Έτη ανενεργός/ή:</span>{formatYearsAndMonths(selectedBubble.size)}</p>
-                  <p><span className="font-semibold">Έτος εγγραφής:</span> {selectedBubble.raw?.["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"]}</p>
-                  <p><span className="font-semibold">Πλήθος περασμένων μαθημάτων:</span> {selectedBubble.r}</p>
-                  <p><span className="font-semibold">Κατάσταση φοίτησης:</span> {selectedBubble.raw?.["ΚΑΤΑΣΤΑΣΗ"]}</p>
-                  <p><span className="font-semibold">Τρόπος εισαγωγής:</span> {selectedBubble.raw?.["ΤΡΟΠΟΣ ΕΙΣΑΓΩΓΗΣ"]}</p>
+                  <p>
+                    <span className="font-semibold">
+                      {t("visualization.inactiveStudents.tooltip.lastActionDate")}:
+                    </span>{" "}
+                    {formatDateToYearMonth(selectedBubble.lastAction)}
+                  </p>
+                  <p>
+                    <span className="font-semibold">
+                      {t("visualization.inactiveStudents.tooltip.yearsInactive")}:
+                    </span>{" "}
+                    {formatYearsAndMonths(selectedBubble.size)}
+                  </p>
+                  <p>
+                    <span className="font-semibold">
+                      {t("visualization.inactiveStudents.tooltip.admissionYear")}:
+                    </span>{" "}
+                    {selectedBubble.raw?.["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"]}
+                  </p>
+                  <p>
+                    <span className="font-semibold">
+                      {t("visualization.inactiveStudents.tooltip.passedCourses")}:
+                    </span>{" "}
+                    {selectedBubble.r}
+                  </p>
+                  <p>
+                    <span className="font-semibold">
+                      {t("visualization.inactiveStudents.tooltip.status")}:
+                    </span>{" "}
+                    {selectedBubble.raw?.["ΚΑΤΑΣΤΑΣΗ"]}
+                  </p>
+                  <p>
+                    <span className="font-semibold">
+                      {t("visualization.inactiveStudents.tooltip.admissionType")}:
+                    </span>{" "}
+                    {selectedBubble.raw?.["ΤΡΟΠΟΣ ΕΙΣΑΓΩΓΗΣ"]}
+                  </p>
                 </div>
               </div>
             )}
 
             <div className="w-full p-2 mt-2 bg-white shadow rounded-lg">
 
-              <h4 className="text-sm font-semibold mb-1">Κατηγορίες ανενεργών</h4>
+              <h4 className="text-sm font-semibold mb-1">{t("visualization.inactiveStudents.categoryCounts.yAxis")}</h4>
               <div ref={categoryBarRef} className="w-full" />
             </div>
 
@@ -1321,7 +1369,7 @@ const InactiveStudents = () => {
           onClick={() => setShowRawData(!showRawData)}
           className="flex items-center justify-between w-full px-4 py-3 text-sm font-medium text-white bg-[#36abcc] rounded transition hover:bg-[#2c9cb7]"
         >
-          <span>{showRawData ? "Απόκρυψη δεδομένων" : "Εμφάνιση δεδομένων"}</span>
+          <span>{showRawData ? t("visualization.common.hideData") : t("visualization.common.showData")}</span>
           <svg
             className={`w-5 h-5 transform transition-transform duration-300 ${showRawData ? "rotate-180" : "rotate-0"}`}
             fill="none"

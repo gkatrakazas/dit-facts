@@ -13,7 +13,7 @@ const LanguageSelector = () => {
       <button
         onClick={() => setLang('en')}
         className={`px-3 py-1 rounded ${
-          current === 'en' ? 'bg-blue-600 text-white' : 'text-gray-700'
+          current === 'en' ? 'bg-secondary text-white' : 'text-gray-700'
         }`}
       >
         EN
@@ -22,7 +22,7 @@ const LanguageSelector = () => {
       <button
         onClick={() => setLang('el')}
         className={`px-3 py-1 rounded ${
-          current === 'el' ? 'bg-blue-600 text-white' : 'text-gray-700'
+          current === 'el' ? 'bg-secondary text-white' : 'text-gray-700'
         }`}
       >
         EL

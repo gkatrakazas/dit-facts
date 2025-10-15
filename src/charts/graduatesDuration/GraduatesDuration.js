@@ -16,17 +16,16 @@ const inactivityLevels = [
   { min: 0, color: "#32CD32", label: "< 2" },
 ];
 
-const speedLevels = [
-  { max: 4, color: "#28a428", label: "0 εώς και ν" },    // lime green
-  { max: 5, color: "#9ACD32", label: "ν εώς και ν+1" },    // yellow-green
-  { max: 6, color: "#FFD700", label: "ν+1 εώς και ν+2" },    // gold
-  { max: Infinity, color: "#FF4500", label: "> ν+2" },    // orange
-  // { max: Infinity, color: "#FF4500", label: "> 7" },    // orange-red
-];
+// const speedLevels = useMemo(() => ([
+//   { max: 4,        color: "#28a428", label: t("visualization.graduatesDuration.bins.uptoN")   },
+//   { max: 5,        color: "#9ACD32", label: t("visualization.graduatesDuration.bins.nToN1")   },
+//   { max: 6,        color: "#FFD700", label: t("visualization.graduatesDuration.bins.n1ToN2")  },
+//   { max: Infinity, color: "#FF4500", label: t("visualization.graduatesDuration.bins.gtN2")    }
+// ]), [t]);
 
 
-const getColorBySpeed = (yearsToDegree) => (speedLevels.find(l => yearsToDegree <= l.max)?.color ?? "#525252");
-const getSpeedCategory = (yearsToDegree) => (speedLevels.find(l => yearsToDegree <= l.max)?.label ?? "-");
+// const getColorBySpeed = (yearsToDegree) => (speedLevels.find(l => yearsToDegree <= l.max)?.color ?? "#525252");
+// const getSpeedCategory = (yearsToDegree) => (speedLevels.find(l => yearsToDegree <= l.max)?.label ?? "-");
 
 // Utils
 const formatYearsAndMonths = (yearsDecimal) => {
@@ -53,24 +52,24 @@ const formatDateToYearMonth = (date) => {
 
 
 
-const getTooltipHtml = (d) => {
+const getTooltipHtml = ((d, t) => {
   const fieldsToShow = [
-    { label: "Έτος εγγραφής", value: d.data.raw?.["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"] },
-    { label: "Έτος αποφοίτησης", value: d.data.gradYear },
-    { label: "Ημ/νία αποφοίτησης", value: formatDateToYearMonth(d.data.gradDate) },
-    { label: "Τρόπος εισαγωγής", value: d.data.raw?.["ΤΡΟΠΟΣ ΕΙΣΑΓΩΓΗΣ"] },
-    { label: "Κατάσταση φοίτησης", value: d.data.raw?.["ΚΑΤΑΣΤΑΣΗ"] },
-    { label: "Χρόνος μέχρι αποφοίτηση", value: formatYearsAndMonths(d.data.size) },
-    { label: "Περασμένα μαθήματα", value: d.data.r },
-    { label: "Ημ/νία τελευταίας ενέργειας", value: formatDateToYearMonth(d.data.lastAction) },
-
+    { label: t("visualization.graduatesDuration.details.admissionYear"), value: d.data.raw?.["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"] },
+    { label: t("visualization.common.year"), value: d.data.gradYear },
+    { label: t("visualization.graduatesDuration.details.lastAction"), value: formatDateToYearMonth(d.data.gradDate) },
+    { label: t("visualization.common.admissionType"), value: d.data.raw?.["ΤΡΟΠΟΣ ΕΙΣΑΓΩΓΗΣ"] },
+    { label: t("visualization.graduatesDuration.details.status"), value: d.data.raw?.["ΚΑΤΑΣΤΑΣΗ"] },
+    { label: t("visualization.graduatesDuration.details.timeToDegree"), value: formatYearsAndMonths(d.data.size) },
+    { label: t("visualization.graduatesDuration.details.passedCourses"), value: d.data.r },
+    { label: t("visualization.inactiveStudents.tooltip.lastActionDate"), value: formatDateToYearMonth(d.data.lastAction) }
   ];
   return fieldsToShow
     .map(({ label, value }) => `<b>${label}:</b> ${value ?? "-"}`)
     .join("<br/>");
-};
+});
 
-const CheckboxFilter = ({ title, options, selected, setSelected, descriptions = {} }) => {
+
+const CheckboxFilter = ({ title, options, selected, setSelected, descriptions = {}, t }) => {
   const allSelected = selected.length === options.length;
 
   const toggleAll = (checked) => {
@@ -105,7 +104,7 @@ const CheckboxFilter = ({ title, options, selected, setSelected, descriptions = 
             checked={allSelected}
             onChange={(e) => toggleAll(e.target.checked)}
           />
-          <span className="text-gray-800 font-medium">ΟΛΑ</span>
+          <span className="text-gray-800 font-medium">{t('visualization.common.all')}</span>
         </label>
         <div className="border-t border-gray-200 my-1" />
         {options.map((option) => (
@@ -156,7 +155,7 @@ function filterStudents({
 }
 
 // Main Component
-const InactiveStudents = () => {
+const GraduatesDuration = () => {
   const { t } = useTranslation();
 
   // States
@@ -164,6 +163,23 @@ const InactiveStudents = () => {
   const [showRawData, setShowRawData] = useState(false);
 
   const [showFullDetails, setShowFullDetails] = useState(false);
+
+  const speedLevels = useMemo(() => ([
+    { max: 4, color: "#28a428", label: t("visualization.graduatesDuration.bins.uptoN") },
+    { max: 5, color: "#9ACD32", label: t("visualization.graduatesDuration.bins.nToN1") },
+    { max: 6, color: "#FFD700", label: t("visualization.graduatesDuration.bins.n1ToN2") },
+    { max: Infinity, color: "#FF4500", label: t("visualization.graduatesDuration.bins.gtN2") }
+  ]), [t]);
+
+  const getColorBySpeed = useCallback(
+    (yearsToDegree) => (speedLevels.find(l => yearsToDegree <= l.max)?.color ?? "#525252"),
+    [speedLevels]
+  );
+
+  const getSpeedCategory = useCallback(
+    (yearsToDegree) => (speedLevels.find(l => yearsToDegree <= l.max)?.label ?? "-"),
+    [speedLevels]
+  );
 
   const {
     currentPage,
@@ -565,7 +581,7 @@ const InactiveStudents = () => {
 
         tooltip
           .style("opacity", 1)
-          .html(getTooltipHtml(d));
+          .html(getTooltipHtml(d, t));
       })
       .on("mousemove", (event) => {
         tooltip
@@ -734,7 +750,7 @@ const InactiveStudents = () => {
           .attr("filter", "url(#hover-shadow)")
           .attr("opacity", 1);
 
-        tooltip.style("opacity", 1).html(getTooltipHtml(d));
+        tooltip.style("opacity", 1).html(getTooltipHtml(d, t));
       })
       .on("mousemove", (event) => {
         tooltip
@@ -768,7 +784,10 @@ const InactiveStudents = () => {
       .on("mouseover", (event, d) => {
         tooltip
           .style("opacity", 1)
-          .html(`<b>${config.label}:</b> ${config.getLabel(d)}<br/><b>Φοιτητές/τριες:</b> ${d.children?.length ?? 0}`);
+          .html(
+            `<b>${t(`visualization.graduatesDuration.group.${config.key}`)}:</b> ${config.getLabel(d)}<br/>
+             <b>${t("visualization.graduatesDuration.summary.count", { count: d.children?.length ?? 0 })}</b>`
+          )
       })
       .on("mousemove", (event) => {
         tooltip
@@ -863,7 +882,7 @@ const InactiveStudents = () => {
       .on("mouseover", (event, d) => {
         tooltip
           .style("opacity", 1)
-          .html(`<b>${d[0]}</b>: ${d[1]} φοιτητές/τριες`);
+          .html(t("visualization.graduatesDuration.barchart.tooltip", { label: d[0], count: d[1] }));
       })
       .on("mousemove", (event) => {
         tooltip
@@ -885,50 +904,50 @@ const InactiveStudents = () => {
       .attr("fill", "#333")
       .attr("font-size", "10px");
 
-      function wrapAndCenter(textSelection, maxWidth) {
-        const lineHeightEm = 1; // spacing between wrapped lines
-      
-        textSelection.each(function () {
-          const text = d3.select(this);
-          const words = text.text().split(/\s+/).reverse();
-          const x = +text.attr("x") || 0; // keep left padding
-          const y = +text.attr("y");        // this is already the band center
-      
-          text.text(null);
-      
-          let line = [], word;
-          let tspan = text.append("tspan").attr("x", x).text("");
-          while ((word = words.pop())) {
-            line.push(word);
+    function wrapAndCenter(textSelection, maxWidth) {
+      const lineHeightEm = 1; // spacing between wrapped lines
+
+      textSelection.each(function () {
+        const text = d3.select(this);
+        const words = text.text().split(/\s+/).reverse();
+        const x = +text.attr("x") || 0; // keep left padding
+        const y = +text.attr("y");        // this is already the band center
+
+        text.text(null);
+
+        let line = [], word;
+        let tspan = text.append("tspan").attr("x", x).text("");
+        while ((word = words.pop())) {
+          line.push(word);
+          tspan.text(line.join(" "));
+          if (tspan.node().getComputedTextLength() > maxWidth) {
+            line.pop();
             tspan.text(line.join(" "));
-            if (tspan.node().getComputedTextLength() > maxWidth) {
-              line.pop();
-              tspan.text(line.join(" "));
-              line = [word];
-              tspan = text.append("tspan").attr("x", x).text(word);
-            }
+            line = [word];
+            tspan = text.append("tspan").attr("x", x).text(word);
           }
-      
-          // center vertically around the original y (band center)
-          const tspans = text.selectAll("tspan");
-          const n = tspans.size();
-          tspans
-            .attr("y", y)
-            .attr("dy", (_, i) => ((i - (n - 1) / 2) * lineHeightEm) + "em");
-        });
-      }
-      
+        }
+
+        // center vertically around the original y (band center)
+        const tspans = text.selectAll("tspan");
+        const n = tspans.size();
+        tspans
+          .attr("y", y)
+          .attr("dy", (_, i) => ((i - (n - 1) / 2) * lineHeightEm) + "em");
+      });
+    }
+
     // Y Axis
     svg.append("g")
-    .attr("class", "y-axis")
-    .attr("transform", `translate(${margin.left},4)`)
-    .call(d3.axisLeft(y).tickSize(0))
-    .selectAll("text")
-    .style("font-size", "11px")
-    .style("fill", "#333")
-    .style("text-anchor", "end")
-    .attr("x", -10)             // padding from ticks
-    .call(wrapAndCenter, 45);   // set your max label width (px)  
+      .attr("class", "y-axis")
+      .attr("transform", `translate(${margin.left},4)`)
+      .call(d3.axisLeft(y).tickSize(0))
+      .selectAll("text")
+      .style("font-size", "11px")
+      .style("fill", "#333")
+      .style("text-anchor", "end")
+      .attr("x", -10)             // padding from ticks
+      .call(wrapAndCenter, 45);   // set your max label width (px)  
 
     // X Axis
     svg.append("g")
@@ -945,7 +964,7 @@ const InactiveStudents = () => {
       .attr("text-anchor", "middle")
       .attr("fill", "#333")
       .attr("font-size", "11px")
-      .text("Διάρκεια φοίτησης");
+      .text(t('visualization.graduatesDuration.barchart.yAxis'));
 
     // X Axis Label (horizontal)
     svg.append("text")
@@ -954,7 +973,7 @@ const InactiveStudents = () => {
       .attr("text-anchor", "middle")
       .attr("fill", "#333")
       .attr("font-size", "11px")
-      .text("Πλήθος Απόφοιτων");
+      .text(t('visualization.graduatesDuration.barchart.xAxis'));
   }, [
     inactiveBubbleData,
     selectedYears,
@@ -993,18 +1012,18 @@ const InactiveStudents = () => {
   return (
     <>
       <div className="flex flex-col mx-5 mt-5">
-        <h2 className="text-xl font-semibold">{t("homepage.visualizations.inactive_students.title")}</h2>
+        <h2 className="text-xl font-semibold">{t("visualization.graduatesDuration.title")}</h2>
 
         <div className="flex flex-row gap-6 w-full">
           {/* Sidebar: Display options */}
           <div className="flex flex-col gap-3 mt-6 bg-white p-4 rounded shadow w-60">
             <div className="flex flex-col gap-2 text-sm">
-              <h2 className="text-md font-semibold text-md">Επιλογή προβολής</h2>
+              <h2 className="text-md font-semibold text-md">{t('visualization.common.view.label')}</h2>
 
               <div className="flex border border-gray-300 rounded overflow-hidden">
                 {[
-                  { value: "individual", label: "Ατομικά" },
-                  { value: "grouped", label: "Ομαδοποιημένα" }
+                  { value: "individual", label: t('visualization.common.view.individual') },
+                  { value: "grouped", label: t('visualization.common.view.grouped') }
                 ].map((option) => (
                   <label
                     key={option.value}
@@ -1043,12 +1062,12 @@ const InactiveStudents = () => {
             <div className="border-t border-gray-200"></div>
 
             <div className="flex flex-col gap-2 text-sm">
-              <h2 className="text-md font-semibold text-md">Λειτουργία Φίλτρων</h2>
+              <h2 className="text-md font-semibold text-md">{t('visualization.common.filterMode.label')}</h2>
 
               <div className="flex border border-gray-300 rounded overflow-hidden">
                 {[
-                  { value: "hide", label: "Απόκρυψη" },
-                  { value: "dim", label: "Εξασθένιση" }
+                  { value: "hide", label: t('visualization.common.filterMode.hide') },
+                  { value: "dim", label: t('visualization.common.filterMode.dim') }
                 ].map((option) => (
                   <label
                     key={option.value}
@@ -1075,11 +1094,11 @@ const InactiveStudents = () => {
             <div className="border-t border-gray-200"></div>
 
             <div className="flex flex-col gap-2 text-sm">
-              <h2 className="text-md font-semibold">Φίλτρα</h2>
+              <h2 className="text-md font-semibold">{t('visualization.graduatesDuration.filtersPanel.title')}</h2>
 
               <div className="text-sm text-gray-700 font-base">
 
-                <label className="font-medium">Έτος εγγραφής</label>
+                <label className="font-medium">{t('visualization.graduatesDuration.filtersPanel.admissionYear')}</label>
 
                 {minYear && maxYear && (
                   <MultiRangeSlider
@@ -1100,7 +1119,7 @@ const InactiveStudents = () => {
               </div>
 
               <div className="text-sm text-gray-700 font-base">
-                <label className="font-medium">Περασμένα μαθημάτα</label>
+                <label className="font-medium">{t('visualization.graduatesDuration.filtersPanel.passedCourses')}</label>
 
                 {availableCourses.length > 0 && (
                   <MultiRangeSlider
@@ -1121,18 +1140,20 @@ const InactiveStudents = () => {
               </div>
 
               <CheckboxFilter
-                title="Κατηγορία τρόπου εισαγωγής"
+                title={t('visualization.graduatesDuration.filtersPanel.admissionGroup')}
                 options={admissionGroups}
                 selected={selectedAdmissionGroups}
                 setSelected={setSelectedAdmissionGroups}
+                t={t}
               />
 
               <CheckboxFilter
-                title="Τρόπος εισαγωγής"
+                title={t('visualization.graduatesDuration.filtersPanel.admissionType')}
                 options={filteredAdmissionTypes}
                 selected={selectedAdmissionTypes}
                 setSelected={setSelectedAdmissionTypes}
                 descriptions={admissionTypeDescriptions}
+                t={t}
               />
 
             </div>
@@ -1143,7 +1164,7 @@ const InactiveStudents = () => {
             {/* Legend */}
             <div className="flex flex-wrap gap-4 items-baseline w-[220px]">
               <div className="flex flex-col justify-center items-left gap-2 text-sm bg-white border-gray-300 border-[1px] shadow-sm m-2 px-2 py-2">
-                <span className="text-gray-600">Διάρκεια Φοίτησης (έτη)</span>
+                <span className="text-gray-600">{t('visualization.graduatesDuration.legend.studyDuration')}</span>
                 <div className="flex flex-col gap-2 mt-2 flex-wrap">
                   {speedLevels.map(({ label, color }) => (
                     <div key={label} className="flex items-center gap-2">
@@ -1152,8 +1173,7 @@ const InactiveStudents = () => {
                     </div>
                   ))}
                 </div>
-                <p className="font-medium  mb-2 italic text-xs text-gray-600">
-                  * n=4 έτη</p>
+                <p className="font-medium  mb-2 italic text-xs text-gray-600">{t('visualization.graduatesDuration.legend.noteN')}</p>
               </div>
             </div>
 
@@ -1170,7 +1190,7 @@ const InactiveStudents = () => {
 
               {(viewMode === "grouped" && groupedMode === "byYear") && (
                 <div>
-                  <h3 className="text-lg font-medium">Ομαδοποίηση ανά έτος εγγραφής</h3>
+                  <h3 className="text-lg font-medium">{t('visualization.graduatesDuration.headings.groupByYear')}</h3>
                   <div ref={yearContainerRef} style={{ height: "90vh", width: "100%" }} className="relative">
                     <div ref={yearPackedRef} className="absolute inset-0"></div>
                   </div>
@@ -1178,7 +1198,7 @@ const InactiveStudents = () => {
               )}
               {(viewMode === "grouped" && groupedMode === "byCategory") && (
                 <div>
-                  <h3 className="text-lg font-medium">Ομαδοποίηση ανά διάρκεια φοίτησης</h3>
+                  <h3 className="text-lg font-medium">{t('visualization.graduatesDuration.headings.groupByCategory')}</h3>
                   <div ref={categoryContainerRef} style={{ height: "90vh", width: "100%" }} className="relative">
                     <div ref={categoryPackedRef} className="absolute inset-0" />
                   </div>
@@ -1187,7 +1207,7 @@ const InactiveStudents = () => {
 
               {viewMode === "grouped" && groupedMode === "byAdmissionGroup" && (
                 <div>
-                  <h3 className="text-lg font-medium">Ομαδοποίηση ανά κατηγορία τρόπου εισαγωγής</h3>
+                  <h3 className="text-lg font-medium">{t('visualization.graduatesDuration.headings.groupByAdmissionGroup')}</h3>
                   <div ref={admissionGroupContainerRef} style={{ height: "90vh", width: "100%" }} className="relative">
                     <div ref={admissionGroupPackedRef} className="absolute inset-0" />
                   </div>
@@ -1196,7 +1216,7 @@ const InactiveStudents = () => {
 
               {viewMode === "grouped" && groupedMode === "byAdmissionType" && (
                 <div>
-                  <h3 className="text-lg font-medium">Ομαδοποίηση ανά τρόπο εισαγωγής</h3>
+                  <h3 className="text-lg font-medium">{t('visualization.graduatesDuration.headings.groupByAdmissionType')}</h3>
                   <div ref={admissionContainerRef} style={{ height: "90vh", width: "100%" }} className="relative">
                     <div ref={admissionPackedRef} className="absolute inset-0" />
                   </div>
@@ -1204,7 +1224,7 @@ const InactiveStudents = () => {
               )}
               {viewMode === "grouped" && groupedMode === "byStatus" && (
                 <div>
-                  <h3 className="text-lg font-medium">Ομαδοποίηση ανά κατάσταση φοίτησης</h3>
+                  <h3 className="text-lg font-medium">{t('visualization.graduatesDuration.headings.groupByStatus')}</h3>
                   <div ref={statusContainerRef} style={{ height: "90vh", width: "100%" }} className="relative">
                     <div ref={statusPackedRef} className="absolute inset-0" />
                   </div>
@@ -1212,7 +1232,7 @@ const InactiveStudents = () => {
               )}
               {viewMode === "grouped" && groupedMode === "byStudyDuration" && (
                 <div>
-                  <h3 className="text-lg font-medium">	Ομαδοποίηση ανά διάρκεια φοίτησης</h3>
+                  <h3 className="text-lg font-medium">{t('visualization.graduatesDuration.headings.groupByStudyDuration')}</h3>
                   <div ref={durationContainerRef} style={{ height: "90vh", width: "100%" }} className="relative">
                     <div ref={durationPackedRef} className="absolute inset-0" />
                   </div>
@@ -1222,29 +1242,32 @@ const InactiveStudents = () => {
           </div>
 
 
-          <div className="max-w-[20%] mt-6 w-full">
+          <div className="max-w-[25%] mt-6 w-full">
             <div className="p-2 relative w-full bg-white shadow shadow-lg rounded-lg w-full">
               <p className="text-lg font-semibold text-primary">
-                {filterStudents({
-                  data: inactiveBubbleData,
-                  selectedYears,
-                  courseRange,
-                  selectedAdmissionTypes,
-                  selectedAdmissionGroups,
-                }).length} Απόφοιτοι
+                {t("visualization.graduatesDuration.summary.count", {
+                  count: filterStudents({
+                    data: inactiveBubbleData,
+                    selectedYears,
+                    courseRange,
+                    selectedAdmissionTypes,
+                    selectedAdmissionGroups,
+                  }).length
+                })}
               </p>
               <p className="text-xs text-gray-600 mt-1 leading-relaxed whitespace-pre-line">
-                Με έτος εγγραφής
+                {t("visualization.inactiveStudents.summary.prefixAdmissionYear")}
                 {range.start !== range.end ? ` ${range.start}–${range.end}` : ` ${range.start}`}
-                , περασμένα μαθήματα {courseRange.start}–{courseRange.end}
+                {t("visualization.inactiveStudents.summary.coursesRangePrefix")} {courseRange.start}–{courseRange.end}
                 {selectedAdmissionGroups.length > 0 ? (
                   <>
-                    , κατηγορία τρόπου εισαγωγής {selectedAdmissionGroups.join(", ")}
-                    , και τρόπους εισαγωγής {selectedAdmissionTypes.length > 0 ? displayedAdmissions : "Κανέναν"}
+                    {t("visualization.inactiveStudents.summary.admissionGroupPrefix")} {selectedAdmissionGroups.join(", ")}
+                    {t("visualization.inactiveStudents.summary.admissionTypesPrefix")} {selectedAdmissionTypes.length > 0 ? displayedAdmissions : "Κανέναν"}
                   </>
                 ) : (
                   <>
-                    , και κατηγορία τρόπου εισαγωγής Κανέναν
+                    {t("visualization.inactiveStudents.summary.admissionGroupPrefix")} {t("visualization.common.none_masc")}
+
                   </>
 
                 )}
@@ -1275,15 +1298,16 @@ const InactiveStudents = () => {
                     className="w-4 h-4 rounded-full border border-gray-300"
                     style={{ backgroundColor: getColorBySpeed(selectedBubble.size) }}
                   />
-                  <p className="text-md font-semibold">Επιλεγμένος/η φοιτητής/τρια</p>
+                  <p className="text-md font-semibold">  {t("visualization.graduatesDuration.details.title")}
+                  </p>
                 </div>
                 <div className="text-xs space-y-1">
-                  <p><span className="font-semibold">Ημ/νία τελευταίας ενέργειας:</span>   {formatDateToYearMonth(selectedBubble.lastAction)}</p>
-                  <p><span className="font-semibold">Έτη ανενεργός/ή:</span>{formatYearsAndMonths(selectedBubble.size)}</p>
-                  <p><span className="font-semibold">Έτος εγγραφής:</span> {selectedBubble.raw?.["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"]}</p>
-                  <p><span className="font-semibold">Πλήθος περασμένων μαθημάτων:</span> {selectedBubble.r}</p>
-                  <p><span className="font-semibold">Κατάσταση φοίτησης:</span> {selectedBubble.raw?.["ΚΑΤΑΣΤΑΣΗ"]}</p>
-                  <p><span className="font-semibold">Τρόπος εισαγωγής:</span> {selectedBubble.raw?.["ΤΡΟΠΟΣ ΕΙΣΑΓΩΓΗΣ"]}</p>
+                  <p><span className="font-semibold">{t("visualization.graduatesDuration.details.lastAction")}:</span> {formatDateToYearMonth(selectedBubble.lastAction)}</p>
+                  <p><span className="font-semibold">{t("visualization.graduatesDuration.details.timeToDegree")}:</span> {formatYearsAndMonths(selectedBubble.size)}</p>
+                  <p><span className="font-semibold">{t("visualization.graduatesDuration.details.admissionYear")}:</span> {selectedBubble.raw?.["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"]}</p>
+                  <p><span className="font-semibold">{t("visualization.graduatesDuration.details.passedCourses")}:</span> {selectedBubble.r}</p>
+                  <p><span className="font-semibold">{t("visualization.graduatesDuration.details.status")}:</span> {selectedBubble.raw?.["ΚΑΤΑΣΤΑΣΗ"]}</p>
+                  <p><span className="font-semibold">{t("visualization.graduatesDuration.details.admissionType")}:</span> {selectedBubble.raw?.["ΤΡΟΠΟΣ ΕΙΣΑΓΩΓΗΣ"]}</p>
                 </div>
               </div>
             )}
@@ -1367,4 +1391,4 @@ const InactiveStudents = () => {
   );
 };
 
-export default InactiveStudents;
+export default GraduatesDuration;

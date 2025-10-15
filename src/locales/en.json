@@ -1,36 +1,173 @@
 {
-  "homepage": {
-    "welcome": "Welcome to DIT Visualizations! Explore interactive charts and insights. Click on a visualization to dive deeper.",
-    "view_button": "View Visualization →",
-    "visualizations": {
-      "active_students": {
-        "title": "Active Students Chart",
-        "description": "A bar chart and tree map illustrating the number of active students with passed courses across over the years."
-      },
-      "inactive_students":{
-        "title": "Inactive Students by Status and Admission Year",
-        "description": "Visualization of students based on status, admission year, and admission type using filters and interactive bubble charts."
-      },
-      "graduateProgressChart":{
-        "title":"Graduate Progress by Admission Category and Year"
-      }
-    }
+  "header": {
+    "home": "Home",
+    "visualizations": "Visualizations"
   },
-  "chart": {
-    "activeStudents": {
+  "homepage": {
+    "welcome": "Welcome to DIT Visualizations! Explore interactive charts and insights. Click on a visualization to dive deeper."
+  },
+  "visualization": {
+    "common": {
       "filters": "Filters",
       "year": "Year",
-      "passed_courses": "Passed Courses",
-      "clear_filter": "Clear",
-      "original_data": "Original Dataset",
-      "students_chart_title": "Students Passing Courses Over the Years",
-      "student_distribution_title": "Student Distribution by",
-      "size_legend": "Size by Student(s) Number:",
+      "admissionYear": "Admission year",
+      "passingCourses": "Passing courses",
+      "view": {
+        "label": "View Mode",
+        "individual": "Individual",
+        "grouped": "Grouped"
+      },
+      "filterMode": {
+        "label": "Filter Mode",
+        "hide": "Hide",
+        "dim": "Dim"
+      },
+      "all": "All",
+      "none": "None",
+      "none_masc": "None",
+      "and": "and",
+      "yearOne": "year",
+      "yearMany": "years",
+      "monthOne": "month",
+      "monthMany": "months",
+      "yearsAndMonths": "{{years}} {{years_label}} {{and}} {{months}} {{months_label}}",
+      "onlyYears": "{{years}} {{years_label}}",
+      "onlyMonths": "{{months}} {{months_label}}",
+      "viewMore": "View more",
+      "viewLess": "View less",
+      "andOthers": "and others",
+      "showData": "Show Data",
+      "hideData": "Hide Data",
+      "admissionCategory": "Admission Category",
+      "admissionType": "Admission Type"
+    },
+    "inactiveStudents": {
+      "title": "Inactive Students by Status and Admission Year",
+      "yearsInactivity": "Years of inactivity",
+      "legendDiscription": "* Calculated from the most recent date: “Last Declaration”, “Last Successful Examination”, “Last Failure”, and “Year of Registration”.",
+      "legendDescription": "* Calculated from the most recent date: “Last Declaration”, “Last Successful Examination”, “Last Failure”, and “Year of Registration”.",
+      "status": "Status",
+      "group": {
+        "byYear": "Group by Admission Year",
+        "byCategory": "Group by Inactivity Category",
+        "byAdmissionGroup": "Group by Admission Category",
+        "byAdmissionType": "Group by Admission Type",
+        "byStatus": "Group by Status",
+        "byStudyDuration": "Group by Study Duration"
+      },
+      "studyDuration": {
+        "uptoN": "Up to and including n",
+        "nToN1": "n + 1",
+        "n1ToN2": "n + 2",
+        "gtN2": "n + 3 or more"
+      },
+      "categoryCounts": {
+        "yAxis": "Inactivity Category",
+        "xAxis": "Students"
+      },
+      "studentsWord": "students",
+      "summary": {
+        "prefixAdmissionYear": "Admission years:",
+        "coursesRangePrefix": " • Passed courses:",
+        "statusPrefix": " • Status:",
+        "admissionGroupPrefix": " • Admission categories:",
+        "admissionTypesPrefix": " • Admission types:"
+      },
+      "selectedStudent": "Selected student",
+      "tooltip": {
+        "yearOfLastAction": "Year of last action",
+        "passedCourses": "Passed courses",
+        "lastActionDate": "Last action date",
+        "admissionType": "Admission type",
+        "admissionYear": "Admission year",
+        "status": "Status",
+        "yearsInactive": "Years inactive"
+      }
+    },
+    "graduationTimelines": {
+      "title": "Graduation Timelines by Admission Category",
+      "graduatesTitle": "Average Study Duration by Admission Category",
+      "avgGradeTitle": "Average Grade by Admission Category",
+      "xAxis": "Admission Year",
+      "yAxisYearsToGraduate": "Average time to graduate (years)",
+      "yAxisAvgGrade": "Average grade",
+      "legendSizeByStudents": "Size by Number of Students:",
       "tooltip": {
         "year": "Year",
-        "total_students": "Total Active Students",
-        "avg_passed_courses": "Average Passed Courses"
+        "avgYears": "Average years",
+        "avgGrade": "Average grade",
+        "students": "Students"
       }
+    },
+    "graduatesDuration": {
+      "title": "Graduates by Admission Year and Study Duration",
+      "group": {
+        "byYear": "By admission year",
+        "byCategory": "By study duration",
+        "byAdmissionGroup": "By admission category",
+        "byAdmissionType": "By admission type",
+        "byStatus": "By study status",
+        "byStudyDuration": "By study duration"
+      },
+      "filtersPanel": {
+        "title": "Filters",
+        "admissionYear": "Admission year",
+        "passedCourses": "Passed courses",
+        "admissionGroup": "Admission category",
+        "admissionType": "Admission type"
+      },
+      "legend": {
+        "studyDuration": "Study Duration (years)",
+        "noteN": "* n = 4 years"
+      },
+      "headings": {
+        "groupByYear": "Grouped by admission year",
+        "groupByCategory": "Grouped by study duration",
+        "groupByAdmissionGroup": "Grouped by admission category",
+        "groupByAdmissionType": "Grouped by admission type",
+        "groupByStatus": "Grouped by study status",
+        "groupByStudyDuration": "Grouped by study duration"
+      },
+      "summary": {
+        "count": "{{count}} Graduates",
+        "line": "With admission year {{range}}, passed courses {{min}}–{{max}}{{admissionGroup}}{{admissionType}}",
+        "range": "{{start}}–{{end}}",
+        "admissionGroup": ", admission categories {{groups}}",
+        "admissionType": ", and admission types {{types}}",
+        "none": "None",
+        "more": "... and {{n}} more",
+        "expand": "Show details",
+        "collapse": "Show summary"
+      },
+      "details": {
+        "title": "Selected student",
+        "lastAction": "Last action date",
+        "timeToDegree": "Time to degree",
+        "admissionYear": "Admission year",
+        "passedCourses": "Passed courses",
+        "status": "Status",
+        "admissionType": "Admission type"
+      },
+      "barchart": {
+        "title": "Study duration",
+        "yAxis": "Study duration",
+        "xAxis": "Number of graduates",
+        "tooltip": "{{label}}: {{count}} graduates"
+      },
+      "bins": {
+        "uptoN": "0 to n",
+        "nToN1": "n to n+1",
+        "n1ToN2": "n+1 to n+2",
+        "gtN2": "> n+2"
+      }
+    },
+    "passingCourses": {
+      "title": "Passing Courses and Student Distribution",
+      "sizeLegend": "Size by Student(s) Number:",
+      "barChartTitle": "Students Passing Courses Over the Years",
+      "ThreeMapTitle": "Student Distribution by number of Passed Courses",
+      "totalStudents": "Total Students",
+      "avgPassingCourses": "Average Passed Courses"
     }
   }
 }

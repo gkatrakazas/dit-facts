@@ -10,7 +10,7 @@ import { admissionTypeGroups } from "../../data/students/studentMetadata";
 
 // Utils
 
-const CheckboxFilter = ({ title, options, selected, setSelected, descriptions = {} }) => {
+const CheckboxFilter = ({ title, options, selected, setSelected, descriptions = {}, t }) => {
   const allSelected = selected.length === options.length;
 
   const toggleAll = (checked) => {
@@ -45,7 +45,7 @@ const CheckboxFilter = ({ title, options, selected, setSelected, descriptions = 
             checked={allSelected}
             onChange={(e) => toggleAll(e.target.checked)}
           />
-          <span className="text-gray-800 font-medium">ΟΛΑ</span>
+          <span className="text-gray-800 font-medium">{t("visualization.common.all")}</span>
         </label>
         <div className="border-t border-gray-200 my-1" />
         {options.map((option) => (
@@ -87,7 +87,7 @@ function filterStudents({ data, selectedYears, selectedAdmissionGroups }) {
 
 
 // Main Component
-const StudentsGraduation = () => {
+const GraduationTimelines = () => {
   const { t } = useTranslation();
 
   // States
@@ -97,22 +97,22 @@ const StudentsGraduation = () => {
 
   const StaticCircleSizeLegend = ({
     steps = [10, 50, 100],
-    label = "Αριθμός φοιτητών (μέγεθος κύκλου)"
+    label = t('visualization.graduationTimelines.legendSizeByStudents')
   }) => {
     // Use the same min/max as your scale
     const minCircle = 4, maxCircle = 18;
     const scale = d3.scaleSqrt().domain([steps[0], steps[steps.length - 1]]).range([minCircle, maxCircle]);
-  
+
     return (
       <div className="flex flex-col gap-1 border border-gray-300 shadow shadow-md p-2">
         <div className="font-semibold text-xs text-gray-600">{label}</div>
         <div className="flex flex-row gap-4 items-end">
           {steps.map(count => (
             <div key={count} className="flex flex-col items-center">
-              <svg width={scale(count)*2+8} height={scale(count)*2+8}>
+              <svg width={scale(count) * 2 + 8} height={scale(count) * 2 + 8}>
                 <circle
-                  cx={scale(count)+4}
-                  cy={scale(count)+4}
+                  cx={scale(count) + 4}
+                  cy={scale(count) + 4}
                   r={scale(count)}
                   fill="#bbb"
                   stroke="#444"
@@ -125,7 +125,7 @@ const StudentsGraduation = () => {
       </div>
     );
   };
-  
+
   const {
     currentPage,
     totalPages,
@@ -241,7 +241,7 @@ const StudentsGraduation = () => {
           else durationCategory = `${n + 3}+`;
 
           const admissionCode = row["ΤΡΟΠΟΣ ΕΙΣΑΓΩΓΗΣ"];
-          const admissionGroup = admissionTypeGroups[admissionCode] || "Άλλο";
+          const admissionGroup = admissionTypeGroups[admissionCode] || "Άλλοι Τρόποι";
 
           return {
             r: row["ΠΛΗΘΟΣ ΜΑΘΗΜΑΤΩΝ"] || 0,
@@ -340,7 +340,7 @@ const StudentsGraduation = () => {
       const enrollmentYear = row.raw["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"];
       const graduationYear = row.raw["ΕΤΟΣ ΑΠΟΦΟΙΤΗΣΗΣ"];
       const code = row.raw["ΤΡΟΠΟΣ ΕΙΣΑΓΩΓΗΣ"];
-      const group = admissionTypeGroups[code] || "Άλλο";
+      const group = admissionTypeGroups[code] || "Άλλοι Τρόποι";
       const yearsToGraduate = graduationYear - enrollmentYear;
 
       if (!grouped[group]) grouped[group] = {};
@@ -374,7 +374,7 @@ const StudentsGraduation = () => {
     for (const row of withGrade) {
       const enrollmentYear = row.raw["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"];
       const code = row.raw["ΤΡΟΠΟΣ ΕΙΣΑΓΩΓΗΣ"];
-      const group = admissionTypeGroups[code] || "Άλλο";
+      const group = admissionTypeGroups[code] || "Άλλοι Τρόποι";
       const grade = Number(row.raw["ΒΑΘΜΟΣ ΠΤΥΧΙΟΥ"]);
 
       if (!grouped[group]) grouped[group] = {};
@@ -458,7 +458,9 @@ const StudentsGraduation = () => {
         const x = xScale(year);
         d3.select("#bubble-tooltip")
           .style("opacity", 1)
-          .html(`Έτος: ${year}`)
+          .html(
+            `${t("visualization.graduationTimelines.tooltip.year")}: ${year}`
+          )
           .style("left", `${event.clientX + 12}px`)
           .style("top", `${event.clientY + 12}px`);
 
@@ -487,7 +489,7 @@ const StudentsGraduation = () => {
       .attr("text-anchor", "middle")
       .attr("x", innerWidth / 2)
       .attr("y", innerHeight + margin.bottom - 5)
-      .text("Έτος Εγγραφής")
+      .text(t('visualization.graduationTimelines.xAxis'))
       .attr("fill", "#333")
       .attr("font-size", 12);
 
@@ -525,7 +527,9 @@ const StudentsGraduation = () => {
           d3.select("#bubble-tooltip")
             .style("opacity", 1)
             .html(
-              `Έτος: ${d.year}<br/>Μέσος χρόνος: ${d.count} έτη<br/>Φοιτητές: ${d.studentCount}`
+              `${t("visualization.graduationTimelines.tooltip.year")}: ${d.year}
+               ${t("visualization.graduationTimelines.tooltip.avgGrade")}: ${d.count}
+               ${t("visualization.graduationTimelines.tooltip.students")}: ${d.studentCount}`
             );
           d3.select("#bubble-tooltip")
             .style("left", (event.clientX + 16) + "px")
@@ -577,11 +581,11 @@ const StudentsGraduation = () => {
       .attr("transform", `rotate(-90)`)
       .attr("x", -innerHeight / 2)
       .attr("y", -margin.left + 15)
-      .text("Μέσος χρόνος αποφοίτησης (έτη)")
+      .text(t('visualization.graduationTimelines.yAxisYearsToGraduate'))
       .attr("fill", "#333")
       .attr("font-size", 12);
 
-  }, [graduateData, dimensions, averageGradeData]);
+  }, [graduateData, dimensions, averageGradeData, t]);
 
 
   useEffect(() => {
@@ -613,7 +617,7 @@ const StudentsGraduation = () => {
 
     const minCircle = 3;  // minimum circle radius
     const maxCircle = 8; // maximum circle radius
-    
+
     const circleSizeScale = d3.scaleSqrt() // sqrt gives better visual distribution
       .domain([Math.min(...allStudentCounts), Math.max(...allStudentCounts)])
       .range([minCircle, maxCircle]);
@@ -642,7 +646,9 @@ const StudentsGraduation = () => {
         const x = xScale(year);
         d3.select("#bubble-tooltip")
           .style("opacity", 1)
-          .html(`Έτος: ${year}`)
+          .html(
+            `${t("visualization.graduationTimelines.tooltip.year")}: ${year}`
+          )
           .style("left", `${event.clientX + 12}px`)
           .style("top", `${event.clientY + 12}px`);
 
@@ -671,7 +677,7 @@ const StudentsGraduation = () => {
       .attr("text-anchor", "middle")
       .attr("x", innerWidth / 2)
       .attr("y", innerHeight + margin.bottom - 5)
-      .text("Έτος Εγγραφής")
+      .text(t('visualization.graduationTimelines.xAxis'))
       .attr("fill", "#333")
       .attr("font-size", 12);
 
@@ -707,7 +713,9 @@ const StudentsGraduation = () => {
           d3.select("#bubble-tooltip")
             .style("opacity", 1)
             .html(
-              `Έτος: ${d.year}<br/>Μέση βαθμολογία: ${d.count} έτη<br/>Φοιτητές: ${d.studentCount}`
+              `${t("visualization.graduationTimelines.tooltip.year")}: ${d.year}
+               ${t("visualization.graduationTimelines.tooltip.avgGrade")}: ${d.count}
+               ${t("visualization.graduationTimelines.tooltip.students")}: ${d.studentCount}`
             );
           d3.select("#bubble-tooltip")
             .style("left", (event.clientX + 16) + "px")
@@ -756,15 +764,15 @@ const StudentsGraduation = () => {
       .attr("transform", `rotate(-90)`)
       .attr("x", -innerHeight / 2)
       .attr("y", -margin.left + 15)
-      .text("Μέση βαθμολογία")
+      .text(t('visualization.graduationTimelines.yAxisAvgGrade'))
       .attr("fill", "#333")
       .attr("font-size", 12);
-  }, [averageGradeData, dimensions, graduateData]);
+  }, [averageGradeData, dimensions, graduateData, t]);
 
   return (
     <>
       <div className="flex flex-col mx-5 mt-5">
-        <h2 className="text-xl font-semibold">{t("homepage.visualizations.graduateProgressChart.title")}</h2>
+        <h2 className="text-xl font-semibold">{t('visualization.graduationTimelines.title')}</h2>
 
         <div className="flex flex-row gap-6 w-full">
           {/* Sidebar: Display options */}
@@ -773,11 +781,11 @@ const StudentsGraduation = () => {
             </div> */}
 
             <div className="flex flex-col gap-2 text-sm">
-              <h2 className="text-md font-semibold">Φίλτρα</h2>
+              <h2 className="text-md font-semibold">{t('visualization.common.filters')}</h2>
 
               <div className="text-sm text-gray-700 font-base">
 
-                <label className="font-medium">Έτος εγγραφής</label>
+                <label className="font-medium">{t('visualization.common.admissionYear')}</label>
 
                 {minYear && maxYear && (
                   <MultiRangeSlider
@@ -797,10 +805,11 @@ const StudentsGraduation = () => {
                 )}
 
                 <CheckboxFilter
-                  title="Κατηγορία τρόπου εισαγωγής"
+                  title={t('visualization.common.admissionCategory')}
                   options={admissionGroups}
                   selected={selectedAdmissionGroups}
                   setSelected={setSelectedAdmissionGroups}
+                  t={t}
                 />
               </div>
             </div>
@@ -812,17 +821,16 @@ const StudentsGraduation = () => {
             {/* Chart container */}
             <div className="w-full m-4">
 
-              <h3 className="text-lg font-semibold mb-2">Απόφοιτοι ανά κατηγορία εισαγωγής</h3>
+              <h3 className="text-lg font-semibold mb-2">{t("visualization.graduationTimelines.graduatesTitle")}</h3>
               <div ref={containerRef} style={{ height: "40vh", width: "100%" }} className="relative">
                 <div ref={graduatesChartRef} className="absolute inset-0"></div>
               </div>
-              <h3 className="text-lg font-semibold mt-4 mb-2">Μέση βαθμολογία ανά κατηγορία εισαγωγής</h3>
+              <h3 className="text-lg font-semibold mt-4 mb-2">{t("visualization.graduationTimelines.avgGradeTitle")}</h3>
               <div ref={gradeContainerRef} style={{ height: "40vh", width: "100%" }} className="relative">
                 <div ref={gradesChartRef} className="absolute inset-0"></div>
               </div>
             </div>
           </div>
-
 
           <div className="max-w-[20%] mt-6 flex flex-col gap-2">
 
@@ -919,4 +927,4 @@ const StudentsGraduation = () => {
   );
 };
 
-export default StudentsGraduation;
+export default GraduationTimelines;
