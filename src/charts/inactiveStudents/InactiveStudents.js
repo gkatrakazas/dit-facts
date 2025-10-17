@@ -1318,7 +1318,7 @@ const InactiveStudents = () => {
                     <span className="font-semibold">
                       {t("visualization.inactiveStudents.tooltip.yearsInactive")}:
                     </span>{" "}
-                    {formatYearsAndMonths(selectedBubble.size)}
+                    {formatYearsAndMonths(selectedBubble.size,t)}
                   </p>
                   <p>
                     <span className="font-semibold">

@@ -869,7 +869,7 @@ const GraduationTimelines = () => {
           onClick={() => setShowRawData(!showRawData)}
           className="flex items-center justify-between w-full px-4 py-3 text-sm font-medium text-white bg-[#36abcc] rounded transition hover:bg-[#2c9cb7]"
         >
-          <span>{showRawData ? "Απόκρυψη δεδομένων" : "Εμφάνιση δεδομένων"}</span>
+          <span>{showRawData ? t("visualization.common.hideData") : t("visualization.common.showData")}</span>
           <svg
             className={`w-5 h-5 transform transition-transform duration-300 ${showRawData ? "rotate-180" : "rotate-0"}`}
             fill="none"
