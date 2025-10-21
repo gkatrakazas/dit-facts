@@ -744,7 +744,7 @@ const GraduatesDuration = () => {
     container.selectAll("*").remove();
 
     const width = barChartWidth;
-    const height = 200;
+    const height = 160;
     const margin = { top: 10, right: 35, bottom: 40, left: 75 };
 
     const svg = container.append("svg")
@@ -1110,12 +1110,12 @@ const GraduatesDuration = () => {
 
           <div className="max-w-[25%] mt-6 w-full">
 
-          <ColorDotLegend
-  title={t("visualization.graduatesDuration.legend.studyDuration")}
-  levels={speedLevels}
-  note={t("visualization.graduatesDuration.legend.noteN")}
-  className="mb-2"
-/>
+            <ColorDotLegend
+              title={t("visualization.graduatesDuration.legend.studyDuration")}
+              levels={speedLevels}
+              note={t("visualization.graduatesDuration.legend.noteN")}
+              className="mb-2"
+            />
 
             <div className="p-2 relative w-full bg-white shadow shadow-lg rounded-lg w-full">
               <p className="text-lg font-semibold text-primary">
