@@ -1,4 +1,5 @@
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa";
+import { useTranslation } from "react-i18next";
 
 const PaginationControls = ({
   currentPage,
@@ -9,6 +10,8 @@ const PaginationControls = ({
   canGoPrev,
   canGoNext,
 }) => {
+  const { t } = useTranslation();
+
   const getPageNumbers = () => {
     const maxDisplayed = 5;
     const pages = [];
@@ -33,14 +36,16 @@ const PaginationControls = ({
   };
 
   return (
-    <div className="flex items-center justify-between text-sm">
+    <div className="flex items-center justify-between text-sm" aria-label={t("pagination.navigation")}>
       <button
         onClick={prevPage}
         disabled={!canGoPrev}
         className="flex items-center gap-1 px-2 py-1 border rounded disabled:opacity-30"
+        aria-label={t("pagination.prev")}
+        title={t("pagination.prev")}
       >
         <FaAngleLeft className="w-4 h-4" />
-        Προηγούμενη
+        {t("pagination.prev")}
       </button>
 
       <div className="flex items-center gap-1 mx-2">
@@ -55,6 +60,8 @@ const PaginationControls = ({
                 ? "bg-blue-600 text-white"
                 : "hover:bg-gray-100"
                 }`}
+              aria-label={t("pagination.pageNumber", { page: page + 1 })}
+              title={t("pagination.pageNumber", { page: page + 1 })}
             >
               {page + 1}
             </button>
@@ -66,8 +73,10 @@ const PaginationControls = ({
         onClick={nextPage}
         disabled={!canGoNext}
         className="flex items-center gap-1 px-2 py-1 border rounded disabled:opacity-30"
+        aria-label={t("pagination.next")}
+        title={t("pagination.next")}
       >
-        Επόμενη
+        {t("pagination.next")}
         <FaAngleRight className="w-4 h-4" />
       </button>
     </div>

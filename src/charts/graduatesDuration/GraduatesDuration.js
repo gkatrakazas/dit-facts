@@ -6,26 +6,7 @@ import { useTranslation } from "react-i18next";
 import MultiRangeSlider from "../../components/MultiRangeSlider";
 import { usePagination } from "../../hooks/usePagination";
 import PaginationControls from "../../components/PaginationControls";
-import { admissionTypeDescriptions, admissionTypeGroups, statusDescriptions } from "../../data/students/studentMetadata";
-
-const inactivityLevels = [
-  { min: 20, color: "#8B0000", label: "> 20" },
-  { min: 10, color: "#FF4500", label: "10–20" },
-  { min: 5, color: "#FFA500", label: "5–10" },
-  { min: 2, color: "#FFD700", label: "2–5" },
-  { min: 0, color: "#32CD32", label: "< 2" },
-];
-
-// const speedLevels = useMemo(() => ([
-//   { max: 4,        color: "#28a428", label: t("visualization.graduatesDuration.bins.uptoN")   },
-//   { max: 5,        color: "#9ACD32", label: t("visualization.graduatesDuration.bins.nToN1")   },
-//   { max: 6,        color: "#FFD700", label: t("visualization.graduatesDuration.bins.n1ToN2")  },
-//   { max: Infinity, color: "#FF4500", label: t("visualization.graduatesDuration.bins.gtN2")    }
-// ]), [t]);
-
-
-// const getColorBySpeed = (yearsToDegree) => (speedLevels.find(l => yearsToDegree <= l.max)?.color ?? "#525252");
-// const getSpeedCategory = (yearsToDegree) => (speedLevels.find(l => yearsToDegree <= l.max)?.label ?? "-");
+import { admissionTypeDescriptions, admissionTypeGroups } from "../../data/students/studentMetadata";
 
 // Utils
 const formatYearsAndMonths = (yearsDecimal) => {
@@ -206,8 +187,6 @@ const GraduatesDuration = () => {
 
   const [admissionTypes, setAdmissionTypes] = useState([]);
   const [selectedAdmissionTypes, setSelectedAdmissionTypes] = useState([]);
-  const [statuses, setStatuses] = useState([]);
-  const [selectedStatuses, setSelectedStatuses] = useState([]);
 
   const [viewMode, setViewMode] = useState("individual");
   const [groupedMode, setGroupedMode] = useState("byYear");
@@ -248,7 +227,7 @@ const GraduatesDuration = () => {
   const groupOptions = [
     {
       key: "byYear",
-      label: "Ανά έτος εγγραφής",
+      label: t("visualization.graduatesDuration.group.byYear"),
       groupBy: (d) => d.raw["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"],
       labelKey: "year",
       getLabel: (d) => d.data.year,
@@ -257,7 +236,7 @@ const GraduatesDuration = () => {
     },
     {
       key: "byCategory",
-      label: "Ανά διάρκεια φοίτησης",
+      label: t("visualization.graduatesDuration.group.byStudyDuration"),
       groupBy: (d) => getSpeedCategory(d.size),
       labelKey: "category",
       getLabel: (d) => d.data.category,
@@ -266,7 +245,7 @@ const GraduatesDuration = () => {
     },
     {
       key: "byAdmissionGroup",
-      label: "Ανά κατηγορία τρόπου εισαγωγής",
+      label: t("visualization.graduatesDuration.group.byAdmissionGroup"),
       groupBy: (d) => d.admissionGroup,
       labelKey: "admissionGroup",
       getLabel: (d) => d.data.admissionGroup,
@@ -275,7 +254,7 @@ const GraduatesDuration = () => {
     },
     {
       key: "byAdmissionType",
-      label: "Ανά τρόπο εισαγωγής",
+      label: t("visualization.graduatesDuration.group.byAdmissionType"),
       groupBy: (d) => d.raw["ΤΡΟΠΟΣ ΕΙΣΑΓΩΓΗΣ"],
       labelKey: "admissionType",
       getLabel: (d) => d.data.admissionType,
@@ -396,8 +375,6 @@ const GraduatesDuration = () => {
       const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
       setRawData(sheetData);
 
-      const today = new Date();
-
       console.log(sheetData);
       // 🔽 Add this to log 2024 students
 
@@ -418,7 +395,7 @@ const GraduatesDuration = () => {
           ((gradDate - enrollDate) / (1000 * 60 * 60 * 24 * 365.25) + 1)
         );
         const admissionCode = row["ΤΡΟΠΟΣ ΕΙΣΑΓΩΓΗΣ"];
-        const admissionGroup = admissionTypeGroups[admissionCode] || "Άλλο";
+        const admissionGroup = admissionTypeGroups[admissionCode] || "Άλλοι Τρόποι";
 
         return {
           r: row["ΠΛΗΘΟΣ ΜΑΘΗΜΑΤΩΝ"] || 0,
@@ -611,7 +588,7 @@ const GraduatesDuration = () => {
       .on("click", (_, d) => {
         setSelectedBubble(d.data); // 🟢 Store data for details panel
       });
-  }, [inactiveBubbleData, viewMode, groupedMode, dimensions, selectedYears, selectedAdmissionTypes, courseRange, selectedBubble, filterMode, selectedAdmissionGroups]);
+  }, [inactiveBubbleData, viewMode, groupedMode, dimensions, selectedYears, selectedAdmissionTypes, courseRange, selectedBubble, filterMode, selectedAdmissionGroups,getColorBySpeed,t]);
 
   const renderGroupedBubbles = useCallback((configKey) => {
     const config = groupedModeConfig[configKey];
@@ -798,7 +775,7 @@ const GraduatesDuration = () => {
         tooltip.style("opacity", 0);
       });
 
-  }, [groupedModeConfig, inactiveBubbleData, dimensions, selectedYears, courseRange, selectedAdmissionTypes, selectedBubble, filterMode, selectedAdmissionGroups]);
+  }, [groupedModeConfig, inactiveBubbleData, dimensions, selectedYears, courseRange, selectedAdmissionTypes, selectedBubble, filterMode, selectedAdmissionGroups,getColorBySpeed,t]);
 
   useEffect(() => {
     if (viewMode === "grouped") {
@@ -980,7 +957,10 @@ const GraduatesDuration = () => {
     courseRange,
     selectedAdmissionTypes,
     barChartWidth,
-    selectedAdmissionGroups
+    selectedAdmissionGroups,
+    getSpeedCategory,
+    speedLevels,
+    t
   ]);
 
   const filteredAdmissionTypes = useMemo(() => {
@@ -1247,7 +1227,7 @@ const GraduatesDuration = () => {
             <div className="flex flex-col justify-center items-left gap-2 text-sm border-gray-300 border-[1px] shadow-sm mb-2 px-2 py-2">
               <span className="text-gray-600">{t('visualization.graduatesDuration.legend.studyDuration')}</span>
               <div className="flex wrap-auto gap-2 mt-2 text-xs flex-wrap w-full">
-                {inactivityLevels.map(({ label, color }) => (
+                {speedLevels.map(({ label, color }) => (
                   <div key={label} className="flex items-center gap-2 border border-1 p-1 bg-gray-50">
                     <div className="w-4 h-4 rounded-full" style={{ backgroundColor: color }} />
                     {label}
@@ -1295,7 +1275,7 @@ const GraduatesDuration = () => {
                   onClick={() => setShowFullDetails(!showFullDetails)}
                   className="text-xs text-blue-600 hover:underline mt-1"
                 >
-                  {showFullDetails ? "Προβολή συνοπτικά" : "Προβολή αναλυτικά"}
+                  {showFullDetails ? t("visualization.common.viewLess") : t("visualization.common.viewMore")}
                 </button>
               )}
             </div>
@@ -1331,7 +1311,7 @@ const GraduatesDuration = () => {
 
             <div className="w-full p-2 mt-2 bg-white shadow rounded-lg">
 
-              <h4 className="text-sm font-semibold mb-1">Διάρκεια φοίτησης</h4>
+              <h4 className="text-sm font-semibold mb-1">{t('visualization.graduatesDuration.barchart.yAxis')}</h4>
               <div ref={categoryBarRef} className="w-full" />
             </div>
 

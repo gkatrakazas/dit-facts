@@ -56,10 +56,10 @@
         "byStudyDuration": "Group by Study Duration"
       },
       "studyDuration": {
-        "uptoN": "Up to and including n",
-        "nToN1": "n + 1",
-        "n1ToN2": "n + 2",
-        "gtN2": "n + 3 or more"
+        "uptoN": " 0 — n",
+        "nToN1": "n — n+1",
+        "n1ToN2": "n+1 — n+2",
+        "gtN2": "> n + 2"
       },
       "categoryCounts": {
         "yAxis": "Inactivity Category",
@@ -169,5 +169,11 @@
       "totalStudents": "Total Students",
       "avgPassingCourses": "Average Passed Courses"
     }
+  },
+  "pagination": {
+    "navigation": "Pagination navigation",
+    "prev": "Previous",
+    "next": "Next",
+    "pageNumber": "Page {{page}}"
   }
 }
