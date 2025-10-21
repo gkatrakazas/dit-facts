@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useMemo } from "react";
+import React, { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import * as d3 from "d3";
 import * as XLSX from "xlsx";
 import excelFile from "../../data/active-students.xlsx";
@@ -40,11 +40,10 @@ const PassingCourses = () => {
   const [highlightedYear, setHighlightedYear] = useState(null);
   const [highlightedCourse, setHighlightedCourse] = useState(null);
 
-  const updateChartWidth = () => {
-    if (chartRef.current) {
-      setChartWidth(chartRef.current.offsetWidth);
-    }
-  };
+  const updateChartWidth = useCallback(() => {
+    if (chartRef.current) setChartWidth(chartRef.current.offsetWidth);
+  }, []);
+
 
   const loadExcelData = async () => {
     const response = await fetch(excelFile);
@@ -118,11 +117,11 @@ const PassingCourses = () => {
     }
   }, [courseRange, availableCourses]);
 
-  const colorScale = d3
-    .scaleSequential(d3.interpolateOranges)
-    .domain([maxPassedCourses, minPassedCourses]);
-
-  const createChart = () => {
+  const colorScale = useMemo(
+    () => d3.scaleSequential(d3.interpolateOranges).domain([maxPassedCourses, minPassedCourses]),
+    [minPassedCourses, maxPassedCourses]
+  );
+  const createChart = useCallback(() => {
     if (!pivotedData.length) return;
 
     const margin = { top: 20, right: 30, bottom: 40, left: 60 };
@@ -260,9 +259,17 @@ const PassingCourses = () => {
         .attr("fill", "black")
         .text(totalStudents);
     });
-  };
+  }, [
+    pivotedData,
+    selectedYears,
+    selectedCourses,
+    highlightedCourse,
+    highlightedYear,
+    colorScale,
+    t
+  ]);
 
-  const createTreeMap = () => {
+  const createTreeMap = useCallback(() => {
     if (!pivotedData.length) return;
 
     d3.select(treeMapRef.current).selectAll("*").remove();
@@ -379,8 +386,14 @@ const PassingCourses = () => {
           .attr("font-size", "12px")
           .attr("fill", "white");
       });
-
-  };
+  }, [
+    pivotedData,
+    selectedYears,
+    selectedCourses,
+    highlightedYear,
+    highlightedCourse,
+    colorScale
+  ]);
 
 
   useEffect(() => {
@@ -398,14 +411,13 @@ const PassingCourses = () => {
   useEffect(() => {
     createChart();
     createTreeMap();
-  }, [pivotedData, chartWidth, selectedYears, selectedCourses, highlightedYear, highlightedCourse]);
+  }, [pivotedData, chartWidth, selectedYears, selectedCourses, highlightedYear, highlightedCourse, createChart, createTreeMap]);
 
   useEffect(() => {
     window.addEventListener("resize", updateChartWidth);
     updateChartWidth();
     return () => window.removeEventListener("resize", updateChartWidth);
-  }, []);
-
+  }, [updateChartWidth]);
 
   return (
     <div>
