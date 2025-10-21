@@ -7,6 +7,7 @@ import MultiRangeSlider from "../../components/MultiRangeSlider";
 import { usePagination } from "../../hooks/usePagination";
 import PaginationControls from "../../components/PaginationControls";
 import { admissionTypeDescriptions, admissionTypeGroups } from "../../data/students/studentMetadata";
+import CheckboxFilter from "../../components/Filters/CheckboxFilter";
 
 // Utils
 const formatYearsAndMonths = (yearsDecimal) => {
@@ -48,76 +49,6 @@ const getTooltipHtml = ((d, t) => {
     .map(({ label, value }) => `<b>${label}:</b> ${value ?? "-"}`)
     .join("<br/>");
 });
-
-
-const CheckboxFilter = ({ title, options, selected, setSelected, descriptions = {}, t }) => {
-  const allSelected = selected.length === options.length;
-
-  const toggleAll = (checked) => {
-    setSelected(checked ? options : []);
-  };
-
-  const toggleOne = (option) => {
-    setSelected((prev) =>
-      prev.includes(option) ? prev.filter((o) => o !== option) : [...prev, option]
-    );
-  };
-
-  return (
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">
-        {title}
-      </label>
-      <div className="space-y-1 max-h-44 overflow-y-auto border border-gray-300 rounded-md text-sm bg-white">
-        <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 px-2 py-1 rounded">
-          <input
-            type="checkbox"
-            className="appearance-none h-4 w-4 shrink-0 rounded bg-white border border-gray-300
-            checked:bg-[#36abcc] checked:border-[#36abcc]
-            flex items-center justify-center
-            focus:outline-none"
-            style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 20 20' fill='white' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M16.704 5.29a1 1 0 010 1.42l-7.292 7.292a1 1 0 01-1.42 0L3.296 9.29a1 1 0 011.408-1.42L8 11.172l6.296-6.296a1 1 0 011.408 0z'/%3E%3C/svg%3E")`,
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat',
-              backgroundSize: '1rem'
-            }}
-            checked={allSelected}
-            onChange={(e) => toggleAll(e.target.checked)}
-          />
-          <span className="text-gray-800 font-medium">{t('visualization.common.all')}</span>
-        </label>
-        <div className="border-t border-gray-200 my-1" />
-        {options.map((option) => (
-          <label key={option} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 px-2 py-1 rounded">
-            <input
-              type="checkbox"
-              className="appearance-none h-4 w-4 shrink-0 rounded bg-white border border-gray-300
-              checked:bg-[#36abcc] checked:border-[#36abcc]
-              flex items-center justify-center
-              focus:outline-none"
-              style={{
-                backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 20 20' fill='white' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M16.704 5.29a1 1 0 010 1.42l-7.292 7.292a1 1 0 01-1.42 0L3.296 9.29a1 1 0 011.408-1.42L8 11.172l6.296-6.296a1 1 0 011.408 0z'/%3E%3C/svg%3E")`,
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-                backgroundSize: '1rem'
-              }}
-              checked={selected.includes(option)}
-              onChange={() => toggleOne(option)}
-            />
-            <span
-              className="text-gray-800 text-sm whitespace-nowrap"
-              title={`${option} - ${descriptions[option] ?? option}`}
-            >
-              {option} {descriptions[option] && `- ${descriptions[option]}`}
-            </span>
-          </label>
-        ))}
-      </div>
-    </div>
-  );
-};
-
 
 function filterStudents({
   data,
@@ -588,7 +519,7 @@ const GraduatesDuration = () => {
       .on("click", (_, d) => {
         setSelectedBubble(d.data); // 🟢 Store data for details panel
       });
-  }, [inactiveBubbleData, viewMode, groupedMode, dimensions, selectedYears, selectedAdmissionTypes, courseRange, selectedBubble, filterMode, selectedAdmissionGroups,getColorBySpeed,t]);
+  }, [inactiveBubbleData, viewMode, groupedMode, dimensions, selectedYears, selectedAdmissionTypes, courseRange, selectedBubble, filterMode, selectedAdmissionGroups, getColorBySpeed, t]);
 
   const renderGroupedBubbles = useCallback((configKey) => {
     const config = groupedModeConfig[configKey];
@@ -775,7 +706,7 @@ const GraduatesDuration = () => {
         tooltip.style("opacity", 0);
       });
 
-  }, [groupedModeConfig, inactiveBubbleData, dimensions, selectedYears, courseRange, selectedAdmissionTypes, selectedBubble, filterMode, selectedAdmissionGroups,getColorBySpeed,t]);
+  }, [groupedModeConfig, inactiveBubbleData, dimensions, selectedYears, courseRange, selectedAdmissionTypes, selectedBubble, filterMode, selectedAdmissionGroups, getColorBySpeed, t]);
 
   useEffect(() => {
     if (viewMode === "grouped") {
@@ -965,7 +896,7 @@ const GraduatesDuration = () => {
 
   const filteredAdmissionTypes = useMemo(() => {
     return admissionTypes.filter((code) => {
-      const group = admissionTypeGroups[code] || "Άλλο";
+      const group = admissionTypeGroups[code] || "Άλλοι Τρόποι";
       return selectedAdmissionGroups.includes(group);
     });
   }, [admissionTypes, selectedAdmissionGroups]);
@@ -1123,17 +1054,15 @@ const GraduatesDuration = () => {
                 title={t('visualization.graduatesDuration.filtersPanel.admissionGroup')}
                 options={admissionGroups}
                 selected={selectedAdmissionGroups}
-                setSelected={setSelectedAdmissionGroups}
-                t={t}
+                onChange={setSelectedAdmissionGroups}
               />
 
               <CheckboxFilter
                 title={t('visualization.graduatesDuration.filtersPanel.admissionType')}
                 options={filteredAdmissionTypes}
                 selected={selectedAdmissionTypes}
-                setSelected={setSelectedAdmissionTypes}
+                onChange={setSelectedAdmissionTypes}
                 descriptions={admissionTypeDescriptions}
-                t={t}
               />
 
             </div>
