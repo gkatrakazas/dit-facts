@@ -7,7 +7,7 @@ export default function GradientLegend({
   endLabel,
   startColor,
   endColor,
-  width = 150,
+  width = 140,
   height = 12,
   className = "",
 }) {

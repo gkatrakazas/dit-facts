@@ -572,8 +572,11 @@ const PassingCourses = () => {
             />
 
             <SizeLegend
-              title={t("visualization.passingCourses.sizeLegend")}
-              items={[{ size: 12, label: "5" }, { size: 23, label: "50" }, { size: 30, label: "500" }]}
+              shape="rect"
+              steps={[5, 50, 500]}
+              range={[12, 30]} // side lengths
+              label={t('visualization.passingCourses.sizeLegend')}
+              direction="row"
             />
           </div>
         </div>

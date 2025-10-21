@@ -8,8 +8,8 @@ import { usePagination } from "../../hooks/usePagination";
 import PaginationControls from "../../components/PaginationControls";
 import { admissionTypeGroups } from "../../data/students/studentMetadata";
 import CheckboxFilter from "../../components/Filters/CheckboxFilter";
-import CircleSizeLegend from "../../components/Legend/CircleSizeLegend";
 import LineLegend from "../../components/Legend/LineLegend";
+import SizeLegend from "../../components/Legend/SizeLegend";
 
 // Utils
 function filterStudents({ data, selectedYears, selectedAdmissionGroups }) {
@@ -737,11 +737,14 @@ const GraduationTimelines = () => {
             </div>
           </div>
 
-          <div className="max-w-[20%] mt-6 flex flex-col gap-2">
+          <div className="max-w-[20%] min-w-[10%] mt-6 flex flex-col gap-2">
             <LineLegend items={lineLegendItems} />
 
-            <CircleSizeLegend
+            <SizeLegend
+              shape="circle"
               steps={[10, 50, 100]}
+              range={[3, 18]} // radii
+              direction="row"
               label={t('visualization.graduationTimelines.legendSizeByStudents')}
             />
           </div>
