@@ -8,6 +8,8 @@ import { usePagination } from "../../hooks/usePagination";
 import PaginationControls from "../../components/PaginationControls";
 import { admissionTypeDescriptions, admissionTypeGroups } from "../../data/students/studentMetadata";
 import CheckboxFilter from "../../components/Filters/CheckboxFilter";
+import ViewModeToggle from "../../components/Controls/ViewModeToggle";
+import FilterModeToggle from "../../components/Controls/FilterModeToggle";
 
 // Utils
 const formatYearsAndMonths = (yearsDecimal) => {
@@ -931,30 +933,8 @@ const GraduatesDuration = () => {
             <div className="flex flex-col gap-2 text-sm">
               <h2 className="text-md font-semibold text-md">{t('visualization.common.view.label')}</h2>
 
-              <div className="flex border border-gray-300 rounded overflow-hidden">
-                {[
-                  { value: "individual", label: t('visualization.common.view.individual') },
-                  { value: "grouped", label: t('visualization.common.view.grouped') }
-                ].map((option) => (
-                  <label
-                    key={option.value}
-                    className={`w-full text-center px-3 py-2 cursor-pointer transition-all duration-200
-                        ${viewMode === option.value
-                        ? "bg-secondary text-white"
-                        : "bg-white text-gray-700 hover:bg-gray-100"}`}
-                  >
-                    <input
-                      type="radio"
-                      name="viewMode"
-                      value={option.value}
-                      checked={viewMode === option.value}
-                      onChange={() => setViewMode(option.value)}
-                      className="hidden"
-                    />
-                    {option.label}
-                  </label>
-                ))}
-              </div>
+              <ViewModeToggle value={viewMode} onChange={setViewMode} />
+
               {viewMode === "grouped" && (
                 <select
                   value={groupedMode}
@@ -974,31 +954,7 @@ const GraduatesDuration = () => {
 
             <div className="flex flex-col gap-2 text-sm">
               <h2 className="text-md font-semibold text-md">{t('visualization.common.filterMode.label')}</h2>
-
-              <div className="flex border border-gray-300 rounded overflow-hidden">
-                {[
-                  { value: "hide", label: t('visualization.common.filterMode.hide') },
-                  { value: "dim", label: t('visualization.common.filterMode.dim') }
-                ].map((option) => (
-                  <label
-                    key={option.value}
-                    className={`w-full text-center px-3 py-2 cursor-pointer transition-all duration-200
-          ${filterMode === option.value
-                        ? "bg-secondary text-white"
-                        : "bg-white text-gray-700 hover:bg-gray-100"}`}
-                  >
-                    <input
-                      type="radio"
-                      name="filterMode"
-                      value={option.value}
-                      checked={filterMode === option.value}
-                      onChange={() => setFilterMode(option.value)}
-                      className="hidden"
-                    />
-                    {option.label}
-                  </label>
-                ))}
-              </div>
+              <FilterModeToggle value={filterMode} onChange={setFilterMode} />
             </div>
 
 

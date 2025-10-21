@@ -8,6 +8,8 @@ import { usePagination } from "../../hooks/usePagination";
 import PaginationControls from "../../components/PaginationControls";
 import { admissionTypeDescriptions, admissionTypeGroups, statusDescriptions } from "../../data/students/studentMetadata";
 import CheckboxFilter from "../../components/Filters/CheckboxFilter";
+import ViewModeToggle from "../../components/Controls/ViewModeToggle";
+import FilterModeToggle from "../../components/Controls/FilterModeToggle";
 
 const inactivityLevels = [
   { min: 20, color: "#8B0000", label: "> 20" },
@@ -935,32 +937,9 @@ const InactiveStudents = () => {
           {/* Sidebar: Display options */}
           <div className="flex flex-col gap-3 mt-6 bg-white p-4 pr-6 rounded shadow w-[30%] max-h-[100vh] overflow-y-auto">
             <div className="flex flex-col gap-2 text-sm">
-              <h2 className="text-md font-semibold text-md">{t("visualization.common.view.label")}</h2>
+            <h2 className="text-md font-semibold">{t("visualization.common.view.label")}</h2>
+            <ViewModeToggle value={viewMode} onChange={setViewMode} />
 
-              <div className="flex border border-gray-300 rounded overflow-hidden">
-                {[
-                  { value: "individual", label: t("visualization.common.view.individual") },
-                  { value: "grouped", label: t("visualization.common.view.grouped") }
-                ].map((option) => (
-                  <label
-                    key={option.value}
-                    className={`w-full text-center px-3 py-2 cursor-pointer transition-all duration-200
-                        ${viewMode === option.value
-                        ? "bg-secondary text-white"
-                        : "bg-white text-gray-700 hover:bg-gray-100"}`}
-                  >
-                    <input
-                      type="radio"
-                      name="viewMode"
-                      value={option.value}
-                      checked={viewMode === option.value}
-                      onChange={() => setViewMode(option.value)}
-                      className="hidden"
-                    />
-                    {option.label}
-                  </label>
-                ))}
-              </div>
               {viewMode === "grouped" && (
                 <select
                   value={groupedMode}
@@ -980,33 +959,8 @@ const InactiveStudents = () => {
 
             <div className="flex flex-col gap-2 text-sm">
               <h2 className="text-md font-semibold text-md">{t("visualization.common.filterMode.label")}</h2>
-
-              <div className="flex border border-gray-300 rounded overflow-hidden">
-                {[
-                  { value: "hide", label: t("visualization.common.filterMode.hide") },
-                  { value: "dim", label: t("visualization.common.filterMode.dim") }
-                ].map((option) => (
-                  <label
-                    key={option.value}
-                    className={`w-full text-center px-3 py-2 cursor-pointer transition-all duration-200
-          ${filterMode === option.value
-                        ? "bg-secondary text-white"
-                        : "bg-white text-gray-700 hover:bg-gray-100"}`}
-                  >
-                    <input
-                      type="radio"
-                      name="filterMode"
-                      value={option.value}
-                      checked={filterMode === option.value}
-                      onChange={() => setFilterMode(option.value)}
-                      className="hidden"
-                    />
-                    {option.label}
-                  </label>
-                ))}
-              </div>
+              <FilterModeToggle value={filterMode} onChange={setFilterMode} />
             </div>
-
 
             <div className="border-t border-gray-200"></div>
 
