@@ -3,7 +3,7 @@ import * as d3 from "d3";
 import * as XLSX from "xlsx";
 import excelFile from "../../data/di_stats.xlsx";
 import { useTranslation } from "react-i18next";
-import MultiRangeSlider from "../../components/MultiRangeSlider";
+import MultiRangeSlider from "../../components/Controls/MultiRangeSlider";
 import { usePagination } from "../../hooks/usePagination";
 import PaginationControls from "../../components/PaginationControls";
 import { admissionTypeDescriptions, admissionTypeGroups, statusDescriptions } from "../../data/students/studentMetadata";

@@ -7,7 +7,7 @@ import excelFile from "../../data/active-students.xlsx";
 import course from '../../assets/course.svg';
 import student from '../../assets/student.svg';
 import { useTranslation } from "react-i18next";
-import MultiRangeSlider from "../../components/MultiRangeSlider";
+import MultiRangeSlider from "../../components/Controls/MultiRangeSlider";
 import GradientLegend from "../../components/Legend/GradientLegend";
 import SizeLegend from "../../components/Legend/SizeLegend";
 
