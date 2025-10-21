@@ -13,8 +13,8 @@ export default function GradientLegend({
 }) {
   const id = useId(); // unique gradient id per instance
   return (
-    <div className={`text-sm border border-gray-300 text-gray-600 shadow-sm px-2 py-2 ${className}`}>
-      {title && <div className="mb-1">{title}</div>}
+    <div className={`flex flex-col justify-center items-left gap-2 text-sm border-gray-300 border-[1px] shadow-sm px-2 py-2 ${className}`}>
+      {title && <div className="text-gray-600 mb-1">{title}</div>}
       <div className="flex items-center gap-2">
         {startLabel != null && <span className="text-gray-600">{startLabel}</span>}
         <svg width={width} height={height}>

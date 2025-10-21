@@ -51,8 +51,8 @@ function SizeLegend({
     );
 
     return (
-        <div className={`flex flex-col gap-1 border border-gray-300 shadow-md p-2 ${className}`}>
-            {label && <div className="font-semibold text-xs text-gray-600">{label}</div>}
+        <div className={`flex flex-col justify-center items-left gap-2 text-sm border-gray-300 border-[1px] shadow-sm px-2 py-2 ${className}`}>
+            {label && <div className="text-gray-600">{label}</div>}
 
             <div style={containerStyle} className="items-end flex-wrap">
                 {steps.map((value) => {

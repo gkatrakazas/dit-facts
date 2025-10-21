@@ -4,7 +4,7 @@ import React from "react";
 export default function LineLegend({ items, className = "" }) {
   // items: Array<{ label: string, color: string }>
   return (
-    <div className={`flex flex-col gap-1 border border-gray-300 shadow-md p-2 ${className}`}>
+    <div className={`flex flex-col justify-center items-left gap-2 text-sm border-gray-300 border-[1px] shadow-sm px-2 py-2 ${className}`}>
       {items.map((it, i) => (
         <div key={`${it.label}-${i}`} className="flex items-center gap-2">
           <svg width="24" height="6" aria-hidden="true">

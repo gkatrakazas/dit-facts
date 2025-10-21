@@ -573,7 +573,7 @@ const PassingCourses = () => {
             </div>
           </div>
 
-          <div className="max-w-[16%] mt-6 w-full flex flex-col gap-2">
+          <div className="max-w-[13%] mt-6 w-full flex flex-col gap-2">
 
             <GradientLegend
               title={t("visualization.common.passingCourses")}
