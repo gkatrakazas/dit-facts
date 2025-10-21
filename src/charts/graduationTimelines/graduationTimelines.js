@@ -7,84 +7,17 @@ import MultiRangeSlider from "../../components/MultiRangeSlider";
 import { usePagination } from "../../hooks/usePagination";
 import PaginationControls from "../../components/PaginationControls";
 import { admissionTypeGroups } from "../../data/students/studentMetadata";
+import CheckboxFilter from "../../components/Filters/CheckboxFilter";
+import CircleSizeLegend from "../../components/Legend/CircleSizeLegend";
+import LineLegend from "../../components/Legend/LineLegend";
 
 // Utils
-
-const CheckboxFilter = ({ title, options, selected, setSelected, descriptions = {}, t }) => {
-  const allSelected = selected.length === options.length;
-
-  const toggleAll = (checked) => {
-    setSelected(checked ? options : []);
-  };
-
-  const toggleOne = (option) => {
-    setSelected((prev) =>
-      prev.includes(option) ? prev.filter((o) => o !== option) : [...prev, option]
-    );
-  };
-
-  return (
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">
-        {title}
-      </label>
-      <div className="space-y-1 max-h-44 overflow-y-auto border border-gray-300 rounded-md text-sm bg-white">
-        <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 px-2 py-1 rounded">
-          <input
-            type="checkbox"
-            className="appearance-none h-4 w-4 shrink-0 rounded bg-white border border-gray-300
-            checked:bg-[#36abcc] checked:border-[#36abcc]
-            flex items-center justify-center
-            focus:outline-none"
-            style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 20 20' fill='white' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M16.704 5.29a1 1 0 010 1.42l-7.292 7.292a1 1 0 01-1.42 0L3.296 9.29a1 1 0 011.408-1.42L8 11.172l6.296-6.296a1 1 0 011.408 0z'/%3E%3C/svg%3E")`,
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat',
-              backgroundSize: '1rem'
-            }}
-            checked={allSelected}
-            onChange={(e) => toggleAll(e.target.checked)}
-          />
-          <span className="text-gray-800 font-medium">{t("visualization.common.all")}</span>
-        </label>
-        <div className="border-t border-gray-200 my-1" />
-        {options.map((option) => (
-          <label key={option} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 px-2 py-1 rounded">
-            <input
-              type="checkbox"
-              className="appearance-none h-4 w-4 shrink-0 rounded bg-white border border-gray-300
-              checked:bg-[#36abcc] checked:border-[#36abcc]
-              flex items-center justify-center
-              focus:outline-none"
-              style={{
-                backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 20 20' fill='white' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M16.704 5.29a1 1 0 010 1.42l-7.292 7.292a1 1 0 01-1.42 0L3.296 9.29a1 1 0 011.408-1.42L8 11.172l6.296-6.296a1 1 0 011.408 0z'/%3E%3C/svg%3E")`,
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-                backgroundSize: '1rem'
-              }}
-              checked={selected.includes(option)}
-              onChange={() => toggleOne(option)}
-            />
-            <span
-              className="text-gray-800 text-sm whitespace-nowrap"
-              title={`${option} - ${descriptions[option] ?? option}`}
-            >
-              {option} {descriptions[option] && `- ${descriptions[option]}`}
-            </span>
-          </label>
-        ))}
-      </div>
-    </div>
-  );
-};
-
 function filterStudents({ data, selectedYears, selectedAdmissionGroups }) {
   return data.filter(b =>
     selectedYears.includes(Number(b.raw["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"])) &&
     selectedAdmissionGroups.includes(b.admissionGroup)
   );
 }
-
 
 // Main Component
 const GraduationTimelines = () => {
@@ -93,38 +26,6 @@ const GraduationTimelines = () => {
   // States
   const [rawData, setRawData] = useState([]);
   const [showRawData, setShowRawData] = useState(false);
-
-
-  const StaticCircleSizeLegend = ({
-    steps = [10, 50, 100],
-    label = t('visualization.graduationTimelines.legendSizeByStudents')
-  }) => {
-    // Use the same min/max as your scale
-    const minCircle = 4, maxCircle = 18;
-    const scale = d3.scaleSqrt().domain([steps[0], steps[steps.length - 1]]).range([minCircle, maxCircle]);
-
-    return (
-      <div className="flex flex-col gap-1 border border-gray-300 shadow shadow-md p-2">
-        <div className="font-semibold text-xs text-gray-600">{label}</div>
-        <div className="flex flex-row gap-4 items-end">
-          {steps.map(count => (
-            <div key={count} className="flex flex-col items-center">
-              <svg width={scale(count) * 2 + 8} height={scale(count) * 2 + 8}>
-                <circle
-                  cx={scale(count) + 4}
-                  cy={scale(count) + 4}
-                  r={scale(count)}
-                  fill="#bbb"
-                  stroke="#444"
-                />
-              </svg>
-              <span className="text-xs text-gray-500 mt-1">{count}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  };
 
   const {
     currentPage,
@@ -360,6 +261,11 @@ const GraduationTimelines = () => {
         .sort((a, b) => a.year - b.year)
     }));
   }, [studentsData, selectedYears, selectedAdmissionGroups]);
+
+  const lineLegendItems = graduateData.map((d, i) => ({
+    label: d.group,
+    color: d3.schemeTableau10[i % 10],
+  }));
 
   const averageGradeData = useMemo(() => {
     const filtered = filterStudents({ data: studentsData, selectedYears, selectedAdmissionGroups });
@@ -808,8 +714,7 @@ const GraduationTimelines = () => {
                   title={t('visualization.common.admissionCategory')}
                   options={admissionGroups}
                   selected={selectedAdmissionGroups}
-                  setSelected={setSelectedAdmissionGroups}
-                  t={t}
+                  onChange={setSelectedAdmissionGroups}
                 />
               </div>
             </div>
@@ -833,27 +738,12 @@ const GraduationTimelines = () => {
           </div>
 
           <div className="max-w-[20%] mt-6 flex flex-col gap-2">
+            <LineLegend items={lineLegendItems} />
 
-            <div className="flex flex-col gap-1 border border-gray-300 shadow shadow-md p-2">
-              {graduateData.map((d, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <svg width="24" height="6">
-                    <line
-                      x1="0"
-                      y1="3"
-                      x2="24"
-                      y2="3"
-                      stroke={d3.schemeTableau10[i % 10]}
-                      strokeWidth="3"
-                    />
-                  </svg>
-                  <span className="text-xs text-gray-700">{d.group}</span>
-                </div>
-              ))}
-            </div>
-
-            <StaticCircleSizeLegend steps={[10, 50, 100]} />
-
+            <CircleSizeLegend
+              steps={[10, 50, 100]}
+              label={t('visualization.graduationTimelines.legendSizeByStudents')}
+            />
           </div>
         </div>
 

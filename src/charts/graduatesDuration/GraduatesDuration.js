@@ -10,6 +10,7 @@ import { admissionTypeDescriptions, admissionTypeGroups } from "../../data/stude
 import CheckboxFilter from "../../components/Filters/CheckboxFilter";
 import ViewModeToggle from "../../components/Controls/ViewModeToggle";
 import FilterModeToggle from "../../components/Controls/FilterModeToggle";
+import ColorDotLegend from "../../components/Legend/ColorDotLegend";
 
 // Utils
 const formatYearsAndMonths = (yearsDecimal) => {
@@ -1109,21 +1110,12 @@ const GraduatesDuration = () => {
 
           <div className="max-w-[25%] mt-6 w-full">
 
-            <div className="flex flex-col justify-center items-left gap-2 text-sm border-gray-300 border-[1px] shadow-sm mb-2 px-2 py-2">
-              <span className="text-gray-600">{t('visualization.graduatesDuration.legend.studyDuration')}</span>
-              <div className="flex wrap-auto gap-2 mt-2 text-xs flex-wrap w-full">
-                {speedLevels.map(({ label, color }) => (
-                  <div key={label} className="flex items-center gap-2 border border-1 p-1 bg-gray-50">
-                    <div className="w-4 h-4 rounded-full" style={{ backgroundColor: color }} />
-                    {label}
-                  </div>
-                ))}
-              </div>
-              <p className="font-medium w-auto  mb-2 italic text-xs text-gray-600">
-                {t('visualization.graduatesDuration.legend.noteN')}
-              </p>
-
-            </div>
+          <ColorDotLegend
+  title={t("visualization.graduatesDuration.legend.studyDuration")}
+  levels={speedLevels}
+  note={t("visualization.graduatesDuration.legend.noteN")}
+  className="mb-2"
+/>
 
             <div className="p-2 relative w-full bg-white shadow shadow-lg rounded-lg w-full">
               <p className="text-lg font-semibold text-primary">

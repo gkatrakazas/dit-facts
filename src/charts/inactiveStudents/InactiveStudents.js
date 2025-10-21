@@ -10,6 +10,7 @@ import { admissionTypeDescriptions, admissionTypeGroups, statusDescriptions } fr
 import CheckboxFilter from "../../components/Filters/CheckboxFilter";
 import ViewModeToggle from "../../components/Controls/ViewModeToggle";
 import FilterModeToggle from "../../components/Controls/FilterModeToggle";
+import ColorDotLegend from "../../components/Legend/ColorDotLegend";
 
 const inactivityLevels = [
   { min: 20, color: "#8B0000", label: "> 20" },
@@ -937,8 +938,8 @@ const InactiveStudents = () => {
           {/* Sidebar: Display options */}
           <div className="flex flex-col gap-3 mt-6 bg-white p-4 pr-6 rounded shadow w-[30%] max-h-[100vh] overflow-y-auto">
             <div className="flex flex-col gap-2 text-sm">
-            <h2 className="text-md font-semibold">{t("visualization.common.view.label")}</h2>
-            <ViewModeToggle value={viewMode} onChange={setViewMode} />
+              <h2 className="text-md font-semibold">{t("visualization.common.view.label")}</h2>
+              <ViewModeToggle value={viewMode} onChange={setViewMode} />
 
               {viewMode === "grouped" && (
                 <select
@@ -1121,20 +1122,13 @@ const InactiveStudents = () => {
 
 
           <div className="max-w-[25%] mt-6 w-full">
-            <div className="flex flex-col justify-center items-left gap-2 text-sm border-gray-300 border-[1px] shadow-sm mb-2 px-2 py-2">
-              <span className="text-gray-600">{t("visualization.inactiveStudents.yearsInactivity")}</span>
-              <div className="flex wrap-auto gap-2 mt-2 text-xs flex-wrap w-full">
-                {inactivityLevels.map(({ label, color }) => (
-                  <div key={label} className="flex items-center gap-2 border border-1 p-1 bg-gray-50">
-                    <div className="w-4 h-4 rounded-full" style={{ backgroundColor: color }} />
-                    {label}
-                  </div>
-                ))}
-              </div>
-              <p className="font-medium w-auto  mb-2 italic text-xs text-gray-600">
-                {t("visualization.inactiveStudents.legendDiscription")}
-              </p>
-            </div>
+
+            <ColorDotLegend
+              title={t("visualization.inactiveStudents.yearsInactivity")}
+              levels={inactivityLevels}
+              note={t("visualization.inactiveStudents.legendDiscription")}
+              className="mb-2"
+            />
 
             <div className="p-2 relative w-full bg-white shadow shadow-lg rounded-lg w-full">
               <p className="text-lg font-semibold text-primary">
@@ -1203,7 +1197,7 @@ const InactiveStudents = () => {
                     <span className="font-semibold">
                       {t("visualization.inactiveStudents.tooltip.yearsInactive")}:
                     </span>{" "}
-                    {formatYearsAndMonths(selectedBubble.size,t)}
+                    {formatYearsAndMonths(selectedBubble.size, t)}
                   </p>
                   <p>
                     <span className="font-semibold">

@@ -8,6 +8,8 @@ import course from '../../assets/course.svg';
 import student from '../../assets/student.svg';
 import { useTranslation } from "react-i18next";
 import MultiRangeSlider from "../../components/MultiRangeSlider";
+import GradientLegend from "../../components/Legend/GradientLegend";
+import SizeLegend from "../../components/Legend/SizeLegend";
 
 const PassingCourses = () => {
 
@@ -561,47 +563,18 @@ const PassingCourses = () => {
 
           <div className="max-w-[16%] mt-6 w-full flex flex-col gap-2">
 
-            <div className="text-sm flex flex-col justify-center items-left gap-2 text-sm border-gray-300 text-gray-600 border-[1px] shadow-sm px-2 py-2">
-              <div className="mb-1">
-                <p className="">{t("visualization.common.passingCourses")}</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-gray-600">{minPassedCourses}</span>
-                <svg width="150" height="12">
-                  <defs>
-                    <linearGradient id="legend-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor={colorScale(minPassedCourses)} />
-                      <stop offset="100%" stopColor={colorScale(maxPassedCourses)} />
-                    </linearGradient>
-                  </defs>
-                  <rect x="0" y="0" width="150" height="12" fill="url(#legend-gradient)" />
-                </svg>
-                <span className="text-gray-600">{maxPassedCourses}</span>
-              </div>
-            </div>
+            <GradientLegend
+              title={t("visualization.common.passingCourses")}
+              startLabel={minPassedCourses}
+              endLabel={maxPassedCourses}
+              startColor={colorScale(minPassedCourses)}
+              endColor={colorScale(maxPassedCourses)}
+            />
 
-            <div className="text-sm flex flex-col justify-center items-left gap-2 text-sm border-gray-300 text-gray-600 border-[1px] shadow-sm px-2 py-2">
-              <div className="mb-1">
-                <p className="">{t("visualization.passingCourses.sizeLegend")}</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="text-sm  text-gray-600 flex items-center gap-4">
-                  <div className="flex flex-row items-center">
-                    <svg width="12" height="12"><rect width="12" height="12" fill="#ddd" /></svg>
-                    <span className="ml-1">5</span>
-                  </div>
-                  <div className="flex flex-row items-center">
-                    <svg width="23" height="23"><rect width="23" height="23" fill="#ddd" /></svg>
-                    <span className="ml-1">50</span>
-                  </div>
-                  <div className="flex flex-row items-center">
-                    <svg width="30" height="30"><rect width="30" height="30" fill="#ddd" /></svg>
-
-                    <span className="ml-1">500</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <SizeLegend
+              title={t("visualization.passingCourses.sizeLegend")}
+              items={[{ size: 12, label: "5" }, { size: 23, label: "50" }, { size: 30, label: "500" }]}
+            />
           </div>
         </div>
       </div>
