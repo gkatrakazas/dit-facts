@@ -12,14 +12,14 @@ import i18n from "./i18n";
 const App = () => {
   return (
     <I18nextProvider i18n={i18n}>
-      <Router>
+      <Router basename="/dit-facts">
         <Layout>
           <Routes>
-            <Route path="dit-facts/" element={<HomePage />} />
-            <Route path="dit-facts/inactive-students" element={<InactiveStudents />} />
-            <Route path="dit-facts/graduation-timelines" element={<GraduationTimelines />} />
-            <Route path="dit-facts/graduates-duration" element={<GraduatesDuration />} />
-            <Route path="dit-facts/passing-courses" element={<PassingCourses />} />
+            <Route path="/" element={<HomePage />} />
+            <Route path="/inactive-students" element={<InactiveStudents />} />
+            <Route path="/graduation-timelines" element={<GraduationTimelines />} />
+            <Route path="/graduates-duration" element={<GraduatesDuration />} />
+            <Route path="/passing-courses" element={<PassingCourses />} />
 
           </Routes>
         </Layout>
