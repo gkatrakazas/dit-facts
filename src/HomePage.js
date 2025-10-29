@@ -12,22 +12,22 @@ const HomePage = () => {
     {
       title: t("visualization.inactiveStudents.title"),
       route: "/inactive-students",
-      img: "./inactive_students.png"
+      img: `${process.env.PUBLIC_URL}/inactive_students.png`
     },
     {
       title: t("visualization.passingCourses.title"),
       route: "/passing-courses",
-      img: "./passing-courses.png"
+      img: `${process.env.PUBLIC_URL}/passing-courses.png`
     },
     {
       title: t("visualization.graduatesDuration.title"),
       route: "/graduates-duration",
-      img: "./graduates-duration.png"
+      img: `${process.env.PUBLIC_URL}/graduates-duration.png`
     },
     {
       title: t("visualization.graduationTimelines.title"),
       route: "/graduation-timelines",
-      img: "./graduation-timelines.png"
+      img:`${process.env.PUBLIC_URL}/graduation-timelines.png`
     },
   ];
 
