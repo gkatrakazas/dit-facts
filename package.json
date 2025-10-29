@@ -1,6 +1,6 @@
 {
-  "name": "di-visualization",
-  "version": "0.1.0",
+  "name": "dit-facts",
+  "version": "1.0.0",
   "private": true,
   "dependencies": {
     "classnames": "^2.5.1",
