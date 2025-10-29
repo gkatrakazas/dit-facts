@@ -4,7 +4,7 @@
     "visualizations": "Visualizations"
   },
   "homepage": {
-    "welcome": "Welcome to DIT Visualizations! Explore interactive charts and insights. Click on a visualization to dive deeper."
+    "welcome": "Welcome to DIT Stats! Explore interactive charts and insights. Click on a visualization to dive deeper."
   },
   "visualization": {
     "common": {
@@ -59,7 +59,7 @@
         "uptoN": " 0 — n",
         "nToN1": "n — n+1",
         "n1ToN2": "n+1 — n+2",
-        "gtN2": "> n + 2"
+        "gtN2": "> n+2"
       },
       "categoryCounts": {
         "yAxis": "Inactivity Category",
@@ -81,7 +81,8 @@
         "admissionType": "Admission type",
         "admissionYear": "Admission year",
         "status": "Status",
-        "yearsInactive": "Years inactive"
+        "yearsInactive": "Years inactive",
+        "students": "Students"
       }
     },
     "graduationTimelines": {
@@ -89,11 +90,11 @@
       "graduatesTitle": "Average Study Duration by Admission Category",
       "avgGradeTitle": "Average Grade by Admission Category",
       "xAxis": "Admission Year",
-      "yAxisYearsToGraduate": "Average time to graduate (years)",
+      "yAxisYearsToGraduate": "Average years to graduate",
       "yAxisAvgGrade": "Average grade",
-      "legendSizeByStudents": "Size by Number of Students:",
+      "legendSizeByStudents": "Size by Student(s) Number",
       "tooltip": {
-        "year": "Year",
+        "year": "Admission Year",
         "avgYears": "Average years",
         "avgGrade": "Average grade",
         "students": "Students"
@@ -163,11 +164,19 @@
     },
     "passingCourses": {
       "title": "Passing Courses and Student Distribution",
-      "sizeLegend": "Size by Student(s) Number:",
+      "sizeLegend": "Size by Student(s) Number",
       "barChartTitle": "Students Passing Courses Over the Years",
       "ThreeMapTitle": "Student Distribution by number of Passed Courses",
       "totalStudents": "Total Students",
-      "avgPassingCourses": "Average Passed Courses"
+      "avgPassingCourses": "Average Passed Courses",
+      "yAxis": "Νumber of students",
+      "iconLegend": {
+        "title": "Icons",
+        "coursesLabel": "Passed courses",
+        "studentsLabel": "Students",
+        "courseAlt": "Courses icon",
+        "studentAlt": "Students icon"
+      }
     }
   },
   "pagination": {

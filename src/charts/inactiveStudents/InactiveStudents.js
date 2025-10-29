@@ -657,10 +657,14 @@ const InactiveStudents = () => {
       .attr("r", (d) => d.r + 3)
       .attr("fill", "#F9F9F9")
       .attr("stroke", "#ccc")
+
       .on("mouseover", (event, d) => {
         tooltip
           .style("opacity", 1)
-          .html(`<b>${config.labelKey}:</b> ${config.getLabel(d)}<br/><b>Φοιτητές/τριες:</b> ${d.children?.length ?? 0}`);
+          .html(
+            `<b>${config.label}:</b> ${config.getLabel(d)}
+             <b>${t("visualization.inactiveStudents.tooltip.students")}:</b> ${d.children?.length ?? 0 }`
+          )
       })
       .on("mousemove", (event) => {
         tooltip
@@ -741,7 +745,10 @@ const InactiveStudents = () => {
       .on("mouseover", (event, d) => {
         tooltip
           .style("opacity", 1)
-          .html(`<b>${config.label}:</b> ${config.getLabel(d)}<br/><b>Φοιτητές/τριες:</b> ${d.children?.length ?? 0}`);
+          .html(
+            `<b>${config.label}:</b> ${config.getLabel(d)}
+             <b>${t("visualization.inactiveStudents.tooltip.students")}:</b> ${d.children?.length ?? 0 }`
+          )
       })
       .on("mousemove", (event) => {
         tooltip
@@ -837,7 +844,7 @@ const InactiveStudents = () => {
       .on("mouseover", (event, d) => {
         tooltip
           .style("opacity", 1)
-          .html(`<b>${d[0]}</b>: ${d[1]} φοιτητές/τριες`);
+          .html(`<b>${d[0]}</b>: ${d[1]} ${t('visualization.inactiveStudents.tooltip.students')}`);
       })
       .on("mousemove", (event) => {
         tooltip
@@ -1227,7 +1234,7 @@ const InactiveStudents = () => {
               </div>
             )}
 
-            <div className="w-full p-2 mt-2 bg-white shadow rounded-lg">
+            <div className="w-full p-1 mt-2 bg-white shadow rounded-lg">
 
               <h4 className="text-sm font-semibold mb-1">{t("visualization.inactiveStudents.categoryCounts.yAxis")}</h4>
               <div ref={categoryBarRef} className="w-full" />

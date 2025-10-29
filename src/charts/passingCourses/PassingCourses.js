@@ -10,6 +10,11 @@ import { useTranslation } from "react-i18next";
 import MultiRangeSlider from "../../components/Controls/MultiRangeSlider";
 import GradientLegend from "../../components/Legend/GradientLegend";
 import SizeLegend from "../../components/Legend/SizeLegend";
+import IconLegend from "../../components/Legend/IconLegend";
+import { PiBooksFill } from "react-icons/pi";
+import { PiUserFill } from "react-icons/pi";
+import { createElement } from "react"; // to use icons in d3
+import { renderToString } from "react-dom/server";
 
 const PassingCourses = () => {
 
@@ -124,7 +129,7 @@ const PassingCourses = () => {
   const createChart = useCallback(() => {
     if (!pivotedData.length) return;
 
-    const margin = { top: 20, right: 30, bottom: 40, left: 60 };
+    const margin = { top: 20, right: 30, bottom: 50, left: 60 };
     const width = chartRef.current.offsetWidth - margin.left - margin.right;
     const height = Math.min(200, Math.max(100, pivotedData.length * 3)); // Adjust height dynamically
 
@@ -144,7 +149,7 @@ const PassingCourses = () => {
       filteredData = filteredData.filter((d) => selectedYears.includes(d.year));
     }
 
-    if (highlightedCourse) {
+    if (highlightedCourse !== null) {
       filteredData = filteredData.filter((d) => d.passedCourses === highlightedCourse);
     } else if (selectedCourses.length > 0) {
       filteredData = filteredData.filter((d) => selectedCourses.includes(d.passedCourses));
@@ -179,6 +184,16 @@ const PassingCourses = () => {
       .attr("transform", "rotate(-45)")
       .style("text-anchor", "end");
 
+    // X Axis Label
+    svg
+      .append("text")
+      .attr("text-anchor", "middle")
+      .attr("x", width / 2)
+      .attr("y", height + margin.bottom - 5)
+      .attr("fill", "black")
+      .attr("font-size", "10px")
+      .text(t("visualization.common.admissionYear"));
+
     svg.append("g").call(d3.axisLeft(y));
 
     svg
@@ -187,7 +202,7 @@ const PassingCourses = () => {
       .attr("transform", `translate(${-margin.left + 25}, ${height / 2}) rotate(-90)`)
       .attr("fill", "black")
       .attr("font-size", "10px")
-      .text("Πλήθος φοιτητ(ρι)ών");
+      .text(t('visualization.passingCourses.yAxis'));
 
     groupedData.forEach(([year, values]) => {
       let cumulative = 0;
@@ -327,7 +342,13 @@ const PassingCourses = () => {
       .data(root.leaves())
       .enter()
       .append("g")
-      .attr("transform", (d) => `translate(${d.x0},${d.y0})`);
+      .attr("transform", (d) => `translate(${d.x0},${d.y0})`)
+      .style("cursor", "pointer")
+      .on("click", (event, d) => {
+        const passedCourses = parseInt(d.data.name, 10);
+        setHighlightedCourse((prev) => (prev === passedCourses ? null : passedCourses));
+      });
+
 
     cell
       .append("rect")
@@ -351,40 +372,35 @@ const PassingCourses = () => {
 
     // ✅ Conditionally Show Text (Only If Box Is Large Enough)
     cell
-      .filter((d) => d.x1 - d.x0 > 50 && d.y1 - d.y0 > 30)
+      .filter((d) => d.x1 - d.x0 > 60 && d.y1 - d.y0 > 35)
       .each(function (d) {
         const group = d3.select(this);
 
-        group.append("image")
-          .attr("href", course)
-          .attr("x", 5)
-          .attr("y", 5)
-          .attr("width", 14)
-          .attr("height", 14)
-
-        // Add text next to the icon
-        group.append("text")
-          .attr("x", 24)
-          .attr("y", 16)
-          .text(`${d.data.name}`)
-          .attr("font-size", "12px")
-          .attr("font-weight", "bold")
-          .attr("fill", "white");
-
-        // Icon for students
-        group.append("image")
-          .attr("href", student)
-          .attr("x", 5)
-          .attr("y", 22)
-          .attr("width", 14)
-          .attr("height", 14);
-
-        group.append("text")
-          .attr("x", 24)
-          .attr("y", 33)
-          .text(`${d.data.students}`)
-          .attr("font-size", "12px")
-          .attr("fill", "white");
+        // Use foreignObject to render React elements inside SVG
+        group
+          .append("foreignObject")
+          .attr("x", 4)
+          .attr("y", 4)
+          .attr("width", d.x1 - d.x0 - 8)
+          .attr("height", d.y1 - d.y0 - 8)
+          .append("xhtml:div")
+          .style("display", "flex")
+          .style("flex-direction", "column")
+          .style("color", "white")
+          .style("font-size", "12px")
+          .html(() => {
+            // Create HTML string containing the icons and text
+            return `
+            <div style="display:flex;align-items:center;gap:6px;">
+              ${renderToString(createElement(PiBooksFill, { size: 15, color: "white" }))} 
+              <span style="font-weight:bold;">${d.data.name}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;margin-top:0px;">
+              ${renderToString(createElement(PiUserFill, { size: 14, color: "white" }))} 
+              <span>${d.data.students}</span>
+            </div>
+          `;
+          });
       });
   }, [
     pivotedData,
@@ -530,7 +546,7 @@ const PassingCourses = () => {
                 <div ref={chartRef} className="w-full relative"></div>
               </div>
 
-              <div className="border-t border-gray-300 py-2 mx-6"></div>
+              <div className="border-t border-gray-300 mx-6"></div>
               {/* treemap */}
               <div className="">
                 <div className="flex mx-6">
@@ -589,6 +605,30 @@ const PassingCourses = () => {
               range={[12, 30]} // side lengths
               label={t('visualization.passingCourses.sizeLegend')}
               direction="row"
+            />
+
+            <SizeLegend
+              shape="rect"
+              steps={[5, 50, 500]}
+              range={[12, 30]}
+              label={t("visualization.passingCourses.sizeLegend")}
+              direction="row"
+            />
+
+            <IconLegend
+              label={t("visualization.passingCourses.iconLegend.title")}
+              items={[
+                {
+                  icon: PiBooksFill,
+                  color: "#7e2804",
+                  label: t("visualization.passingCourses.iconLegend.coursesLabel"),
+                },
+                {
+                  icon: PiUserFill,
+                  color: "#7e2804",
+                  label: t("visualization.passingCourses.iconLegend.studentsLabel"),
+                },
+              ]}
             />
           </div>
         </div>

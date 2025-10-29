@@ -614,7 +614,10 @@ const GraduatesDuration = () => {
       .on("mouseover", (event, d) => {
         tooltip
           .style("opacity", 1)
-          .html(`<b>${config.labelKey}:</b> ${config.getLabel(d)}<br/><b>Φοιτητές/τριες:</b> ${d.children?.length ?? 0}`);
+          .html(
+            `<b>${t(`visualization.graduatesDuration.group.${config.key}`)}:</b> ${config.getLabel(d)}
+             <b>${t("visualization.graduatesDuration.summary.count", { count: d.children?.length ?? 0 })}</b>`
+          )
       })
       .on("mousemove", (event) => {
         tooltip
@@ -696,7 +699,7 @@ const GraduatesDuration = () => {
         tooltip
           .style("opacity", 1)
           .html(
-            `<b>${t(`visualization.graduatesDuration.group.${config.key}`)}:</b> ${config.getLabel(d)}<br/>
+            `<b>${t(`visualization.graduatesDuration.group.${config.key}`)}:</b> ${config.getLabel(d)}
              <b>${t("visualization.graduatesDuration.summary.count", { count: d.children?.length ?? 0 })}</b>`
           )
       })

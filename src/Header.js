@@ -58,7 +58,7 @@ const Header = () => {
       <div className="flex items-center">
         <img src="/logo.png" alt="DI Visualization Logo" className="h-12 mr-4" />
         <h1 className="text-2xl font-bold text-gray-800">
-          <Link to="/">DIT {t("header.visualizations")}</Link>
+          <Link to="/">DIT Stats</Link>
         </h1>
       </div>
 
@@ -82,17 +82,15 @@ const Header = () => {
         >
           <button
             onClick={() => setIsOpen((prev) => !prev)}
-            className={`flex px-4 py-2 font-medium items-center gap-2 text-md rounded-md transition-colors duration-200 ${
-              isOpen || isVisualizationActive
+            className={`flex px-4 py-2 font-medium items-center gap-2 text-md rounded-md transition-colors duration-200 ${isOpen || isVisualizationActive
                 ? activeClass
                 : "text-gray-700 hover:bg-secondary hover:text-white"
-            }`}
+              }`}
           >
             {t("header.visualizations")}
             <FaAngleDown
-              className={`transition-transform duration-200 ${
-                isOpen ? "rotate-180" : "rotate-0"
-              }`}
+              className={`transition-transform duration-200 ${isOpen ? "rotate-180" : "rotate-0"
+                }`}
             />
           </button>
 
@@ -110,12 +108,12 @@ const Header = () => {
               </li>
               <li>
                 <NavLink
-                  to="/graduation-timelines"
+                  to="/passing-courses"
                   className={({ isActive }) =>
                     `${baseClass} text-sm ${isActive ? activeClass : inactiveClass}`
                   }
                 >
-                  {t("visualization.graduationTimelines.title")}
+                  {t("visualization.passingCourses.title")}
                 </NavLink>
               </li>
               <li>
@@ -130,12 +128,12 @@ const Header = () => {
               </li>
               <li>
                 <NavLink
-                  to="/passing-courses"
+                  to="/graduation-timelines"
                   className={({ isActive }) =>
                     `${baseClass} text-sm ${isActive ? activeClass : inactiveClass}`
                   }
                 >
-                  {t("visualization.passingCourses.title")}
+                  {t("visualization.graduationTimelines.title")}
                 </NavLink>
               </li>
             </ul>

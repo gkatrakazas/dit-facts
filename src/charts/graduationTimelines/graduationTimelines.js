@@ -434,7 +434,7 @@ const GraduationTimelines = () => {
             .style("opacity", 1)
             .html(
               `${t("visualization.graduationTimelines.tooltip.year")}: ${d.year}
-               ${t("visualization.graduationTimelines.tooltip.avgGrade")}: ${d.count}
+               ${t("visualization.graduationTimelines.tooltip.avgYears")}: ${d.count}
                ${t("visualization.graduationTimelines.tooltip.students")}: ${d.studentCount}`
             );
           d3.select("#bubble-tooltip")

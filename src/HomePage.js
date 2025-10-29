@@ -15,9 +15,9 @@ const HomePage = () => {
       img: "./inactive_students.png"
     },
     {
-      title: t("visualization.graduationTimelines.title"),
-      route: "/graduation-timelines",
-      img: "./graduation-timelines.png"
+      title: t("visualization.passingCourses.title"),
+      route: "/passing-courses",
+      img: "./passing-courses.png"
     },
     {
       title: t("visualization.graduatesDuration.title"),
@@ -25,9 +25,9 @@ const HomePage = () => {
       img: "./graduates-duration.png"
     },
     {
-      title: t("visualization.passingCourses.title"),
-      route: "/passing-courses",
-      img: "./passing-courses.png"
+      title: t("visualization.graduationTimelines.title"),
+      route: "/graduation-timelines",
+      img: "./graduation-timelines.png"
     },
   ];
 
@@ -52,7 +52,8 @@ const HomePage = () => {
               <div>
                 <h2 className="text-xl flex flex-col gap-2 font-semibold text-primary group-hover:text-secondary group-hover:opacity-80 transition duration-200 mb-2">
                   <img className="h-40 w-auto object-cover" src={viz.img} alt="vis img"></img>
-                  {viz.title}
+                  {viz.title.replace(/\//g, "\u2060/\u2060")}
+
                 </h2>
               </div>
             </div>
