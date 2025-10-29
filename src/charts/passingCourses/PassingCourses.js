@@ -1,11 +1,7 @@
 import React, { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import * as d3 from "d3";
 import * as XLSX from "xlsx";
-import excelFile from "../../data/active-students.xlsx";
-// import YearSelection from "../../YearSelection"; // Import the new component
-// import PassedCoursesSelection from "../../PassedCoursesSelection";
-import course from '../../assets/course.svg';
-import student from '../../assets/student.svg';
+import excelFile2 from "../../data/di_stats.xlsx";
 import { useTranslation } from "react-i18next";
 import MultiRangeSlider from "../../components/Controls/MultiRangeSlider";
 import GradientLegend from "../../components/Legend/GradientLegend";
@@ -15,6 +11,8 @@ import { PiBooksFill } from "react-icons/pi";
 import { PiUserFill } from "react-icons/pi";
 import { createElement } from "react"; // to use icons in d3
 import { renderToString } from "react-dom/server";
+import { usePagination } from "../../hooks/usePagination";
+import PaginationControls from "../../components/PaginationControls";
 
 const PassingCourses = () => {
 
@@ -45,40 +43,88 @@ const PassingCourses = () => {
   const [highlightedYear, setHighlightedYear] = useState(null);
   const [highlightedCourse, setHighlightedCourse] = useState(null);
 
+
+  const {
+    currentPage,
+    totalPages,
+    currentData,
+    nextPage,
+    prevPage,
+    goToPage,
+    canGoNext,
+    canGoPrev,
+  } = usePagination(rawData, 100);
+
   const updateChartWidth = useCallback(() => {
     if (chartRef.current) setChartWidth(chartRef.current.offsetWidth);
   }, []);
 
 
   const loadExcelData = async () => {
-    const response = await fetch(excelFile);
-    const arrayBuffer = await response.arrayBuffer();
-    const workbook = XLSX.read(arrayBuffer, { type: "array" });
-    const sheetName = workbook.SheetNames[0];
-    const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
-    setRawData(sheetData); // Save the raw data for the table
+    // --- Read second Excel (di_stats.xlsx) ---
+    const response2 = await fetch(excelFile2);
+    const arrayBuffer2 = await response2.arrayBuffer();
+    const workbook2 = XLSX.read(arrayBuffer2, { type: "array" });
+    const sheetName2 = workbook2.SheetNames[0];
+    const sheetData2 = XLSX.utils.sheet_to_json(workbook2.Sheets[sheetName2]);
 
-    const transformedData = [];
+    // Save raw (for the table)
+    setRawData(sheetData2);
+    console.log('sheetData2', sheetData2)
+    const pivotMap = new Map();
     const yearsSet = new Set();
     const coursesSet = new Set();
 
-    sheetData.forEach((row) => {
-      const year = row["Έτος εγγραφής"];
+    for (const row of sheetData2) {
+      if (row["ΚΑΤΑΣΤΑΣΗ"] === "ΠΤ") continue;
+      const year = Number(row["ΕΤΟΣ ΕΓΓΡΑΦΗΣ"]);
+      const passed = Number(row["ΠΛΗΘΟΣ ΜΑΘΗΜΑΤΩΝ"] ?? 0);
+
       yearsSet.add(year);
-      Object.keys(row).forEach((key) => {
-        if (!isNaN(key)) {
-          coursesSet.add(parseInt(key));
-          transformedData.push({
-            year: year,
-            passedCourses: parseInt(key),
-            students: row[key],
-          });
-        }
+      coursesSet.add(passed);
+
+      if (!pivotMap.has(year)) pivotMap.set(year, {});
+      const yearEntry = pivotMap.get(year);
+      yearEntry[passed] = (yearEntry[passed] || 0) + 1;
+    }
+
+    // Build consistent columns based on observed courses
+    const sortedCourses = Array.from(coursesSet).sort((a, b) => a - b);
+
+    // Create pivoted rows (compatible with your existing rendering)
+    const pivotRows = [];
+    pivotMap.forEach((courseCounts, year) => {
+      const row = { "Έτος εγγραφής": year };
+
+      // Fill only observed course columns (keeps table narrower & accurate)
+      for (const c of sortedCourses) {
+        row[c] = courseCounts[c] || 0;
+      }
+
+      // Keep a total field similar to the first sheet (you can refine the logic if needed)
+      row["παραμένουν εγγεγραμμένοι"] = Object.values(courseCounts).reduce((a, b) => a + b, 0);
+
+      pivotRows.push(row);
+    });
+
+    // Prepare the flattened array used by your charts
+    const transformedData = [];
+    const years = Array.from(yearsSet).sort((a, b) => a - b);
+
+    pivotRows.forEach((row) => {
+      const year = row["Έτος εγγραφής"];
+      sortedCourses.forEach((c) => {
+        transformedData.push({
+          year,
+          passedCourses: c,
+          students: Number(row[c] || 0),
+        });
       });
     });
 
     setPivotedData(transformedData);
-    const years = Array.from(yearsSet).sort();
+
+    // Setup filters/ranges from observed data
     setAvailableYears(years);
     setSelectedYears(years);
     setRange({
@@ -86,16 +132,17 @@ const PassingCourses = () => {
       end: Math.max(...years),
     });
 
-    const sortedCourses = Array.from(coursesSet).sort((a, b) => a - b);
     setAvailableCourses(sortedCourses);
+    setSelectedCourses(sortedCourses);
     setCourseRange({
       start: Math.min(...sortedCourses),
       end: Math.max(...sortedCourses),
     });
-    setMinPassedCourses(sortedCourses[0]);
-    setMaxPassedCourses(sortedCourses[sortedCourses.length - 1]);
 
+    setMinPassedCourses(sortedCourses[0] ?? 0);
+    setMaxPassedCourses(sortedCourses[sortedCourses.length - 1] ?? 0);
   };
+
 
   useEffect(() => {
     if (availableYears.length > 0) {
@@ -360,8 +407,7 @@ const PassingCourses = () => {
       })
       .attr("opacity", (d) => {
         const passedCourses = parseInt(d.data.name);
-        if (!highlightedCourse) return 1;
-        return highlightedCourse === passedCourses ? 1 : 0.2;
+        return highlightedCourse === null || highlightedCourse === passedCourses ? 1 : 0.2;
       })
       .style("cursor", "pointer")
       .on("click", (event, d) => {
@@ -662,6 +708,17 @@ const PassingCourses = () => {
           className={`transition-[max-height] duration-500 ease-in-out overflow-hidden ${showRawData ? "max-h-[1000px]" : "max-h-0"}`}
         >
           <div className="bg-white p-4 rounded-b shadow">
+            {/* Pagination Controls */}
+            <PaginationControls
+              currentPage={currentPage}
+              totalPages={totalPages}
+              goToPage={goToPage}
+              nextPage={nextPage}
+              prevPage={prevPage}
+              canGoNext={canGoNext}
+              canGoPrev={canGoPrev}
+            />
+
             {/* Table */}
             <div className="overflow-x-auto bg-gray-50 mt-4 border rounded max-h-[400px] overflow-y-auto text-sm">
               <table className="min-w-full border text-xs text-left">
@@ -673,7 +730,7 @@ const PassingCourses = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {rawData.map((row, i) => (
+                  {currentData.map((row, i) => (
                     <tr key={i} className="hover:bg-gray-100 border-t">
                       {allKeys.map((key, j) => (
                         <td key={j} className="px-2 py-1 border-b whitespace-nowrap">
