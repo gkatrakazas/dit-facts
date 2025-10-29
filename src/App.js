@@ -15,11 +15,11 @@ const App = () => {
       <Router>
         <Layout>
           <Routes>
-            <Route path="dit-stats/" element={<HomePage />} />
-            <Route path="dit-stats/inactive-students" element={<InactiveStudents />} />
-            <Route path="dit-stats/graduation-timelines" element={<GraduationTimelines />} />
-            <Route path="dit-stats/graduates-duration" element={<GraduatesDuration />} />
-            <Route path="dit-stats/passing-courses" element={<PassingCourses />} />
+            <Route path="dit-facts/" element={<HomePage />} />
+            <Route path="dit-facts/inactive-students" element={<InactiveStudents />} />
+            <Route path="dit-facts/graduation-timelines" element={<GraduationTimelines />} />
+            <Route path="dit-facts/graduates-duration" element={<GraduatesDuration />} />
+            <Route path="dit-facts/passing-courses" element={<PassingCourses />} />
 
           </Routes>
         </Layout>
