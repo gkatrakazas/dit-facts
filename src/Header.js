@@ -58,7 +58,7 @@ const Header = () => {
       <div className="flex items-center">
         <img src={`${process.env.PUBLIC_URL}/logo.png`} alt="DI Visualization Logo" className="h-12 mr-4" />
         <h1 className="text-2xl font-bold text-gray-800">
-          <Link to="/">DIT Stats</Link>
+          <Link to="/">DIT Facts</Link>
         </h1>
       </div>
 
