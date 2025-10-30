@@ -653,14 +653,6 @@ const PassingCourses = () => {
               direction="row"
             />
 
-            <SizeLegend
-              shape="rect"
-              steps={[5, 50, 500]}
-              range={[12, 30]}
-              label={t("visualization.passingCourses.sizeLegend")}
-              direction="row"
-            />
-
             <IconLegend
               label={t("visualization.passingCourses.iconLegend.title")}
               items={[
