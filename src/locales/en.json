@@ -56,9 +56,9 @@
         "byStudyDuration": "Group by Study Duration"
       },
       "studyDuration": {
-        "uptoN": " 0 — n",
-        "nToN1": "n — n+1",
-        "n1ToN2": "n+1 — n+2",
+        "uptoN": "Up to n",
+        "nToN1": "n up to n+1",
+        "n1ToN2": "n+1 up to n+2",
         "gtN2": "> n+2"
       },
       "categoryCounts": {
@@ -156,9 +156,9 @@
         "tooltip": "{{label}}: {{count}} graduates"
       },
       "bins": {
-        "uptoN": "0 to n",
-        "nToN1": "n to n+1",
-        "n1ToN2": "n+1 to n+2",
+        "uptoN": "Up to n",
+        "nToN1": "n up to n+1",
+        "n1ToN2": "n+1 up to n+2",
         "gtN2": "> n+2"
       }
     },
