@@ -1,0 +1,27 @@
+
+========
+Deployment guide
+
+
+Steps:
+
+1. Create docker context
+
+
+docker context create mycontext --docker "host=ssh://USER@HOST"
+
+
+2. Build
+
+
+COMPOSE_PROFILES='prod' docker --context mycontext compose build
+
+
+3. Run
+
+
+COMPOSE_PROFILES='prod' docker --context mycontext compose down
+COMPOSE_PROFILES='prod' docker --context mycontext compose up -d
+docker --context mycontext image prune -a
+
+

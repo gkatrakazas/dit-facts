@@ -1,0 +1,32 @@
+version: '3.9'
+
+
+name: facts
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    networks:
+      - facts-net
+
+  proxy:
+    build:
+      context: ./apache
+      dockerfile: Dockerfile
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - /etc/letsencrypt/live/facts.di.uoa.gr/fullchain.pem:/etc/apache2/certs/fullchain.pem
+      - /etc/letsencrypt/live/facts.di.uoa.gr/privkey.pem:/etc/apache2/certs/privkey.pem
+      - /etc/letsencrypt/live/facts.di.uoa.gr/cert.pem:/etc/apache2/certs/cert.pem
+    restart: always
+    networks:
+      - facts-net
+    profiles:
+      - prod
+networks:
+  facts-net:
