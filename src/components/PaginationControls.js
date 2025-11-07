@@ -36,27 +36,26 @@ const PaginationControls = ({
   };
 
   return (
-    <div className="flex items-center justify-between text-sm" aria-label={t("pagination.navigation")}>
+    <div className="flex items-center justify-center text-sm" aria-label={t("pagination.navigation")}>
       <button
         onClick={prevPage}
         disabled={!canGoPrev}
-        className="flex items-center gap-1 px-2 py-1 border rounded disabled:opacity-30"
+        className="flex items-center justify-center h-8 w-8 border rounded disabled:opacity-30 hover:bg-gray-100"
         aria-label={t("pagination.prev")}
         title={t("pagination.prev")}
       >
         <FaAngleLeft className="w-4 h-4" />
-        {t("pagination.prev")}
       </button>
 
       <div className="flex items-center gap-1 mx-2">
         {getPageNumbers().map((page, i) =>
           page === "..." ? (
-            <span key={i} className="px-2 text-gray-400">...</span>
+            <span key={i} className="px-1 text-gray-400">...</span>
           ) : (
             <button
               key={i}
               onClick={() => goToPage(page)}
-              className={`px-2 py-1 border rounded ${page === currentPage
+              className={`h-8 w-8 border rounded ${page === currentPage
                 ? "bg-blue-600 text-white"
                 : "hover:bg-gray-100"
                 }`}
@@ -72,11 +71,10 @@ const PaginationControls = ({
       <button
         onClick={nextPage}
         disabled={!canGoNext}
-        className="flex items-center gap-1 px-2 py-1 border rounded disabled:opacity-30"
+        className="flex items-center justify-center h-8 w-8 border rounded disabled:opacity-30 hover:bg-gray-100"
         aria-label={t("pagination.next")}
         title={t("pagination.next")}
       >
-        {t("pagination.next")}
         <FaAngleRight className="w-4 h-4" />
       </button>
     </div>

@@ -485,9 +485,11 @@ const PassingCourses = () => {
     <div>
       <div className="flex flex-col mx-5 mt-5">
         <h2 className="text-xl font-semibold">{t("visualization.passingCourses.title")}</h2>
-        <div className="flex flex-row gap-6 w-full">
+        
 
-          <div className="flex flex-col gap-3 mt-6 bg-white p-4 rounded shadow w-60">
+        <div className="flex flex-col lg:flex-row lg:gap-6 w-full">
+
+          <div className="flex flex-col gap-3 mt-6 bg-white p-4 rounded shadow w-full lg:w-[25%] lg:max-h-[100vh] lg:overflow-y-auto">
             <div className="flex flex-col gap-2 text-sm">
               <div className="flex flex-col gap-2 text-sm">
                 <h2 className="text-md font-semibold text-md">{t("visualization.common.filters")}</h2>
@@ -534,7 +536,6 @@ const PassingCourses = () => {
                   )}
                 </div>
                 {/*
-
               <CheckboxFilter
                 title="Κατάσταση φοίτησης"
                 options={statuses}
@@ -555,10 +556,8 @@ const PassingCourses = () => {
 
             </div>
           </div>
-          {/* Main content (bubble chart and legend) */}
-          <div id="graph" className="flex flex-row bg-white shadow shadow-lg rounded-lg mt-6 w-full">
-            {/* Legend */}
 
+          <div id="graph" className="flex flex-col bg-white shadow shadow-lg rounded-lg mt-6 w-full lg:w-[60%]">
             {/* Chart container */}
             <div className="w-full m-4">
               {/* chart */}
@@ -566,27 +565,7 @@ const PassingCourses = () => {
                 <div className="flex flex-row justify-between">
                   <h2 className="text-lg text-left pt-2 font-medium mx-6">{t("visualization.passingCourses.barChartTitle")}</h2>
                   <div className="flex gap-4 items-baseline">
-                    {/* Legend */}
-
-                    {/* <div className="text-sm flex flex-col justify-center items-left gap-2 text-sm bg-white border-gray-300 text-gray-600 border-[1px] shadow-sm m-2 px-2 py-2 mx-6">
-                      <div className="mb-1">
-                        <p className="">{t("chart.activeStudents.legend.passed_courses_title")}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-gray-600">{minPassedCourses}</span>
-                        <svg width="150" height="12">
-                          <defs>
-                            <linearGradient id="legend-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                              <stop offset="0%" stopColor={colorScale(minPassedCourses)} />
-                              <stop offset="100%" stopColor={colorScale(maxPassedCourses)} />
-                            </linearGradient>
-                          </defs>
-                          <rect x="0" y="0" width="150" height="12" fill="url(#legend-gradient)" />
-                        </svg>
-                        <span className="text-gray-600">{maxPassedCourses}</span>
-                      </div>
-                    </div> */}
-
+                 
                   </div>
                 </div>
                 <div ref={chartRef} className="w-full relative"></div>
@@ -603,31 +582,7 @@ const PassingCourses = () => {
                       {t("visualization.passingCourses.ThreeMapTitle")}
                     </h2>
 
-                    {/* <div className="text-sm flex flex-col justify-center items-left gap-2 text-sm bg-white border-gray-300 text-gray-600 border-[1px] shadow-sm mx-2 px-2 py-2">
-                      <div className="mb-1">
-                        <p className="">{t("chart.activeStudents.legend.students_per_box")}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="text-sm  text-gray-600 flex items-center gap-4">
-                          <div className="flex flex-row items-center">
-                            <svg width="12" height="12"><rect width="12" height="12" fill="#ddd" /></svg>
-                            <span className="ml-1">5</span>
-                          </div>
-                          <div className="flex flex-row items-center">
-                            <svg width="23" height="23"><rect width="23" height="23" fill="#ddd" /></svg>
-                            <span className="ml-1">50</span>
-                          </div>
-                          <div className="flex flex-row items-center">
-                            <svg width="30" height="30"><rect width="30" height="30" fill="#ddd" /></svg>
-
-                            <span className="ml-1">500</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div> */}
-
                   </div>
-                  {/* Treemap Size Legend */}
                 </div>
                 <div ref={treeMapRef} className="w-full relative"></div>
               </div>
@@ -635,7 +590,7 @@ const PassingCourses = () => {
             </div>
           </div>
 
-          <div className="max-w-[13%] mt-6 w-full flex flex-col gap-2">
+          <div className="w-full lg:w-[15%] mt-6 lg:mt-6 flex flex-col gap-2">
 
             <GradientLegend
               title={t("visualization.common.passingCourses")}
@@ -648,17 +603,9 @@ const PassingCourses = () => {
             <SizeLegend
               shape="rect"
               steps={[5, 50, 500]}
-              range={[12, 30]} // side lengths
+              range={[12, 30]} 
               label={t('visualization.passingCourses.sizeLegend')}
-              direction="row"
-            />
-
-            <SizeLegend
-              shape="rect"
-              steps={[5, 50, 500]}
-              range={[12, 30]}
-              label={t("visualization.passingCourses.sizeLegend")}
-              direction="row"
+              direction="row" 
             />
 
             <IconLegend
@@ -675,6 +622,7 @@ const PassingCourses = () => {
                   label: t("visualization.passingCourses.iconLegend.studentsLabel"),
                 },
               ]}
+              direction="row" 
             />
           </div>
         </div>
