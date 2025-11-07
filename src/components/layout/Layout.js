@@ -1,11 +1,13 @@
 import React from "react";
 import Header from "./Header";
+import Footer from "./Footer"; 
 
 const Layout = ({ children }) => {
   return (
-    <div className="min-h-screen flex flex-col bg-gray-100 w-full">
+    <div className="min-h-screen flex flex-col bg-gray-100 w-full"> 
       <Header />
-      <div className="flex-1 mb-10">{children}</div>
+      <main className="flex-1">{children}</main> 
+      <Footer />
     </div>
   );
 };
