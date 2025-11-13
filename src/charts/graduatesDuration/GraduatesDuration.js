@@ -931,9 +931,9 @@ const GraduatesDuration = () => {
       <div className="flex flex-col mx-5 mt-5">
         <h2 className="text-xl font-semibold">{t("visualization.graduatesDuration.title")}</h2>
 
-        <div className="flex flex-row gap-6 w-full">
-          {/* Sidebar: Display options */}
-          <div className="flex flex-col gap-3 mt-6 bg-white p-4 pr-6 rounded shadow w-[30%] max-h-[100vh] overflow-y-auto">
+
+        <div className="flex flex-col lg:flex-row lg:gap-6 w-full">
+          <div className="flex flex-col gap-3 mt-6 bg-white p-4 pr-6 rounded shadow w-full lg:w-[30%] lg:max-h-[100vh] lg:overflow-y-auto">
             <div className="flex flex-col gap-2 text-sm">
               <h2 className="text-md font-semibold text-md">{t('visualization.common.view.label')}</h2>
 
@@ -1028,25 +1028,9 @@ const GraduatesDuration = () => {
             </div>
 
           </div>
-          {/* Main content (bubble chart and legend) */}
-          <div id="graph" className="flex flex-row bg-white shadow shadow-lg rounded-lg mt-6 w-full">
-            {/* Legend */}
-            {/* <div className="flex flex-wrap gap-4 items-baseline w-[220px]">
-              <div className="flex flex-col justify-center items-left gap-2 text-sm bg-white border-gray-300 border-[1px] shadow-sm m-2 px-2 py-2">
-                <span className="text-gray-600">{t('visualization.graduatesDuration.legend.studyDuration')}</span>
-                <div className="flex flex-col gap-2 mt-2 flex-wrap">
-                  {speedLevels.map(({ label, color }) => (
-                    <div key={label} className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded-full" style={{ backgroundColor: color }} />
-                      {label}
-                    </div>
-                  ))}
-                </div>
-                <p className="font-medium  mb-2 italic text-xs text-gray-600">{t('visualization.graduatesDuration.legend.noteN')}</p>
-              </div>
-            </div> */}
 
-
+          <div id="graph" className="flex flex-col bg-white shadow shadow-lg rounded-lg mt-6 w-full lg:w-[45%]">
+            
             {/* Chart container */}
             <div className="w-full m-4">
               {viewMode === "individual" && (
@@ -1111,7 +1095,7 @@ const GraduatesDuration = () => {
           </div>
 
 
-          <div className="max-w-[25%] mt-6 w-full">
+          <div className="w-full lg:w-[25%] mt-6 lg:mt-6">
 
             <ColorDotLegend
               title={t("visualization.graduatesDuration.legend.studyDuration")}
